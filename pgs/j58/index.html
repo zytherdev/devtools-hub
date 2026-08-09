@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript Minifier Online – Minify & Optimize JS | Zyther Dev</title>
+    <link rel="icon" href="../../assets/icons/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../js/utils/tailwind.cfg.js"></script>
+    <link rel="stylesheet" href="../../css/styles.css">
+    <link rel="stylesheet" href="../../css/themes/light.css" id="theme-stylesheet" />
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="bg-body text-primary flex flex-col min-h-screen">
+    <header id="main-header"></header>
+    
+    <div class="card">
+        <h1>
+            ⚡ Zyther Dev JS Minifier
+            <span>build</span>
+        </h1>
+        <div class="sub">Paste your JavaScript · minify in one click · copy the result</div>
+
+        <div class="grid-2">
+            <!-- input -->
+            <div class="panel">
+                <div class="panel-header">
+                    <label>📄 Input <span class="badge">JS</span></label>
+                    <div class="stats" id="inputStats">chars <span id="inputCharCount">0</span></div>
+                </div>
+                <textarea id="inputJS" spellcheck="false" placeholder="/* paste your JavaScript here */&#10;function greet(name) {&#10;  const message = 'Hello, ' + name + '!';&#10;  console.log(message);&#10;  return message;&#10;}&#10;&#10;// call the function&#10;greet('World');">
+                    /**
+                    * A simple calculator module
+                    */
+                    const Calculator = {
+                    add: function(a, b) {
+                        return a + b;
+                    },
+                    subtract: function(a, b) {
+                        return a - b;
+                    },
+                    multiply: function(a, b) {
+                        return a * b;
+                    },
+                    divide: function(a, b) {
+                        if (b === 0) {
+                        throw new Error('Division by zero');
+                        }
+                        return a / b;
+                    }
+                    };
+
+                    // Export for use
+                    export default Calculator;
+                </textarea>
+                <div class="action-bar">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="minifyBtn">⚡ Minify</button>
+                        <button class="btn btn-outline" id="clearBtn">✕ Clear</button>
+                    </div>
+                    <div class="stats" id="minifyStats">⚡ ready</div>
+                </div>
+            </div>
+
+            <!-- output -->
+            <div class="panel">
+                <div class="panel-header">
+                    <label>📦 Minified <span class="badge badge-out">output</span></label>
+                    <div class="stats" id="outputStats">chars <span id="outputCharCount">0</span></div>
+                </div>
+                <textarea id="outputJS" class="textarea-output" readonly spellcheck="false" placeholder="minified JavaScript will appear here …"></textarea>
+                <div class="action-bar">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="copyBtn">📋 Copy</button>
+                        <button class="btn btn-outline" id="sampleBtn">↺ Sample</button>
+                    </div>
+                    <span id="copyFeedback" class="copy-feedback">✓ copied</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <span><code>JS Minifier</code> — removes comments, whitespace, semicolons &amp; more</span><hr>
+            <span>by <a href="https://github.com/zytherdev">@zytherdev</a></span>
+        </div>
+    </div>
+
+    <footer id="main-footer"></footer>
+
+    <script src="index.js"></script>
+    <script src="../../js/utils/helpers.js"></script>
+    <script src="../../js/theme.js"></script>
+    <script src="../../js/utils/load.js"></script>
+</body>
+</html>
