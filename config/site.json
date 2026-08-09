@@ -1,0 +1,53 @@
+{
+  "site": {
+    "name": "DevTools Hub",
+    "version": "1.0.1",
+    "description": "Your comprehensive developer toolkit",
+    "author": "DevTools Hub Team",
+    "email": "support@devtools-hub.zyther.dev",
+    "url": "https://devtools-hub.zyther.dev"
+  },
+  "tools": [
+    {
+      "id": "css-minifier",
+      "name": "CSS Minifier",
+      "description": "Compress and optimize CSS code",
+      "icon": "fa-css3-alt",
+      "color": "#3b82f6",
+      "path": "/pgs/css-minifier",
+      "badge": "Popular",
+      "category": "minifier"
+    },
+    {
+      "id": "js-minifier",
+      "name": "JavaScript Minifier",
+      "description": "Minify JavaScript for production",
+      "icon": "fa-js",
+      "color": "#fbbf24",
+      "path": "/pgs/js-minifier",
+      "badge": "New",
+      "category": "minifier"
+    },
+    {
+      "id": "html-minifier",
+      "name": "HTML Minifier",
+      "description": "Compress HTML markup",
+      "icon": "fa-html5",
+      "color": "#f97316",
+      "path": "/pgs/html-minifier",
+      "badge": "Beta",
+      "category": "minifier"
+    }
+  ],
+  "social": {
+    "github": "https://github.com/zytherdev/devtools-hub",
+    "twitter": "https://twitter.com/zytherdev",
+    "instagram": "https://instagram.com/zytherdev"
+  },
+  "resources": {
+    "documentation": "/docs",
+    "api": "/api",
+    "changelog": "/changelog",
+    "faq": "/faq"
+  }
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevTools Hub</title>
+    <link rel="shortcut icon" href="assets/icons/favicon.ico" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/utils/tailwind.cfg.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/themes/light.css" id="theme-stylesheet" />
+</head>
+<body class="bg-body text-primary flex flex-col min-h-screen">
+    <header id="main-header"></header>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                Welcome to <span class="text-primary">DevTools Hub</span>
+            </h1>
+            <p class="text-lg text-secondary max-w-2xl mx-auto">
+                Your comprehensive toolkit for developers. Minify, format, and optimize your code with ease.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tools-grid">
+            <!-- tools serão loaded dynamically aqui -->
+        </div>
+    </main>
+    
+    <footer id="main-footer"></footer>
+    
+    <script src="js/utils/helpers.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/theme.js"></script>
+</body>
+</html>

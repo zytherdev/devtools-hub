@@ -1,0 +1,46 @@
+<nav class="bg-card border-b border-border">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+            <!-- logo -->
+            <div class="flex items-center gap-2">
+                <a href="/" class="text-xl font-bold text-primary flex items-center gap-2">
+                    <i class="fas fa-cubes text-primary"></i>
+                    DevTools Hub
+                </a>
+                <span class="text-xs bg-primary text-white px-2 py-0.5 rounded-full">zyther.dev</span>
+            </div>
+            
+            <!-- nav -->
+            <div class="hidden md:flex items-center gap-1">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/pgs/css-minifier" class="nav-link">CSS</a>
+                <a href="/pgs/js-minifier" class="nav-link">JS</a>
+                <a href="/pgs/html-minifier" class="nav-link">HTML</a>
+                <a href="/pgs/contact" class="nav-link">Contact</a>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <!-- thm tggle -->
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
+                <!-- mbile mnu btn -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-hover transition-colors" aria-label="Toggle menu">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- mbile mnu -->
+        <div id="mobile-menu" class="md:hidden hidden py-4 border-t border-border">
+            <div class="flex flex-col gap-2">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/pgs/css-minifier" class="nav-link">CSS Minifier</a>
+                <a href="/pgs/js-minifier" class="nav-link">JS Minifier</a>
+                <a href="/pgs/html-minifier" class="nav-link">HTML Minifier</a>
+                <a href="/pgs/contact" class="nav-link">Contact</a>
+            </div>
+        </div>
+    </div>
+</nav>
