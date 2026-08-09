@@ -14,7 +14,7 @@
       "description": "Compress and optimize CSS code",
       "icon": "fa-css3-alt",
       "color": "#3b82f6",
-      "path": "/pgs/css-minifier",
+      "path": "/pgs/css-minifier/index.html",
       "badge": "Popular",
       "category": "minifier"
     },
