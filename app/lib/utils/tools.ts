@@ -31,7 +31,7 @@ export const tools = [
     id: 'json-formatter',
     name: 'JSON Formatter',
     description: 'Format and validate JSON data. Make your JSON readable and debug with ease.',
-    icon: 'fa-solid fa-brackets-curly',
+    icon: 'fa-solid fa-file',
     color: '#8b5cf6',
     badge: '',
     href: '/json-formatter',

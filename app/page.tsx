@@ -11,7 +11,6 @@ export default function Home() {
   return (
     <>
       <main className="grow container mx-auto px-4 py-8">
-        {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
             Welcome to <span className="text-primary">DevTools Hub</span>
@@ -32,7 +31,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Tools Grid */}
+        {/* tools*/}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tools.map((tool) => (
             <ToolCard key={tool.id} {...tool} />
