@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { minifyJS } from '@/app/lib/tools/minifyJs';
+import { minifyJS } from '@/app/lib/tools/minifiers/minifyJs';
 import { useState, useEffect } from 'react'
 
 export default function JSMinifier() {
