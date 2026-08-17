@@ -13,7 +13,7 @@ import {
     jsonToYAML,
     escapeJSON,
     unescapeJSON
-} from '@/app/lib/tools/formatters/formatJson'
+} from '@/app/lib/tools/data/formatJson'
 
 type Mode = 'format' | 'minify' | 'validate' | 'sort' | 'csv' | 'yaml' | 'escape' | 'unescape'
 

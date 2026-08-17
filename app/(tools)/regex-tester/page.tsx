@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
-import * as Regex from '@/app/lib/tools/testers/testRegex'
+import * as Regex from '@/app/lib/tools/text/testRegex'
 
 export default function RegexTester() {
     const [pattern, setPattern] = useState('')

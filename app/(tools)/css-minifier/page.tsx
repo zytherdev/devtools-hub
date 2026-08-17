@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
-import { minifyCSS, minifyCSS2 } from '@/app/lib/tools/minifiers/minifyCss'
+import { minifyCSS, minifyCSS2 } from '@/app/lib/tools/css/minifier'
 
 export default function CSSMinifier() {
     const [input, setInput] = useState('')

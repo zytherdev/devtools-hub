@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
-import * as Color from '@/app/lib/tools/converters/convertColor'
+import * as Color from '@/app/lib/tools/converter/convertColor'
 
 type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'hsv' | 'cmyk' | 'name'
 
