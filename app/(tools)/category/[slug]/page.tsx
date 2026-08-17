@@ -85,7 +85,6 @@ export default function CategoryPage() {
             </div>
           </div>
         </div>
-        <div className="h-1 w-20 rounded-full bg-primary/20"></div>
       </div>
 
       {/* ctrls */}

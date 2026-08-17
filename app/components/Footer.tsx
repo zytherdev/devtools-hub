@@ -196,7 +196,7 @@ export function Footer() {
                 &copy; {new Date().getFullYear()} DevTools Hub. Made for developers
               </p>
               <span className="text-muted hidden md:inline">|</span>
-              <span className="text-xs text-secondary">
+              <span className="hidden md:inline text-xs text-secondary">
                 <i className="fas fa-code mr-1"></i>
                 {allTools.length}+ tools
               </span>
