@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛠️ DevTools Hub
 
-## Getting Started
+<div align="center">
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**A comprehensive, open-source collection of 90+ developer tools — all running directly in your browser.**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[![Next.js](https://img.shields.io/badge/Next.js-14.0-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+[Live Demo](https://devtools-hub.dev) · [Report Bug](https://github.com/yourusername/devtools-hub/issues) · [Request Feature](https://github.com/yourusername/devtools-hub/issues)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+</div>
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ✨ Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **🔒 Privacy First** — All processing happens client-side. Your data never leaves your browser.
+- **🚀 90+ Tools** — Minifiers, formatters, converters, generators, and more.
+- **🎨 Dark/Light Theme** — Automatic theme switching with persistent preference.
+- **📱 Fully Responsive** — Works on desktop, tablet, and mobile devices.
+- **🔍 Smart Search** — Find tools instantly with real-time search and filtering.
+- **⭐ Favorites** — Save your most-used tools for quick access.
+- **📂 Category Browsing** — Explore tools organized into logical categories.
+- **⚡ Zero Dependencies** — No sign-ups, no accounts, no tracking.
+- **🌐 Open Source** — Fully transparent and community-driven.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛠️ Tools Overview
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Category | Tools | Description |
+|----------|-------|-------------|
+| 🎨 CSS & Style | 5 | Minify, beautify, gradients, box shadows, SVG to CSS |
+| ⚡ JavaScript | 4 | Minify, beautify, HTML to JSX, cURL to code |
+| 📄 HTML & Markup | 4 | Minify, beautify, Markdown to HTML, favicon generator |
+| 📦 Data (JSON/YAML/XML/CSV) | 12 | Formatters, validators, and converters |
+| 🔐 Encoders & Decoders | 8 | Base64, URL, HTML entities, JWT, Unicode, ASCII |
+| ✨ Generators | 10 | UUID, password, QR, robots.txt, sitemap, cron, barcode |
+| 📝 Text & String | 9 | Regex tester, case converter, word counter, diff checker |
+| 🔄 Converters | 7 | Color, unit, timestamp, number base, currency, file size |
+| 🗄️ Database & DevOps | 5 | SQL formatter, Docker, Kubernetes, chmod, subnet |
+| 🛡️ Security & Crypto | 10 | SSL checker, password strength, hash generator, RSA, AES |
+| ⏰ Date & Time | 5 | Cron validator, ETA calculator, date diff, timezone |
+| 🌐 Network & Lookup | 3 | IP lookup, user agent parser, MAC address lookup |
+| 🔧 Miscellaneous | 4 | HTTP status codes, emoji picker, BIP39, benchmark |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Total: 91 Tools and counting!** 🚀
