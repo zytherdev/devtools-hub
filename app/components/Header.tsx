@@ -109,7 +109,7 @@ export function Header() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-primary">DevTools Hub</span>
+              <span className="hidden md:flex text-xl font-bold text-primary">DevTools Hub</span>
               <span className="text-[10px] font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
                 zyther.dev
               </span>
