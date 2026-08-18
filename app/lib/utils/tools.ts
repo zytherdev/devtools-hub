@@ -6,7 +6,7 @@ export const cssTools = [
     description: 'Compress and optimize your CSS code. Remove comments, whitespace, and unnecessary characters.',
     icon: 'fa-brands fa-css3-alt',
     color: '#3b82f6',
-    badge: 'Popular',
+    badge: '',
     href: '/css-minifier',
   },
   {
@@ -15,7 +15,7 @@ export const cssTools = [
     description: 'Format and prettify your CSS code. Make it readable with proper indentation and structure.',
     icon: 'fa-solid fa-brush',
     color: '#60a5fa',
-    badge: 'New',
+    badge: '',
     href: '/css-beautifier',
   },
   {
