@@ -5,7 +5,8 @@ import { useState, useMemo } from 'react'
 import { ToolCard } from './components/ToolCard'
 import { categories, allTools } from './lib/utils/tools'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LoadingSpinner } from './components/spinner';
+import { LoadingSpinner } from './components/spinner'
+import { useToast } from '@zyther/react-toastify'
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -13,6 +14,7 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
+  const toast = useToast()
 
   const filteredTools = useMemo(() => {
     let filtered = allTools
@@ -51,7 +53,9 @@ export default function Home() {
     <>
       <main className="grow container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
+          <h1 onClick={() => {
+            toast.info('YEAHH')
+          }} className="text-4xl md:text-5xl font-bold mb-4 text-primary">
             Welcome to <span className="text-primary">DevTools Hub</span>
           </h1>
           <p className="text-lg text-secondary max-w-2xl mx-auto">

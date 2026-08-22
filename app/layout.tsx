@@ -1,13 +1,16 @@
+'use client'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/app/providers/ThemeProvider'
+import '@zyther/react-toastify/styles'
 import './styles/globals.css'
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { ToastProvider } from '@zyther/react-toastify'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
+ const metadata: Metadata = {
   title: 'DevTools Hub · Developer Toolkit',
   description: 'Free online developer tools: CSS Minifier, JavaScript Minifier, HTML Minifier, JSON Formatter, and more.',
   keywords: 'developer tools, minifier, CSS, JavaScript, HTML, JSON formatter, code optimizer',
@@ -51,9 +54,15 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} bg-body text-primary min-h-screen flex flex-col`}>
         <ThemeProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <ToastProvider
+            defaultPosition='top-right'
+            defaultDuration={0}
+            theme='system'
+          >
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
