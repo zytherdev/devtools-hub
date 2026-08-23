@@ -54,7 +54,19 @@ export default function Home() {
       <main className="grow container mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h1 onClick={() => {
-            toast.info('YEAHH')
+            toast.info('YEAHH', {
+              title: "Toast Lib Test",
+              action: {
+                label: "Começar",
+                onClick: () => {
+                  alert("É isso aeee!")
+                }
+              },
+              duration: 10000,
+              onClose: () => {
+                alert("Fechou!!!")
+              }
+            })
           }} className="text-4xl md:text-5xl font-bold mb-4 text-primary">
             Welcome to <span className="text-primary">DevTools Hub</span>
           </h1>
