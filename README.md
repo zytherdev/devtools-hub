@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 
-[Live Demo](https://devtools-hub.dev) · [Report Bug](https://github.com/yourusername/devtools-hub/issues) · [Request Feature](https://github.com/yourusername/devtools-hub/issues)
+[Visit]([https://devtools-hub.dev](https://devtools.zyther.dev/)) · [Report Bug](https://github.com/zytherdev/devtools-hub/issues) · [Request Feature](https://github.com/zytherdev/devtools-hub/issues)
 
 </div>
 
