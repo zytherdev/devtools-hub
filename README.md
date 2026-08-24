@@ -23,7 +23,7 @@
 ## ✨ Features
 
 - **🔒 Privacy First** — All processing happens client-side. Your data never leaves your browser.
-- **🚀 90+ Tools** — Minifiers, formatters, converters, generators, beautifiers, testers, and more.
+- **🚀 80+ Tools** — Minifiers, formatters, converters, generators, beautifiers, testers, and more.
 - **🎨 Dark/Light Theme** — Automatic theme switching with persistent preference.
 - **📱 Fully Responsive** — Works on desktop, tablet, and mobile devices.
 - **🔍 Smart Search** — Find tools instantly with real-time search and filtering.
