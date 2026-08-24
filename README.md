@@ -4,7 +4,7 @@
 
 ![DevTools Hub](https://devtools.zyther.dev/_next/image?url=%2Fassets%2Ficons%2Ffavicon.ico&w=32&q=75)
 
-**A comprehensive, open-source collection of 90+ developer tools — all running directly in your browser.**
+**A comprehensive, open-source collection of 80+ developer tools — all running directly in your browser.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.0-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
