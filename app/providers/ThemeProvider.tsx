@@ -8,8 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-
-type Theme = 'light' | 'dark'
+import { getStoredTheme, STORAGE_KEY, Theme } from '../lib/utils/thm';
 
 interface ThemeContextType {
   theme: Theme
@@ -18,16 +17,6 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
-
-const STORAGE_KEY = 'devtools-theme'
-
-function getStoredTheme(): Theme {
-  if (typeof window === 'undefined') return 'light'
-
-  const saved = localStorage.getItem(STORAGE_KEY)
-
-  return saved === 'dark' ? 'dark' : 'light'
-}
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { minifyJS } from '@/app/lib/tools/js/minifyJs';
+import { minifyJS } from '@/app/lib/tools/js/minify';
 import { useState, useEffect } from 'react'
 
 export default function JSMinifier() {
@@ -35,9 +35,9 @@ export default function JSMinifier() {
   // Export for use
   export default Calculator;`
 
-  const handleMinify = () => {
+  const handleMinify = async () => {
     try {
-      const result = minifyJS(input)
+      const result = await minifyJS(input)
       setOutput(result)
       
       const saved = input.length - result.length

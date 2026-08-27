@@ -1,5 +1,5 @@
 import { minifyCSS2 } from "../css/minifier";
-import { minifyJS } from "../js/minifyJs";
+import { minifyJS } from "../js/minify";
 
 export function minifyHTML(code: string): string {
     if (!code || typeof code !== 'string') return ''
