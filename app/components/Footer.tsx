@@ -199,6 +199,7 @@ export function Footer() {
                 defaultLanguage="en"
                 supportedLanguages="fr,en,es,pt,it"
                 showNativeNames
+                enableAutoDetection={false}
               />
             </div>
           </div>
