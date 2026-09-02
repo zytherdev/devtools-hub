@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 'use client'
 
@@ -12,7 +13,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const toast = useToast()
 
@@ -68,7 +68,7 @@ export default function Home() {
               }
             })
           }} className="text-4xl md:text-5xl font-bold mb-4 text-primary">
-            Welcome to <span className="text-primary">DevTools Hub</span>
+            Welcome to <span translate="no" className="text-primary px-2 whitespace-nowrap">DevTools Hub</span>
           </h1>
           <p className="text-lg text-secondary max-w-2xl mx-auto">
             Your comprehensive toolkit for developers. Minify, format, and optimize your code with ease.

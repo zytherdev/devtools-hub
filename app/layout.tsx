@@ -5,6 +5,7 @@ import './styles/globals.css'
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { ClientToast } from './components/ToastWrapper';
+import "@zyther/ggl-translate/styles"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -50,7 +51,7 @@ export default function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         />
       </head>
-      <body className={`${inter.className} bg-body text-primary min-h-screen flex flex-col`}>
+      <body suppressHydrationWarning className={`${inter.className} bg-body text-primary min-h-screen flex flex-col`}>
         <ThemeProvider>
           <ClientToast>
             <Header />

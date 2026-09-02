@@ -1,16 +1,24 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { categories, allTools, quickTools } from '../lib/utils/tools'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'
+import { GoogleTranslate } from '@zyther/ggl-translate'
+import { getStoredTheme } from '../lib/utils/thm';
 
 export function Footer() {
   const router = useRouter()
   const pathname = usePathname()
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  useEffect(() => {
+    setTheme(getStoredTheme());
+  }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +39,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="text-2xl font-bold text-primary flex items-center gap-2">
+              <div translate="no" className="text-2xl font-bold text-primary flex items-center gap-2">
                 <Image 
                   src="/assets/icons/favicon.ico" 
                   alt="DevTools Hub" 
@@ -184,6 +192,16 @@ export function Footer() {
                 Response within 24h
               </p>
             </div>
+            {/* thm btn */}
+            <div className="mt-4 pt-4 border-t border-border">
+              <GoogleTranslate
+              theme={ { mode: theme } }
+                defaultLanguage="en"
+                supportedLanguages="fr,en,es,pt,it"
+                showNativeNames
+                enableAutoDetection
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -192,8 +210,8 @@ export function Footer() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 py-6">
             <div className="flex flex-wrap items-center gap-4 text-sm">
-              <p className="text-secondary">
-                &copy; {new Date().getFullYear()} DevTools Hub. Made for developers
+              <p translate="no" className="text-secondary">
+                &copy; {new Date().getFullYear()} DevTools Hub
               </p>
               <span className="text-muted hidden md:inline">|</span>
               <span className="hidden md:inline text-xs text-secondary">

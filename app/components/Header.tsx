@@ -7,7 +7,7 @@ import { useTheme } from '../providers/ThemeProvider'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import clsx from 'clsx'
 import Image from 'next/image'
-import { categories, quickTools } from '../lib/utils/tools';
+import { categories, quickTools } from '../lib/utils/tools'
 
 const menuItems = [
   { 
@@ -96,7 +96,7 @@ export function Header() {
 
   return (
     <nav className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto py-0.5 px-2">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative w-8 h-8">
@@ -108,7 +108,7 @@ export function Header() {
                 className="transition-transform group-hover:scale-110"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div translate="no" className="flex items-center gap-2">
               <span className="hidden md:flex text-xl font-bold text-primary">DevTools Hub</span>
               <span className="text-[10px] font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
                 zyther.dev
@@ -289,7 +289,7 @@ export function Header() {
 
         {/* mbile mnu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border">
+          <div className="lg:hidden py-4 mt-2 border-t border-border">
             <div className="flex flex-col gap-1">
               <div className="px-3 py-2">
                 <div className="text-xs font-semibold text-secondary uppercase tracking-wider mb-2">
