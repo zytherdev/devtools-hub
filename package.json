@@ -24,7 +24,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@zyther/ggl-translate": "^0.1.6",
+    "@zyther/ggl-translate": "^0.1.7",
     "@zyther/react-toastify": "^0.1.9",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
