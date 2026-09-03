@@ -195,7 +195,7 @@ export function Footer() {
             {/* thm btn */}
             <div className="mt-4 pt-4 border-t border-border">
               <GoogleTranslate
-              theme={ { mode: theme } }
+                theme={ { mode: theme } }
                 defaultLanguage="en"
                 supportedLanguages="fr,en,es,pt,it"
                 showNativeNames
