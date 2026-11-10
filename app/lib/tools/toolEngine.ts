@@ -9,10 +9,13 @@ import { run as runDiffChecker } from '@/app/tools/diff-checker/logic'
 import { run as runFaviconGenerator } from '@/app/tools/favicon-generator/logic'
 import { run as runHtmlBeautifier } from '@/app/tools/html-beautifier/logic'
 import { run as runHtmlEncoder } from '@/app/tools/html-encoder/logic'
+import { run as runJsonDiff } from '@/app/tools/json-diff/logic'
 import { run as runJsonSchemaGenerator } from '@/app/tools/json-schema-generator/logic'
 import { run as runJsonToXml } from '@/app/tools/json-to-xml/logic'
 import { run as runJwtDecoder } from '@/app/tools/jwt-decoder/logic'
 import { run as runJwtGenerator } from '@/app/tools/jwt-generator/logic'
+import { run as runLineSorter } from '@/app/tools/line-sorter/logic'
+import { run as runLoremIpsum } from '@/app/tools/lorem-ipsum/logic'
 import { run as runMarkdownToHtml } from '@/app/tools/markdown-to-html/logic'
 import { run as runMimeTypeValidator } from '@/app/tools/mime-type-validator/logic'
 import { run as runMockApiGenerator } from '@/app/tools/mock-api-generator/logic'
@@ -21,8 +24,10 @@ import { run as runPasswordGenerator } from '@/app/tools/password-generator/logi
 import { run as runPhpJsonConverter } from '@/app/tools/php-json-converter/logic'
 import { run as runQrGenerator } from '@/app/tools/qr-generator/logic'
 import { run as runRandomNumberGenerator } from '@/app/tools/random-number-generator/logic'
+import { run as runRemoveDuplicateLines } from '@/app/tools/remove-duplicate-lines/logic'
 import { run as runRobotsTxtGenerator } from '@/app/tools/robots-txt-generator/logic'
 import { run as runSitemapGenerator } from '@/app/tools/sitemap-generator/logic'
+import { run as runSlugGenerator } from '@/app/tools/slug-generator/logic'
 import { run as runTomlFormatter } from '@/app/tools/toml-formatter/logic'
 import { run as runTomlJsonConverter } from '@/app/tools/toml-json-converter/logic'
 import { run as runTextCaseConverter } from '@/app/tools/text-case-converter/logic'
@@ -46,10 +51,13 @@ const handlers: Record<string, ToolRunner> = {
   'favicon-generator': runFaviconGenerator,
   'html-beautifier': runHtmlBeautifier,
   'html-encoder': runHtmlEncoder,
+  'json-diff': runJsonDiff,
   'json-schema-generator': runJsonSchemaGenerator,
   'json-to-xml': runJsonToXml,
   'jwt-decoder': runJwtDecoder,
   'jwt-generator': runJwtGenerator,
+  'line-sorter': runLineSorter,
+  'lorem-ipsum': runLoremIpsum,
   'markdown-to-html': runMarkdownToHtml,
   'mime-type-validator': runMimeTypeValidator,
   'mock-api-generator': runMockApiGenerator,
@@ -58,8 +66,10 @@ const handlers: Record<string, ToolRunner> = {
   'php-json-converter': runPhpJsonConverter,
   'qr-generator': runQrGenerator,
   'random-number-generator': runRandomNumberGenerator,
+  'remove-duplicate-lines': runRemoveDuplicateLines,
   'robots-txt-generator': runRobotsTxtGenerator,
   'sitemap-generator': runSitemapGenerator,
+  'slug-generator': runSlugGenerator,
   'text-case-converter': runTextCaseConverter,
   'toml-formatter': runTomlFormatter,
   'toml-json-converter': runTomlJsonConverter,

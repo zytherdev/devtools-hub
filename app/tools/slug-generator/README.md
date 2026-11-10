@@ -1,41 +1,28 @@
-# Slug Generator
+# Gerador de slug
 
-**Status:** Planned
+**Status:** Implementado
 
-Generate URL-friendly slugs from any text. Perfect for SEO and URLs.
+Transforma texto em um slug compacto para URLs. A normalização remove marcas diacríticas combinantes, mantém letras e números Unicode e troca sequências de outros caracteres por um separador.
 
-## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Opções
 
 ~~~json
-""
+{"separator":"-","maxLength":"80","lowercase":"true"}
 ~~~
 
-## Default options
+- `separator`: hífen (`-`) ou sublinhado (`_`).
+- `maxLength`: tamanho máximo de 1 a 200 caracteres; o corte remove eventual separador final.
+- `lowercase`: `true` converte para minúsculas; `false` preserva a caixa original.
 
-The options panel starts with this JSON:
+Exemplo: `Olá, Mundo! Página número 2` resulta em `ola-mundo-pagina-numero-2`. Não é feita transliteração de scripts não latinos; letras Unicode são mantidas.
 
-~~~json
-{}
-~~~
+## Limites e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+A entrada é limitada a 100.000 caracteres. O processamento é local e não envia texto para serviços externos.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/slug-generator.test.cjs](../../../tests/tools/slug-generator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e opções padrão.
+- [logic.ts](logic.ts): normalização Unicode e validação.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/slug-generator.test.cjs](../../../tests/tools/slug-generator.test.cjs).

@@ -1,41 +1,29 @@
-# JSON Diff Checker
+# Comparador de JSON
 
-**Status:** Planned
+**Status:** Implementado
 
-Compare two JSON objects and see the differences in structure and values.
+Compara duas estruturas JSON localmente e retorna listas de valores adicionados, removidos e alterados.
 
-## Availability
+## Uso
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+A entrada deve ser um objeto JSON com exatamente as propriedades `before` e `after`:
 
 ~~~json
-""
+{
+  "before": { "name": "Ada", "role": "engineer" },
+  "after": { "name": "Grace", "active": true }
+}
 ~~~
 
-## Default options
+A saída é um JSON com arrays `added`, `removed` e `changed`. Cada diferença inclui um caminho JSON Pointer; caracteres `/` e `~` nos nomes de propriedade são escapados conforme a convenção. Arrays do mesmo tamanho são comparados por índice; arrays de tamanhos diferentes aparecem como uma única alteração no caminho do array.
 
-The options panel starts with this JSON:
+## Limites e privacidade
 
-~~~json
-{}
-~~~
+A entrada é limitada a 1.000.000 de caracteres, a comparação percorre no máximo 100.000 nós e 50 níveis de profundidade, e a saída não pode exceder 4.000.000 de caracteres. Opções não são aceitas. Nenhum dado é enviado pela rede.
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+## Arquivos de contribuição
 
-## Processing and privacy
-
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/json-diff.test.cjs](../../../tests/tools/json-diff.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e exemplo de comparação.
+- [logic.ts](logic.ts): parser, comparação estrutural e validações.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/json-diff.test.cjs](../../../tests/tools/json-diff.test.cjs).

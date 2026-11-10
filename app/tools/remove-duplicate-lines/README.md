@@ -1,41 +1,28 @@
-# Remove Duplicate Lines
+# Remover linhas duplicadas
 
-**Status:** Planned
+**Status:** Implementado
 
-Remove duplicate lines from text. Keep only unique entries.
+Remove ocorrências repetidas de linhas, preservando a ordem da primeira ocorrência. Quebras CRLF e LF são normalizadas para LF.
 
-## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Opções
 
 ~~~json
-""
+{"caseSensitive":"true","trimWhitespace":"false","keepEmpty":"false"}
 ~~~
 
-## Default options
+- `caseSensitive`: `true` diferencia maiúsculas/minúsculas; `false` compara em minúsculas, preservando a primeira forma encontrada na saída.
+- `trimWhitespace`: `true` remove espaços no início/fim antes da comparação e também na saída.
+- `keepEmpty`: `true` preserva uma ocorrência de linha vazia; por padrão linhas vazias são descartadas.
 
-The options panel starts with this JSON:
+Uma quebra de linha final é tratada como terminador do arquivo, não como um item vazio adicional. A saída é composta por linhas únicas separadas por LF.
 
-~~~json
-{}
-~~~
+## Limites e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+A entrada é limitada a 1.000.000 de caracteres e 100.000 linhas. Nenhum conteúdo é enviado pela rede.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/remove-duplicate-lines.test.cjs](../../../tests/tools/remove-duplicate-lines.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e opções padrão.
+- [logic.ts](logic.ts): normalização, deduplicação e validação.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/remove-duplicate-lines.test.cjs](../../../tests/tools/remove-duplicate-lines.test.cjs).

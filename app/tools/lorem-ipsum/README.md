@@ -1,41 +1,29 @@
-# Lorem Ipsum Generator
+# Gerador Lorem Ipsum
 
-**Status:** Planned
+**Status:** Implementado
 
-Generate placeholder text for your designs and mockups. Customize length and format.
+Gera texto de preenchimento determinístico, sem entrada, adequado a protótipos, layouts e mockups.
 
-## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Opções
 
 ~~~json
-""
+{"paragraphs":"3","sentencesPerParagraph":"3","wordsPerSentence":"12","format":"paragraphs"}
 ~~~
 
-## Default options
+- `paragraphs`: de 1 a 50.
+- `sentencesPerParagraph`: de 1 a 20.
+- `wordsPerSentence`: de 3 a 50.
+- `format`: `paragraphs` (separa blocos com linha em branco) ou `single` (um bloco contínuo).
 
-The options panel starts with this JSON:
+Cada frase termina com ponto. A lista de palavras se repete de forma previsível, portanto não use o texto gerado como conteúdo editorial real.
 
-~~~json
-{}
-~~~
+## Limites e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+O texto de entrada deve ficar vazio. O resultado é limitado a 500.000 caracteres. Todo o processamento é local e determinístico, sem chamadas de rede.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/lorem-ipsum.test.cjs](../../../tests/tools/lorem-ipsum.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e opções padrão.
+- [logic.ts](logic.ts): geração e validação dos limites.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/lorem-ipsum.test.cjs](../../../tests/tools/lorem-ipsum.test.cjs).

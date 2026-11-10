@@ -1,41 +1,29 @@
-# Line Sorter
+# Ordenador de linhas
 
-**Status:** Planned
+**Status:** Implementado
 
-Sort lines alphabetically, numerically, or reversed. Remove duplicates.
+Ordena texto linha por linha ou inverte a sequência, com opções para remover duplicatas, aparar espaços ou ignorar linhas vazias.
 
-## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Opções
 
 ~~~json
-""
+{"order":"alphabetical-asc","unique":"false","trimWhitespace":"false","ignoreEmpty":"false"}
 ~~~
 
-## Default options
+- `order`: `alphabetical-asc`, `alphabetical-desc`, `numeric-asc`, `numeric-desc` ou `reverse`.
+- `unique`: mantém apenas a primeira ocorrência exata de cada linha.
+- `trimWhitespace`: remove espaços no início e fim antes de ordenar.
+- `ignoreEmpty`: descarta linhas vazias.
 
-The options panel starts with this JSON:
+A ordenação alfabética não diferencia caixa para comparação e preserva a ordem original em empates. A numérica compara valores numéricos quando ambos os itens são números válidos e usa comparação textual nos demais casos. Quebras CRLF são normalizadas para LF; uma quebra final não é considerada uma linha extra.
 
-~~~json
-{}
-~~~
+## Limites e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+A entrada é limitada a 1.000.000 de caracteres e 100.000 linhas. Nenhuma chamada de rede é feita.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/line-sorter.test.cjs](../../../tests/tools/line-sorter.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e opções padrão.
+- [logic.ts](logic.ts): ordenação e validação de linhas/opções.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/line-sorter.test.cjs](../../../tests/tools/line-sorter.test.cjs).
