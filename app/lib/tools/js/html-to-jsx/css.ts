@@ -22,9 +22,8 @@ export function cssToObject(
       .slice(separator + 1)
       .trim()
 
-    if (!property || !value) {
-      continue
-    }
+    if (!property || !value || !/^--[A-Za-z0-9_-]+$|^-?[A-Za-z][A-Za-z0-9-]*$/.test(property)) continue
+    if (/expression\s*\(|url\(\s*['\"]?\s*(?:javascript|vbscript):/i.test(value)) continue
 
     const key =
       cssPropertyToJSX(property)
@@ -173,30 +172,6 @@ function cssPropertyToJSX(
   )
 }
 
-function toJSValue(
-  value: string,
-): string {
-  const trimmed = value.trim()
-
-  if (
-    trimmed.startsWith('"') &&
-    trimmed.endsWith('"')
-  ) {
-    return `'${trimmed
-      .slice(1, -1)
-      .replace(/'/g, "\\'")}'`
-  }
-
-  if (
-    trimmed.startsWith("'") &&
-    trimmed.endsWith("'")
-  ) {
-    return `"${trimmed
-      .slice(1, -1)
-      .replace(/"/g, '\\"')}"`
-  }
-
-  return `'${trimmed
-    .replace(/\\/g, '\\\\')
-    .replace(/'/g, "\\'")}'`
+function toJSValue(value: string): string {
+  return JSON.stringify(value.trim())
 }

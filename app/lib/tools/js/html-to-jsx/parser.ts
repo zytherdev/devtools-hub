@@ -6,6 +6,7 @@ import type {
 } from './ast'
 
 import { VOID_ELEMENTS } from './constants'
+import { decodeHTMLEntities } from './entities'
 
 export function parseHTML(
   tokens: HTMLToken[],
@@ -45,7 +46,12 @@ export function parseHTML(
         const node: ElementNode = {
           type: 'element',
           name: token.name,
-          attributes: token.attributes,
+          attributes: token.attributes.map(attribute => ({
+            ...attribute,
+            value: typeof attribute.value === 'string'
+              ? decodeHTMLEntities(attribute.value)
+              : attribute.value,
+          })),
           children: [],
           selfClosing:
             token.selfClosing ||

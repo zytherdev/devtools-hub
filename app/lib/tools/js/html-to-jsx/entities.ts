@@ -21,7 +21,7 @@ export function decodeHTMLEntities(
       (full, code: string) => {
         const number = Number(code)
 
-        return Number.isFinite(number)
+        return Number.isInteger(number) && number >= 0 && number <= 0x10FFFF && !(number >= 0xD800 && number <= 0xDFFF)
           ? String.fromCodePoint(number)
           : full
       },
@@ -31,7 +31,7 @@ export function decodeHTMLEntities(
       (full, code: string) => {
         const number = parseInt(code, 16)
 
-        return Number.isFinite(number)
+        return Number.isInteger(number) && number >= 0 && number <= 0x10FFFF && !(number >= 0xD800 && number <= 0xDFFF)
           ? String.fromCodePoint(number)
           : full
       },

@@ -107,8 +107,8 @@ export default function ColorConverter() {
         const samples = ['#3b82f6', '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff']
         const random = samples[Math.floor(Math.random() * samples.length)]
         setInput(random)
-        setTimeout(handleProcess, 100)
-        alert('Sample loaded!')
+        const parsed = Color.parseColorString(random)
+        if (parsed) updateColor(parsed)
     }
 
     // Ctrl+Enter
@@ -126,9 +126,7 @@ export default function ColorConverter() {
 
     // pcess fmt change
     useEffect(() => {
-        if (rgb.r !== 0 || rgb.g !== 0 || rgb.b !== 0) {
-            updateColor(rgb)
-        }
+        if (output || colorName) updateColor(rgb)
     }, [format])
 
     const formats: { value: ColorFormat; label: string }[] = [

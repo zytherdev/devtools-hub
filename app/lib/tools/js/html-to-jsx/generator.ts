@@ -4,9 +4,7 @@ import type {
   ElementNode,
 } from './ast'
 
-import {
-  escapeJSXText,
-} from './entities'
+import { decodeHTMLEntities } from './entities'
 
 import {
   generateAttributes,
@@ -71,7 +69,7 @@ function generateNode(
 
     case 'comment':
       return options.preserveComments
-        ? `${indent}{/* ${node.value.trim()} */}`
+        ? `${indent}{/* ${node.value.trim().replace(/\*\//g, '* /')} */}`
         : ''
 
     case 'element':
@@ -97,16 +95,14 @@ function generateText(
 
   const text =
     options.preserveWhitespace
-      ? value
-      : value.trim()
+      ? decodeHTMLEntities(value)
+      : decodeHTMLEntities(value.trim())
 
   if (!text) {
     return ''
   }
 
-  return `${indent}{${JSON.stringify(
-    escapeJSXText(text),
-  )}}`
+  return `${indent}{${JSON.stringify(text)}}`
 }
 
 function generateElement(

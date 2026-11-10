@@ -105,13 +105,16 @@ export const presetGradients: { name: string; gradient: Gradient }[] = [
 ]
 
 export function generateGradientCSS(gradient: Gradient): string {
-  const stops = gradient.stops
+  const validStops = [...gradient.stops]
+    .filter(stop => isValidColor(stop.color) && Number.isFinite(stop.position))
     .sort((a, b) => a.position - b.position)
-    .map(stop => `${stop.color} ${stop.position}%`)
+  const stops = validStops
+    .map(stop => `${stop.color.trim()} ${Math.max(0, Math.min(100, stop.position))}%`)
     .join(', ')
+  if (validStops.length < 2) return 'background: none'
 
   if (gradient.type === 'linear') {
-    const angle = gradient.angle || 90
+    const angle = Number.isFinite(gradient.angle) ? Math.max(0, Math.min(360, gradient.angle!)) : 90
     return `background: linear-gradient(${angle}deg, ${stops})`
   }
 
@@ -122,7 +125,7 @@ export function generateGradientCSS(gradient: Gradient): string {
   }
 
   // conic
-  const angle = gradient.angle || 0
+  const angle = Number.isFinite(gradient.angle) ? Math.max(0, Math.min(360, gradient.angle!)) : 0
   return `background: conic-gradient(from ${angle}deg, ${stops})`
 }
 
@@ -131,15 +134,19 @@ export function generatePreviewStyle(gradient: Gradient): string {
 }
 
 export function isValidColor(color: string): boolean {
+  if (typeof color !== 'string') return false
+  color = color.trim()
   // hex
   if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color)) return true
   // RGB
-  if (/^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/.test(color)) return true
+  const rgb = color.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i)
+  if (rgb && rgb.slice(1).every(value => Number(value) <= 255)) return true
   // HSL
-  if (/^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/.test(color)) return true
+  const hsl = color.match(/^hsl\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*\)$/i)
+  if (hsl && Number(hsl[1]) <= 360 && Number(hsl[2]) <= 100 && Number(hsl[3]) <= 100) return true
   // nmd colors
   const namedColors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'cyan', 'magenta', 'lime', 'teal', 'navy', 'maroon', 'coral', 'gold', 'silver']
-  if (namedColors.includes(color.toLowerCase())) return true
+  if (namedColors.includes(color.trim().toLowerCase())) return true
   return false
 }
 

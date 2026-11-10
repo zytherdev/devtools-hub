@@ -26,10 +26,11 @@ export function generateAttributes(
   const result: string[] = []
 
   for (const attribute of attributes) {
-    const {
-      name,
-      value,
-    } = attribute
+    const { name, value } = attribute
+
+    // HTML event handler strings must not be carried into JSX output.
+    if (/^on[a-z]/i.test(name)) continue
+    if (['href', 'src', 'action', 'formAction', 'xlinkHref'].includes(name) && typeof value === 'string' && /^(?:\s*(?:javascript|vbscript):|\s*data:text\/html)/i.test(value)) continue
 
     if (
       name === 'style' &&

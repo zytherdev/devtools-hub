@@ -45,7 +45,7 @@ export function testRegex(pattern: string, flags: string, text: string): RegexRe
             
             // hndle numbered groups
             for (let i = 1; i < match.length; i++) {
-                if (match[i] !== undefined && !groups[i]) {
+                if (match[i] !== undefined && !Object.prototype.hasOwnProperty.call(groups, i.toString())) {
                     groups[i.toString()] = match[i]
                 }
             }
@@ -56,8 +56,13 @@ export function testRegex(pattern: string, flags: string, text: string): RegexRe
                 groups: Object.keys(groups).length > 0 ? groups : undefined
             })
 
-            // brk if not global t/ avd infinite loop
+            // Stop at a bounded result count and always advance zero-width matches.
+            if (matches.length >= 5000) break
             if (!flags.includes('g')) break
+            if (match[0].length === 0) {
+                const codePoint = text.codePointAt(regex.lastIndex)
+                regex.lastIndex += (flags.includes('u') && codePoint !== undefined && codePoint > 0xFFFF) ? 2 : 1
+            }
         }
 
         return {
@@ -189,5 +194,5 @@ export const flagOptions = [
 ]
 
 export function getFlagString(selectedFlags: string[]): string {
-    return selectedFlags.sort().join('')
+    return [...selectedFlags].sort().join('')
 }

@@ -12,10 +12,17 @@ const samples: Record<string, string> = {
   'favicon-generator': 'DH',
   'xml-formatter': '<?xml version="1.0"?><catalog><item id="1"><name>DevTools</name><active>true</active></item></catalog>',
   'yaml-formatter': 'name: DevTools Hub\nversion: 1\ntools:\n  - formatter\n  - converter\nprivate: true',
+  'csv-formatter': 'name,category,free\nJSON Formatter,data,true\nUUID Generator,generator,true',
+  'toml-formatter': 'name="DevTools Hub"\nversion=1\n\n[tools]\ncount=86\nprivate=true',
+  'xml-to-json': '<catalog><item id="1"><name>DevTools</name></item><item id="2"><name>Hub</name></item></catalog>',
+  'yaml-to-json': 'app:\n  name: DevTools Hub\n  version: 1\nfeatures:\n  - private\n  - fast',
+  'json-to-xml': '{\n  "catalog": { "item": [{ "id": 1 }, { "id": 2 }] }\n}',
 }
 const optionSamples: Record<string, ToolOptions> = {
   'favicon-generator': { foreground: '#ffffff', background: '#347a58', shape: 'rounded' },
   'yaml-formatter': { indent: '2', sortKeys: 'false' },
+  'csv-formatter': { delimiter: ',' },
+  'json-to-xml': { rootName: 'root' },
 }
 
 export function UniversalTool({ tool, slug }: { tool: ToolInfo; slug: string }) {
@@ -49,7 +56,18 @@ export function UniversalTool({ tool, slug }: { tool: ToolInfo; slug: string }) 
 
   function download() {
     if (!output) return
-    const extension = slug === 'favicon-generator' ? 'svg' : slug === 'markdown-to-html' ? 'html' : slug.includes('yaml') ? 'yaml' : slug.includes('xml') ? 'xml' : 'txt'
+    const extensions: Record<string, string> = {
+      'favicon-generator': 'svg',
+      'markdown-to-html': 'html',
+      'xml-formatter': 'xml',
+      'yaml-formatter': 'yaml',
+      'csv-formatter': 'csv',
+      'toml-formatter': 'toml',
+      'xml-to-json': 'json',
+      'yaml-to-json': 'json',
+      'json-to-xml': 'xml',
+    }
+    const extension = extensions[slug] ?? 'txt'
     const blob = new Blob([output], { type: extension === 'svg' ? 'image/svg+xml' : 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = `${slug}.${extension}`; anchor.click(); URL.revokeObjectURL(url)

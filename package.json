@@ -9,11 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "clsx": "^2.1.1",
     "escodegen": "^2.1.0",
     "esprima": "^4.0.1",
     "framer-motion": "^13.1.0",
     "next": "16.3.0",
+    "prettier": "^3.9.10",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "yaml": "^2.9.1"

@@ -16,47 +16,20 @@ export const defaultSVGOptions: SVGConversionOptions = {
 }
 
 export function compressSVG(svg: string): string {
-  let compressed = svg
-    
-  // rm XML declaration
-  compressed = compressed.replace(/<\?xml[^>]*\?>/g, '')
-    
-  // rm DOCTYPE
-  compressed = compressed.replace(/<!DOCTYPE[^>]*>/g, '')
-    
-  // rm cmnts
-  compressed = compressed.replace(/<!--[\s\S]*?-->/g, '')
-    
-  // rm unnecessary whitespace
-  compressed = compressed.replace(/[\n\r\t]/g, ' ')
-  compressed = compressed.replace(/ {2,}/g, ' ')
-    
-  // rm spaces between attrs
-  compressed = compressed.replace(/\s*=\s*/g, '=')
-    
-  // rm spaces before closing
-  compressed = compressed.replace(/\s+\/>/g, '/>')
-    
-  // rm quotes from attrs
-  compressed = compressed.replace(/(\w+)=(["'])([^"'\s>]+)\2/g, '$1=$3')
-    
-  // rm dflt namespace
-  compressed = compressed.replace(/xmlns="[^"]*"/g, '')
-    
-  // rm v.
-  compressed = compressed.replace(/version="[^"]*"/g, '')
-    
-  // trm
-  compressed = compressed.trim()
-    
-  return compressed
+  if (typeof svg !== 'string') return ''
+  // Keep XML namespaces, quoting and text-node whitespace intact. Strip only optional prolog material.
+  return svg
+    .replace(/^\s*<\?xml[^>]*\?>\s*/i, '')
+    .replace(/^\s*<!DOCTYPE[^>]*>\s*/i, '')
+    .trim()
 }
 
 export function svgToCSS(svg: string, options: Partial<SVGConversionOptions> = {}): string {
   if (!svg || typeof svg !== 'string') return ''
     
   const opts = { ...defaultSVGOptions, ...options }
-    
+  if (!isValidSVG(svg)) throw new Error('Input must be a valid SVG root with viewBox or width and height.')
+  if (opts.addPrefix && !/^-?[_a-zA-Z][-_a-zA-Z0-9]*$/.test(opts.prefix)) throw new Error('CSS class must be a valid identifier.')
   let processed = svg
     
   if (opts.optimize) {
@@ -88,70 +61,22 @@ export function svgToCSS(svg: string, options: Partial<SVGConversionOptions> = {
 }
 
 export function encodeSVG(svg: string, minify: boolean): string {
-  let encoded = svg
-    
-  // rm nwlines
-  encoded = encoded.replace(/\n/g, ' ')
-    
-  // rplce special characters f/ URL encoding
-  const replacements: { [key: string]: string } = {
-    '%': '%25',
-    '#': '%23',
-    '{': '%7B',
-    '}': '%7D',
-    '<': '%3C',
-    '>': '%3E',
-    '|': '%7C',
-    '^': '%5E',
-    '`': '%60',
-    '[': '%5B',
-    ']': '%5D',
-    '"': '%22',
-    ';': '%3B',
-    '/': '%2F',
-    '?': '%3F',
-    ':': '%3A',
-    '@': '%40',
-    '&': '%26',
-    '=': '%3D',
-    '+': '%2B',
-    '$': '%24',
-    ',': '%2C',
-    '!': '%21',
-    "'": '%27',
-    '(': '%28',
-    ')': '%29',
-    '*': '%2A',
-  }
-    
-  for (const [char, code] of Object.entries(replacements)) {
-    encoded = encoded.replace(new RegExp(`\\${char}`, 'g'), code)
-  }
-    
-  // rm spaces around attrs
-  if (!minify) {
-    encoded = encoded.replace(/\s/g, ' ')
-  }
-    
-  return encoded
+  const source = minify ? svg.trim() : svg
+  return encodeURIComponent(source).replace(/[!'()*]/g, character => `%${character.charCodeAt(0).toString(16).toUpperCase()}`)
 }
 
 export function isValidSVG(svg: string): boolean {
-  if (!svg || typeof svg !== 'string') return false
-    
+  if (!svg || typeof svg !== 'string' || svg.length > 1_000_000) return false
   const trimmed = svg.trim()
-    
-  // SVG tag??
-  if (!/<svg[\s\S]*>/i.test(trimmed)) return false
-    
-  // closing SVG tag??
-  if (!/<\/svg>/.test(trimmed)) return false
-    
-  // has viewBox or width/height??
-  const hasViewBox = /viewBox\s*=\s*["']([^"']*)["']/.test(trimmed)
-  const hasWidth = /width\s*=\s*["']([^"']*)["']/.test(trimmed)
-  const hasHeight = /height\s*=\s*["']([^"']*)["']/.test(trimmed)
-    
+  const rootStart = trimmed.search(/<svg(?:\s|>)/i)
+  if (rootStart < 0 || /<\/?(?:script|foreignObject)(?:\s|>)/i.test(trimmed)) return false
+  const openTagEnd = trimmed.indexOf('>', rootStart)
+  if (openTagEnd < 0) return false
+  const rootOpen = trimmed.slice(rootStart, openTagEnd + 1)
+  if (!/<\/svg\s*>\s*$/i.test(trimmed)) return false
+  const hasViewBox = /\bviewBox\s*=\s*["'][^"']+["']/i.test(rootOpen)
+  const hasWidth = /\bwidth\s*=\s*["'][^"']+["']/i.test(rootOpen)
+  const hasHeight = /\bheight\s*=\s*["'][^"']+["']/i.test(rootOpen)
   return hasViewBox || (hasWidth && hasHeight)
 }
 

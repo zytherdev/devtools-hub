@@ -1,4 +1,5 @@
 import YAML from 'yaml'
+import { runDataTool } from './dataTools'
 
 export type ToolOptions = Record<string, string>
 
@@ -113,5 +114,7 @@ export async function runTool(slug: string, input: string, options: ToolOptions 
     const value = document.toJS()
     return YAML.stringify(options.sortKeys === 'true' ? sortObjectKeys(value) : value, { indent: Number(options.indent) || 2, lineWidth: 0 })
   }
-  throw new Error('This tool is scheduled for the next implementation batch.')
+  const dataResult = await runDataTool(slug, input, options)
+  if (dataResult !== null) return dataResult
+  throw new Error('This tool is scheduled for a later implementation batch.')
 }

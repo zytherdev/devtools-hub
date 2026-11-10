@@ -57,6 +57,10 @@ class HTMLLexer {
           type: 'text',
           value: text,
         })
+      } else if (this.current() === '<') {
+        // Consume malformed '<' tokens so the lexer always makes progress.
+        tokens.push({ type: 'text', value: '<' })
+        this.advance()
       }
     }
 
@@ -229,7 +233,7 @@ class HTMLLexer {
       if (
         this.isWhitespace(char) ||
         char === '>' ||
-        char === '/'
+        (char === '/' && this.source[this.index + 1] === '>')
       ) {
         break
       }

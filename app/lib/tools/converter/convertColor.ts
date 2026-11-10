@@ -27,33 +27,27 @@ export interface CMYKColor {
 
 // ===== validar =====
 export function isValidHex(hex: string): boolean {
-    return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(hex)
+    return /^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(hex.trim())
 }
 
 export function isValidRGB(rgb: string): boolean {
-    return /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/.test(rgb)
+    const match = rgb.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i)
+    return !!match && match.slice(1).every(value => Number(value) <= 255)
 }
 
 export function isValidHSL(hsl: string): boolean {
-    return /^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/.test(hsl)
+    const match = hsl.match(/^hsl\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*\)$/i)
+    return !!match && Number(match[1]) <= 360 && Number(match[2]) <= 100 && Number(match[3]) <= 100
 }
 
 // ===== hex =====
 export function hexToRGB(hex: string): RGBColor {
-    let cleanHex = hex.replace('#', '')
+    let cleanHex = hex.trim().replace(/^#/, '')
+    if (!/^(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(cleanHex)) throw new Error('Expected a 3- or 6-digit hexadecimal color.')
     
     // #fff -> #ffffff
     if (cleanHex.length === 3) {
         cleanHex = cleanHex.split('').map(c => c + c).join('')
-    }
-    
-    // 8-digit hex with alpha
-    if (cleanHex.length === 8) {
-        return {
-            r: parseInt(cleanHex.substring(0, 2), 16),
-            g: parseInt(cleanHex.substring(2, 4), 16),
-            b: parseInt(cleanHex.substring(4, 6), 16)
-        }
     }
     
     return {
@@ -65,7 +59,8 @@ export function hexToRGB(hex: string): RGBColor {
 
 export function rgbToHex(rgb: RGBColor): string {
     const { r, g, b } = rgb
-    return `#${[r, g, b].map(c => c.toString(16).padStart(2, '0')).join('')}`
+    const channel = (value: number) => Math.round(Math.max(0, Math.min(255, Number.isFinite(value) ? value : 0))).toString(16).padStart(2, '0')
+    return `#${[r, g, b].map(channel).join('')}`
 }
 
 // ===== rgb =====
@@ -104,9 +99,9 @@ export function rgbToHSL(rgb: RGBColor): HSLColor {
 
 export function hslToRGB(hsl: HSLColor): RGBColor {
     let { h, s, l } = hsl
-    h /= 360
-    s /= 100
-    l /= 100
+    h = (((h % 360) + 360) % 360) / 360
+    s = Math.max(0, Math.min(100, s)) / 100
+    l = Math.max(0, Math.min(100, l)) / 100
 
     let r, g, b
     if (s === 0) {
@@ -171,9 +166,9 @@ export function rgbToHSV(rgb: RGBColor): HSVColor {
 
 export function hsvToRGB(hsv: HSVColor): RGBColor {
     let { h, s, v } = hsv
-    h /= 360
-    s /= 100
-    v /= 100
+    h = (((h % 360) + 360) % 360) / 360
+    s = Math.max(0, Math.min(100, s)) / 100
+    v = Math.max(0, Math.min(100, v)) / 100
 
     const i = Math.floor(h * 6)
     const f = h * 6 - i
@@ -224,10 +219,10 @@ export function rgbToCMYK(rgb: RGBColor): CMYKColor {
 
 export function cmykToRGB(cmyk: CMYKColor): RGBColor {
     let { c, m, y, k } = cmyk
-    c /= 100
-    m /= 100
-    y /= 100
-    k /= 100
+    c = Math.max(0, Math.min(100, c)) / 100
+    m = Math.max(0, Math.min(100, m)) / 100
+    y = Math.max(0, Math.min(100, y)) / 100
+    k = Math.max(0, Math.min(100, k)) / 100
 
     return {
         r: Math.round(255 * (1 - c) * (1 - k)),
@@ -238,15 +233,15 @@ export function cmykToRGB(cmyk: CMYKColor): RGBColor {
 
 // ===== str parsers  =====
 export function parseRGBString(str: string): RGBColor | null {
-    const match = str.match(/rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/)
-    if (!match) return null
-    return { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) }
+    const match = str.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i)
+    if (!match || !match.slice(1).every(value => Number(value) <= 255)) return null
+    return { r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) }
 }
 
 export function parseHSLString(str: string): HSLColor | null {
-    const match = str.match(/hsl\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*\)/)
-    if (!match) return null
-    return { h: parseInt(match[1]), s: parseInt(match[2]), l: parseInt(match[3]) }
+    const match = str.match(/^hsl\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*\)$/i)
+    if (!match || Number(match[1]) > 360 || Number(match[2]) > 100 || Number(match[3]) > 100) return null
+    return { h: Number(match[1]), s: Number(match[2]), l: Number(match[3]) }
 }
 
 export function parseColorString(str: string): RGBColor | null {
@@ -254,11 +249,7 @@ export function parseColorString(str: string): RGBColor | null {
     
     // hex
     if (str.startsWith('#')) {
-        try {
-            return hexToRGB(str)
-        } catch {
-            return null
-        }
+        return isValidHex(str) ? hexToRGB(str) : null
     }
     
     // rgb

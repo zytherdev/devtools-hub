@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export type Language = 'javascript' | 'python' | 'php' | 'go' | 'ruby' | 'java' | 'csharp'
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
 
@@ -6,542 +5,258 @@ export interface CurlToCodeOptions {
   language: Language
   method: Method
   url: string
-  headers: { [key: string]: string }
+  headers: Record<string, string>
   data?: string
-  formData?: { [key: string]: string }
+  formData?: Record<string, string>
   auth?: { username: string; password: string }
   bearerToken?: string
 }
 
+const METHODS = new Set<Method>(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'])
+
+function shellTokens(input: string): string[] | null {
+  const tokens: string[] = []
+  let token = ''
+  let quote: "'" | '"' | null = null
+  let active = false
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i]
+    if (quote === "'") {
+      if (char === "'") quote = null
+      else token += char
+      active = true
+      continue
+    }
+    if (char === '\\' && i + 1 < input.length) {
+      const next = input[++i]
+      if (next !== '\n' && next !== '\r') token += next
+      active = true
+      continue
+    }
+    if (quote === '"') {
+      if (char === '"') quote = null
+      else token += char
+      active = true
+      continue
+    }
+    if (char === "'" || char === '"') { quote = char; active = true; continue }
+    if (/\s/.test(char)) {
+      if (active) { tokens.push(token); token = ''; active = false }
+      continue
+    }
+    token += char
+    active = true
+  }
+  if (quote) return null
+  if (active) tokens.push(token)
+  return tokens
+}
+
 export function parseCurl(curlCommand: string): CurlToCodeOptions | null {
-  if (!curlCommand || typeof curlCommand !== 'string') return null
+  if (!curlCommand || typeof curlCommand !== 'string' || curlCommand.length > 100_000) return null
+  const tokens = shellTokens(curlCommand.trim())
+  if (!tokens?.length || !/^curl(?:\.exe)?$/i.test(tokens[0])) return null
+  const result: CurlToCodeOptions = { language: 'javascript', method: 'GET', url: '', headers: {} }
+  let hasBody = false
+  const take = (index: number, inline?: string): [string | undefined, number] => inline !== undefined ? [inline, index] : [tokens[index + 1], index + 1]
 
-  // rm 'curl' prefix
-  let cmd = curlCommand.trim()
-  if (cmd.startsWith('curl ')) {
-    cmd = cmd.substring(5)
-  }
+  for (let i = 1; i < tokens.length; i++) {
+    const arg = tokens[i]
+    const [name, inline] = arg.startsWith('--') && arg.includes('=') ? [arg.slice(0, arg.indexOf('=')), arg.slice(arg.indexOf('=') + 1)] : [arg, undefined]
+    if (['-L', '--location', '-s', '--silent', '-S', '--show-error', '--compressed', '--fail', '--fail-with-body', '--globoff', '-v', '--verbose'].includes(name)) continue
+    if (['-k', '--insecure', '-G', '--get', '--url-query', '-o', '--output', '-T', '--upload-file'].includes(name)) return null
 
-  const options: CurlToCodeOptions = {
-    language: 'javascript',
-    method: 'GET',
-    url: '',
-    headers: {},
-  }
-
-  // parse URL
-  const urlMatch = cmd.match(/['"]?(https?:\/\/[^\s'"]+)['"]?/)
-  if (urlMatch) {
-    options.url = urlMatch[1]
-    cmd = cmd.replace(urlMatch[0], '')
-  }
-
-  // parse method
-  const methodMatch = cmd.match(/-X\s+['"]?([A-Z]+)['"]?/)
-  if (methodMatch) {
-    options.method = methodMatch[1] as Method
-    cmd = cmd.replace(methodMatch[0], '')
-  }
-
-  // parse headers
-  const headerRegex = /-H\s+['"]([^'"]+)['"]/g
-  let headerMatch
-  while ((headerMatch = headerRegex.exec(cmd)) !== null) {
-    const header = headerMatch[1]
-    const colonIndex = header.indexOf(':')
-    if (colonIndex !== -1) {
-      const key = header.substring(0, colonIndex).trim()
-      const value = header.substring(colonIndex + 1).trim()
-      options.headers[key] = value
+    if (['-I', '--head'].includes(name)) { result.method = 'HEAD'; continue }
+    if (name === '--url') { const [value, next] = take(i, inline); if (!value || result.url) return null; result.url = value; i = next; continue }
+    if (['-A', '--user-agent'].includes(name)) { const [value, next] = take(i, inline); if (value === undefined) return null; result.headers['User-Agent'] = value; i = next; continue }
+    if (['-X', '--request'].includes(name)) {
+      const [value, next] = take(i, inline); if (!value) return null
+      const method = value.toUpperCase() as Method; if (!METHODS.has(method)) return null
+      result.method = method; i = next; continue
     }
-    cmd = cmd.replace(headerMatch[0], '')
-  }
-
-  // parse data
-  const dataMatch = cmd.match(/-d\s+['"]([^'"]+)['"]/)
-  if (dataMatch) {
-    options.data = dataMatch[1]
-    cmd = cmd.replace(dataMatch[0], '')
-    if (!options.method || options.method === 'GET') {
-      options.method = 'POST'
+    if (['-H', '--header'].includes(name)) {
+      const [value, next] = take(i, inline); if (value === undefined) return null
+      const colon = value.indexOf(':'); if (colon < 1) return null
+      const key = value.slice(0, colon).trim(); const headerValue = value.slice(colon + 1).trim()
+      if (key) result.headers[key] = headerValue
+      i = next; continue
     }
-  }
-
-  // parse form data
-  const formMatch = cmd.match(/-F\s+['"]([^'"]+)['"]/)
-  if (formMatch) {
-    const formString = formMatch[1]
-    const formParts = formString.split('=')
-    if (formParts.length === 2) {
-      if (!options.formData) options.formData = {}
-      options.formData[formParts[0]] = formParts[1]
+    if (['-d', '--data', '--data-raw', '--data-binary'].includes(name)) {
+      const [value, next] = take(i, inline); if (value === undefined) return null
+      result.data = result.data === undefined ? value : `${result.data}&${value}`
+      hasBody = true; i = next; continue
     }
-    cmd = cmd.replace(formMatch[0], '')
-    if (!options.method || options.method === 'GET') {
-      options.method = 'POST'
+    if (['-F', '--form'].includes(name)) {
+      const [value, next] = take(i, inline); if (value === undefined) return null
+      const equals = value.indexOf('='); if (equals < 1) return null
+      const field = value.slice(0, equals)
+      const fieldValue = value.slice(equals + 1)
+      if (/[\r\n]/.test(field) || fieldValue.startsWith('@') || fieldValue.startsWith('<')) return null
+      result.formData ??= {}; result.formData[field] = fieldValue
+      hasBody = true; i = next; continue
     }
-  }
-
-  // parse bearer token
-  const bearerMatch = cmd.match(/-H\s+['"]Authorization:\s*Bearer\s+([^'"]+)['"]/)
-  if (bearerMatch) {
-    options.bearerToken = bearerMatch[1]
-  }
-
-  // parse basic auth
-  const authMatch = cmd.match(/-u\s+['"]?([^:]+):([^'"]+)['"]?/)
-  if (authMatch) {
-    options.auth = {
-      username: authMatch[1],
-      password: authMatch[2],
+    if (['-u', '--user'].includes(name)) {
+      const [value, next] = take(i, inline); if (value === undefined) return null
+      const colon = value.indexOf(':'); if (colon < 0) return null
+      result.auth = { username: value.slice(0, colon), password: value.slice(colon + 1) }; i = next; continue
     }
+    if (name === '--bearer') {
+      const [value, next] = take(i, inline); if (value === undefined) return null
+      result.bearerToken = value; i = next; continue
+    }
+    if (['--max-time', '--connect-timeout', '--retry', '--retry-delay'].includes(name)) { if (inline === undefined) i++; continue }
+    if (name.startsWith('-')) return null
+    if (/^https?:\/\//i.test(arg) && !result.url) result.url = arg
+    else return null
   }
+  if (!result.url) return null
+  try { const parsed = new URL(result.url); if (!['http:', 'https:'].includes(parsed.protocol)) return null }
+  catch { return null }
+  if (result.data !== undefined && result.formData) return null
+  if (hasBody && result.method === 'GET') result.method = 'POST'
+  for (const [key, value] of Object.entries(result.headers)) {
+    if (key.toLowerCase() === 'authorization' && /^Bearer\s+/i.test(value)) result.bearerToken = value.replace(/^Bearer\s+/i, '')
+  }
+  return result
+}
 
-  return options
+function js(value: string): string { return JSON.stringify(value) }
+function py(value: string): string { return JSON.stringify(value) }
+function php(value: string): string { return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'` }
+function go(value: string): string { return JSON.stringify(value) }
+function ruby(value: string): string { return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'` }
+function java(value: string): string { return JSON.stringify(value) }
+function csharp(value: string): string { return JSON.stringify(value) }
+
+function authHeader(options: CurlToCodeOptions): string | undefined {
+  if (options.auth) {
+    const bytes = new TextEncoder().encode(`${options.auth.username}:${options.auth.password}`)
+    let binary = ''; bytes.forEach(byte => { binary += String.fromCharCode(byte) })
+    return `Basic ${btoa(binary)}`
+  }
+  return options.bearerToken ? `Bearer ${options.bearerToken}` : undefined
+}
+
+function effectiveHeaders(options: CurlToCodeOptions): Record<string, string> {
+  const headers = { ...options.headers }
+  if (options.formData) {
+    for (const key of Object.keys(headers)) if (key.toLowerCase() === 'content-type') delete headers[key]
+  }
+  if (options.data !== undefined && !Object.keys(headers).some(key => key.toLowerCase() === 'content-type')) {
+    headers['Content-Type'] = 'application/x-www-form-urlencoded'
+  }
+  const authorization = authHeader(options)
+  if (authorization) {
+    for (const key of Object.keys(headers)) if (key.toLowerCase() === 'authorization') delete headers[key]
+    headers.Authorization = authorization
+  }
+  return headers
 }
 
 export function generateCode(options: CurlToCodeOptions): string {
-  const { language, method, url, headers, data, formData, auth, bearerToken } = options
-
-  switch (language) {
-    case 'javascript':
-      return generateJavaScript(method, url, headers, data, formData, auth, bearerToken)
-    case 'python':
-      return generatePython(method, url, headers, data, formData, auth, bearerToken)
-    case 'php':
-      return generatePHP(method, url, headers, data, formData, auth, bearerToken)
-    case 'go':
-      return generateGo(method, url, headers, data, formData, auth, bearerToken)
-    case 'ruby':
-      return generateRuby(method, url, headers, data, formData, auth, bearerToken)
-    case 'java':
-      return generateJava(method, url, headers, data, formData, auth, bearerToken)
-    case 'csharp':
-      return generateCSharp(method, url, headers, data, formData, auth, bearerToken)
-    default:
-      return '// Language not supported'
+  const headers = effectiveHeaders(options)
+  switch (options.language) {
+    case 'javascript': return generateJavaScript(options, headers)
+    case 'python': return generatePython(options, headers)
+    case 'php': return generatePHP(options, headers)
+    case 'go': return generateGo(options, headers)
+    case 'ruby': return generateRuby(options, headers)
+    case 'java': return generateJava(options, headers)
+    case 'csharp': return generateCSharp(options, headers)
   }
 }
 
-function generateJavaScript(
-  method: string,
-  url: string,
-  headers: { [key: string]: string },
-  data?: string,
-  formData?: { [key: string]: string },
-  auth?: { username: string; password: string },
-  bearerToken?: string
-): string {
-  let code = ''
+function bodyValue(options: CurlToCodeOptions): string | undefined { return options.data }
 
-  // Headers
-  const headerObj: { [key: string]: string } = { ...headers }
-  if (bearerToken) {
-    headerObj['Authorization'] = `Bearer ${bearerToken}`
-  }
-  if (auth) {
-    const credentials = btoa(`${auth.username}:${auth.password}`)
-    headerObj['Authorization'] = `Basic ${credentials}`
-  }
-
-  // build fetch options
-  const options: any = {
-    method,
-    headers: headerObj,
-  }
-
-  if (data) {
-    options.body = data
-    if (!headerObj['Content-Type']) {
-      headerObj['Content-Type'] = 'application/json'
-    }
-  }
-
-  if (formData) {
-    const fd = new FormData()
-    for (const [key, value] of Object.entries(formData)) {
-      fd.append(key, value)
-    }
-    options.body = fd
-  }
-
-  // gen code
-  code += `fetch('${url}', ${JSON.stringify(options, null, 2)})\n`
-  code += `  .then(response => response.json())\n`
-  code += `  .then(data => console.log(data))\n`
-  code += `  .catch(error => console.error('Error:', error));`
-
-  return code
+function generateJavaScript(o: CurlToCodeOptions, headers: Record<string,string>): string {
+  const body = bodyValue(o)
+  const hasForm = o.formData !== undefined
+  const fetchHeaders = { ...headers }
+  if (body !== undefined && !hasForm && !Object.keys(fetchHeaders).some(k => k.toLowerCase() === 'content-type')) fetchHeaders['Content-Type'] = 'application/json'
+  const lines = [`const headers = ${JSON.stringify(fetchHeaders, null, 2)};`, 'const options = {', `  method: ${js(o.method)},`, '  headers,']
+  if (hasForm) lines.push('  body: (() => { const form = new FormData();', ...Object.entries(o.formData!).map(([k,v]) => `    form.append(${js(k)}, ${js(v)});`), '    return form; })(),')
+  else if (body !== undefined) lines.push(`  body: ${js(body)},`)
+  lines.push('};', '', `const response = await fetch(${js(o.url)}, options);`, 'const responseText = await response.text();', 'if (!response.ok) throw new Error(`HTTP ${response.status}: ${responseText}`);', 'console.log(responseText);')
+  return lines.join('\n')
 }
 
-function generatePython(
-  method: string,
-  url: string,
-  headers: { [key: string]: string },
-  data?: string,
-  formData?: { [key: string]: string },
-  auth?: { username: string; password: string },
-  bearerToken?: string
-): string {
-  let code = 'import requests\n\n'
-
-  const headerObj = { ...headers }
-  if (bearerToken) {
-    headerObj['Authorization'] = `Bearer ${bearerToken}`
-  }
-
-  code += `url = "${url}"\n`
-  code += `headers = ${JSON.stringify(headerObj, null, 2)}\n`
-
-  if (auth) {
-    code += `auth = (${JSON.stringify(auth.username)}, ${JSON.stringify(auth.password)})\n`
-  }
-
-  let dataVar = ''
-  if (data) {
-    try {
-      JSON.parse(data)
-      dataVar = `json = ${data}`
-    } catch {
-      dataVar = `data = ${JSON.stringify(data)}`
-    }
-  }
-
-  if (formData) {
-    dataVar = `data = ${JSON.stringify(formData)}`
-  }
-
-  if (dataVar) {
-    code += `${dataVar}\n`
-  }
-
-  code += `\nresponse = requests.${method.toLowerCase()}(\n`
-  code += `    url,\n`
-  code += `    headers=headers,\n`
-  if (dataVar) {
-    code += `    ${dataVar.includes('json') ? 'json' : 'data'}=${dataVar.split(' = ')[0]},\n`
-  }
-  if (auth) {
-    code += `    auth=auth,\n`
-  }
-  code += `)\n\n`
-  code += `print(response.json())`
-
-  return code
+function generatePython(o: CurlToCodeOptions, headers: Record<string,string>): string {
+  const lines = ['import requests', '', `url = ${py(o.url)}`, `headers = ${JSON.stringify(headers, null, 2)}`]
+  if (o.auth) lines.push(`auth = (${py(o.auth.username)}, ${py(o.auth.password)})`)
+  if (o.formData) lines.push(`form_data = {${Object.entries(o.formData).map(([key,value]) => `${py(key)}: (None, ${py(value)})`).join(', ')}}`)
+  else if (o.data !== undefined) lines.push(`body = ${py(o.data)}`)
+  lines.push('', `response = requests.request(${py(o.method)}, url, headers=headers${o.auth ? ', auth=auth' : ''}${o.formData ? ', files=form_data' : o.data !== undefined ? ', data=body' : ''})`, 'response.raise_for_status()', 'print(response.text)')
+  return lines.join('\n')
 }
-
-function generatePHP(
-  method: string,
-  url: string,
-  headers: { [key: string]: string },
-  data?: string,
-  formData?: { [key: string]: string },
-  auth?: { username: string; password: string },
-  bearerToken?: string
-): string {
-  let code = '<?php\n\n'
-  code += `$curl = curl_init();\n\n`
-
-  code += `curl_setopt_array($curl, [\n`
-  code += `  CURLOPT_URL => "${url}",\n`
-  code += `  CURLOPT_RETURNTRANSFER => true,\n`
-  code += `  CURLOPT_ENCODING => "",\n`
-  code += `  CURLOPT_MAXREDIRS => 10,\n`
-  code += `  CURLOPT_TIMEOUT => 30,\n`
-  code += `  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,\n`
-  code += `  CURLOPT_CUSTOMREQUEST => "${method}",\n`
-
-  // Headers
-  const headerList: string[] = []
-  for (const [key, value] of Object.entries(headers)) {
-    headerList.push(`"${key}: ${value}"`)
-  }
-  if (bearerToken) {
-    headerList.push(`"Authorization: Bearer ${bearerToken}"`)
-  }
-  if (auth) {
-    code += `  CURLOPT_USERPWD => "${auth.username}:${auth.password}",\n`
-  }
-  if (headerList.length > 0) {
-    code += `  CURLOPT_HTTPHEADER => [\n`
-    for (const header of headerList) {
-      code += `    ${header},\n`
-    }
-    code += `  ],\n`
-  }
-
-  if (data) {
-    code += `  CURLOPT_POSTFIELDS => ${JSON.stringify(data)},\n`
-  }
-  if (formData) {
-    code += `  CURLOPT_POSTFIELDS => ${JSON.stringify(formData)},\n`
-  }
-
-  code += `]);\n\n`
-  code += `$response = curl_exec($curl);\n`
-  code += `$err = curl_error($curl);\n\n`
-  code += `curl_close($curl);\n\n`
-  code += `if ($err) {\n`
-  code += `  echo "cURL Error #:" . $err;\n`
-  code += `} else {\n`
-  code += `  echo $response;\n`
-  code += `}`
-
-  return code
+function generatePHP(o: CurlToCodeOptions, headers: Record<string,string>): string {
+  const headerLines = Object.entries(headers).map(([key,value]) => `    ${php(`${key}: ${value}`)}`).join(',\n')
+  const lines = ['<?php', '$ch = curl_init();', '$options = [', `  CURLOPT_URL => ${php(o.url)},`, '  CURLOPT_RETURNTRANSFER => true,', `  CURLOPT_CUSTOMREQUEST => ${php(o.method)},`]
+  if (headerLines) lines.push(`  CURLOPT_HTTPHEADER => [\n${headerLines}\n  ],`)
+  if (o.formData) {
+    const fields = Object.entries(o.formData).map(([key,value]) => `    ${php(key)} => ${php(value)}`).join(',\n')
+    lines.push(`  CURLOPT_POSTFIELDS => [\n${fields}\n  ],`)
+  } else if (o.data !== undefined) lines.push(`  CURLOPT_POSTFIELDS => ${php(o.data)},`)
+  if (o.auth) lines.push(`  CURLOPT_USERPWD => ${php(`${o.auth.username}:${o.auth.password}`)},`)
+  lines.push('];', 'curl_setopt_array($ch, $options);', '$response = curl_exec($ch);', 'if ($response === false) { throw new RuntimeException(curl_error($ch)); }', 'curl_close($ch);', 'echo $response;')
+  return lines.join('\n')
 }
-
-function generateGo(
-  method: string,
-  url: string,
-  headers: { [key: string]: string },
-  data?: string,
-  formData?: { [key: string]: string },
-  auth?: { username: string; password: string },
-  bearerToken?: string
-): string {
-  let code = 'package main\n\n'
-  code += 'import (\n'
-  code += '  "fmt"\n'
-  code += '  "io/ioutil"\n'
-  code += '  "net/http"\n'
-  if (data || formData) {
-    code += '  "strings"\n'
-  }
-  if (auth) {
-    code += '  "encoding/base64"\n'
-  }
-  code += ')\n\n'
-
-  code += 'func main() {\n'
-
-  if (data) {
-    code += `  payload := strings.NewReader(${JSON.stringify(data)})\n`
-  }
-  if (formData) {
-    code += `  payload := strings.NewReader(${JSON.stringify(formData)})\n`
-  }
-
-  code += `  url := "${url}"\n`
-
-  code += `  req, err := http.NewRequest("${method}", url, ${data || formData ? 'payload' : 'nil'})\n`
-  code += '  if err != nil {\n'
-  code += '    fmt.Println(err)\n'
-  code += '    return\n'
-  code += '  }\n\n'
-
-  for (const [key, value] of Object.entries(headers)) {
-    code += `  req.Header.Add("${key}", "${value}")\n`
-  }
-  if (bearerToken) {
-    code += `  req.Header.Add("Authorization", "Bearer ${bearerToken}")\n`
-  }
-  if (auth) {
-    code += `  req.Header.Add("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte("${auth.username}:${auth.password}")))\n`
-  }
-
-  code += '\n  client := &http.Client{}\n'
-  code += '  resp, err := client.Do(req)\n'
-  code += '  if err != nil {\n'
-  code += '    fmt.Println(err)\n'
-  code += '    return\n'
-  code += '  }\n'
-  code += '  defer resp.Body.Close()\n\n'
-
-  code += '  body, err := ioutil.ReadAll(resp.Body)\n'
-  code += '  if err != nil {\n'
-  code += '    fmt.Println(err)\n'
-  code += '    return\n'
-  code += '  }\n\n'
-
-  code += '  fmt.Println(string(body))\n'
-  code += '}\n'
-
-  return code
+function generateGo(o: CurlToCodeOptions, headers: Record<string,string>): string {
+  const imports = ['"fmt"', '"io"', '"net/http"']
+  if (o.formData) imports.push('"bytes"', '"mime/multipart"')
+  else if (o.data !== undefined) imports.push('"strings"')
+  const lines = ['package main', '', 'import (', ...imports.map(value => `  ${value}`), ')', '', 'func main() {']
+  if (o.formData) {
+    lines.push('  var body bytes.Buffer', '  writer := multipart.NewWriter(&body)')
+    for (const [key,value] of Object.entries(o.formData)) lines.push(`  field${Object.keys(o.formData).indexOf(key)} , err := writer.CreateFormField(${go(key)})`, '  if err != nil { panic(err) }', `  _, err = field${Object.keys(o.formData).indexOf(key)}.Write([]byte(${go(value)}))`, '  if err != nil { panic(err) }')
+    lines.push('  if err := writer.Close(); err != nil { panic(err) }', `  req, err := http.NewRequest(${go(o.method)}, ${go(o.url)}, &body)`)
+  } else lines.push(`  req, err := http.NewRequest(${go(o.method)}, ${go(o.url)}, ${o.data !== undefined ? `strings.NewReader(${go(o.data)})` : 'nil'})`)
+  lines.push('  if err != nil { panic(err) }')
+  for (const [key,value] of Object.entries(headers)) if (!(o.formData && key.toLowerCase() === 'content-type')) lines.push(`  req.Header.Set(${go(key)}, ${go(value)})`)
+  if (o.formData) lines.push('  req.Header.Set("Content-Type", writer.FormDataContentType())')
+  lines.push('  resp, err := http.DefaultClient.Do(req)', '  if err != nil { panic(err) }', '  defer resp.Body.Close()', '  responseBody, err := io.ReadAll(resp.Body)', '  if err != nil { panic(err) }', '  fmt.Println(string(responseBody))', '}')
+  return lines.join('\n')
 }
-
-function generateRuby(
-  method: string,
-  url: string,
-  headers: { [key: string]: string },
-  data?: string,
-  formData?: { [key: string]: string },
-  auth?: { username: string; password: string },
-  bearerToken?: string
-): string {
-  let code = 'require "uri"\n'
-  code += 'require "net/http"\n'
-  code += 'require "json"\n\n'
-
-  code += `uri = URI.parse("${url}")\n`
-
-  if (method !== 'GET') {
-    code += `http = Net::HTTP.new(uri.host, uri.port)\n`
-    code += `http.use_ssl = true if uri.scheme == "https"\n`
-  }
-
-  if (data) {
-    code += `data = ${JSON.stringify(data)}\n`
-    code += `headers = ${JSON.stringify(headers)}\n`
-    code += `request = Net::HTTP::Post.new(uri.path, headers)\n`
-    code += `request.body = data\n`
-  } else if (formData) {
-    code += `form_data = ${JSON.stringify(formData)}\n`
-    code += `headers = ${JSON.stringify(headers)}\n`
-    code += `request = Net::HTTP::Post.new(uri.path, headers)\n`
-    code += `request.set_form_data(form_data)\n`
-  } else {
-    code += `headers = ${JSON.stringify(headers)}\n`
-    code += `request = Net::HTTP::${method}(${method === 'GET' ? 'Get' : method}).new(uri.path, headers)\n`
-  }
-
-  if (bearerToken) {
-    code += `request["Authorization"] = "Bearer ${bearerToken}"\n`
-  }
-  if (auth) {
-    code += `request.basic_auth("${auth.username}", "${auth.password}")\n`
-  }
-
-  code += `\nresponse = http.request(request)\n`
-  code += `puts response.body`
-
-  return code
+function generateRuby(o: CurlToCodeOptions, headers: Record<string,string>): string {
+  const requestClass = ({ GET:'Get', POST:'Post', PUT:'Put', PATCH:'Patch', DELETE:'Delete', HEAD:'Head', OPTIONS:'Options' } as Record<Method,string>)[o.method]
+  const lines = ['require "uri"', 'require "net/http"', '', `uri = URI(${ruby(o.url)})`, 'http = Net::HTTP.new(uri.host, uri.port)', 'http.use_ssl = uri.scheme == "https"', `request = Net::HTTP::${requestClass}.new(uri)`, `headers = ${JSON.stringify(headers, null, 2)}`, 'headers.each { |key, value| request[key] = value }']
+  if (o.formData) lines.push(`request.set_form(${JSON.stringify(o.formData)}, 'multipart/form-data')`)
+  else if (o.data !== undefined) lines.push(`request.body = ${ruby(o.data)}`)
+  if (o.auth) lines.push(`request.basic_auth(${ruby(o.auth.username)}, ${ruby(o.auth.password)})`)
+  lines.push('response = http.request(request)', 'raise "HTTP #{response.code}: #{response.body}" unless response.is_a?(Net::HTTPSuccess)', 'puts response.body')
+  return lines.join('\n')
 }
-
-function generateJava(
-  method: string,
-  url: string,
-  headers: { [key: string]: string },
-  data?: string,
-  formData?: { [key: string]: string },
-  auth?: { username: string; password: string },
-  bearerToken?: string
-): string {
-  let code = 'import java.net.http.HttpClient;\n'
-  code += 'import java.net.http.HttpRequest;\n'
-  code += 'import java.net.http.HttpResponse;\n'
-  code += 'import java.net.URI;\n'
-  if (data) {
-    code += 'import java.net.http.HttpRequest.BodyPublishers;\n'
-  }
-  code += '\n'
-
-  code += 'public class Main {\n'
-  code += '  public static void main(String[] args) throws Exception {\n'
-  code += `    HttpClient client = HttpClient.newHttpClient();\n\n`
-
-  let requestBuilder = `    HttpRequest.newBuilder()\n`
-  requestBuilder += `      .uri(URI.create("${url}"))\n`
-
-  for (const [key, value] of Object.entries(headers)) {
-    requestBuilder += `      .header("${key}", "${value}")\n`
-  }
-  if (bearerToken) {
-    requestBuilder += `      .header("Authorization", "Bearer ${bearerToken}")\n`
-  }
-  if (auth) {
-    const credentials = btoa(`${auth.username}:${auth.password}`)
-    requestBuilder += `      .header("Authorization", "Basic ${credentials}")\n`
-  }
-
-  if (method !== 'GET') {
-    requestBuilder += `      .method("${method}", `
-    if (data) {
-      requestBuilder += `BodyPublishers.ofString(${JSON.stringify(data)})`
-    } else if (formData) {
-      requestBuilder += `BodyPublishers.ofString(${JSON.stringify(formData)})`
-    } else {
-      requestBuilder += `BodyPublishers.noBody()`
-    }
-    requestBuilder += `)\n`
-  }
-
-  requestBuilder += `      .build();\n\n`
-
-  code += requestBuilder
-  code += `    HttpRequest request = requestBuilder.build();\n\n`
-  code += `    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());\n`
-  code += `    System.out.println(response.body());\n`
-  code += '  }\n'
-  code += '}'
-
-  return code
+function generateJava(o: CurlToCodeOptions, headers: Record<string,string>): string {
+  const lines = ['import java.net.URI;', 'import java.net.http.HttpClient;', 'import java.net.http.HttpRequest;', 'import java.net.http.HttpResponse;', 'import java.nio.charset.StandardCharsets;', '', 'public class Main {', '  public static void main(String[] args) throws Exception {', '    HttpClient client = HttpClient.newHttpClient();', `    HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(${java(o.url)}));`]
+  let bodyPublisher = 'HttpRequest.BodyPublishers.noBody()'
+  if (o.formData) {
+    const boundary = '----DevToolsHubBoundary7MA4YWxkTrZu0gW'
+    const chunks = Object.entries(o.formData).map(([key,value]) => `--${boundary}\r\nContent-Disposition: form-data; name="${key.replace(/"/g, '\\"')}"\r\n\r\n${value}\r\n`)
+    chunks.push(`--${boundary}--\r\n`)
+    bodyPublisher = `HttpRequest.BodyPublishers.ofString(${java(chunks.join(''))}, StandardCharsets.UTF_8)`
+    lines.push(`    builder.header("Content-Type", "multipart/form-data; boundary=${boundary}");`)
+  } else if (o.data !== undefined) bodyPublisher = `HttpRequest.BodyPublishers.ofString(${java(o.data)}, StandardCharsets.UTF_8)`
+  for (const [key,value] of Object.entries(headers)) lines.push(`    builder.header(${java(key)}, ${java(value)});`)
+  lines.push(`    HttpRequest request = builder.method(${java(o.method)}, ${bodyPublisher}).build();`, '    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());', '    System.out.println(response.body());', '  }', '}')
+  return lines.join('\n')
 }
-
-function generateCSharp(
-  method: string,
-  url: string,
-  headers: { [key: string]: string },
-  data?: string,
-  formData?: { [key: string]: string },
-  auth?: { username: string; password: string },
-  bearerToken?: string
-): string {
-  let code = 'using System;\n'
-  code += 'using System.Net.Http;\n'
-  code += 'using System.Threading.Tasks;\n'
-  if (data || formData) {
-    code += 'using System.Text;\n'
+function generateCSharp(o: CurlToCodeOptions, headers: Record<string,string>): string {
+  const lines = ['using System;', 'using System.Net.Http;', 'using System.Text;', 'using System.Threading.Tasks;', '', 'class Program {', '  static async Task Main() {', '    using var client = new HttpClient();', `    using var request = new HttpRequestMessage(new HttpMethod(${csharp(o.method)}), ${csharp(o.url)});`]
+  for (const [key,value] of Object.entries(headers)) if (!(o.formData && key.toLowerCase() === 'content-type')) lines.push(`    request.Headers.TryAddWithoutValidation(${csharp(key)}, ${csharp(value)});`)
+  if (o.formData) {
+    lines.push('    var multipart = new MultipartFormDataContent();')
+    for (const [key,value] of Object.entries(o.formData)) lines.push(`    multipart.Add(new StringContent(${csharp(value)}), ${csharp(key)});`)
+    lines.push('    request.Content = multipart;')
+  } else if (o.data !== undefined) {
+    const contentType = Object.entries(headers).find(([key]) => key.toLowerCase() === 'content-type')?.[1] ?? 'application/json'
+    lines.push(`    request.Content = new StringContent(${csharp(o.data)}, Encoding.UTF8, ${csharp(contentType)});`)
   }
-  code += '\n'
-
-  code += 'class Program\n'
-  code += '{\n'
-  code += '  static async Task Main()\n'
-  code += '  {\n'
-  code += `    using var client = new HttpClient();\n\n`
-
-  if (data) {
-    code += `    var data = ${JSON.stringify(data)};\n`
-    code += `    var content = new StringContent(data, Encoding.UTF8, "application/json");\n`
-  } else if (formData) {
-    code += `    var formData = new MultipartFormDataContent();\n`
-    for (const [key, value] of Object.entries(formData)) {
-      code += `    formData.Add(new StringContent("${value}"), "${key}");\n`
-    }
-    code += `    var content = formData;\n`
-  }
-
-  code += `    var request = new HttpRequestMessage(HttpMethod.${method}, "${url}");\n`
-
-  for (const [key, value] of Object.entries(headers)) {
-    code += `    request.Headers.Add("${key}", "${value}");\n`
-  }
-  if (bearerToken) {
-    code += `    request.Headers.Add("Authorization", "Bearer ${bearerToken}");\n`
-  }
-  if (auth) {
-    const credentials = btoa(`${auth.username}:${auth.password}`)
-    code += `    request.Headers.Add("Authorization", "Basic ${credentials}");\n`
-  }
-
-  if (data || formData) {
-    code += '    request.Content = content;\n'
-  }
-
-  code += '\n    var response = await client.SendAsync(request);\n'
-  code += '    var responseBody = await response.Content.ReadAsStringAsync();\n'
-  code += '    Console.WriteLine(responseBody);\n'
-  code += '  }\n'
-  code += '}'
-
-  return code
+  lines.push('    using var response = await client.SendAsync(request);', '    var responseText = await response.Content.ReadAsStringAsync();', '    response.EnsureSuccessStatusCode();', '    Console.WriteLine(responseText);', '  }', '}')
+  return lines.join('\n')
 }
 
 export const sampleCurlCommands = [
-  {
-    name: 'GET Request',
-    command: 'curl https://api.github.com/users/octocat',
-  },
-  {
-    name: 'POST with JSON',
-    command: 'curl -X POST https://httpbin.org/post -H "Content-Type: application/json" -d \'{"name":"John","age":30}\'',
-  },
-  {
-    name: 'with Bearer Token',
-    command: 'curl -X GET https://api.example.com/users -H "Authorization: Bearer your_token_here"',
-  },
-  {
-    name: 'with Basic Auth',
-    command: 'curl -X GET https://api.example.com/protected -u username:password',
-  },
+  { name: 'GET Request', command: 'curl https://api.github.com/users/octocat' },
+  { name: 'POST with JSON', command: `curl -X POST https://httpbin.org/post -H "Content-Type: application/json" -d '{"name":"John","age":30}'` },
+  { name: 'with Bearer Token', command: 'curl -X GET https://api.example.com/users -H "Authorization: Bearer your_token_here"' },
+  { name: 'with Basic Auth', command: 'curl -X GET https://api.example.com/protected -u username:password' },
 ]
