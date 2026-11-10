@@ -1,393 +1,320 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
 import * as Color from '@/app/tools/color-converter/logic'
 
-type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'hsv' | 'cmyk' | 'name'
+type Feedback = { kind: 'status' | 'error'; message: string }
+
+const initialRgb: Color.RGBColor = { r: 59, g: 130, b: 246 }
+const formats: { value: Color.ColorFormat; label: string }[] = [
+    { value: 'hex', label: 'HEX' },
+    { value: 'rgb', label: 'RGB' },
+    { value: 'hsl', label: 'HSL' },
+    { value: 'hsv', label: 'HSV' },
+    { value: 'cmyk', label: 'CMYK' },
+    { value: 'name', label: 'Color name' },
+]
 
 export default function ColorConverter() {
-    const [input, setInput] = useState('#3b82f6')
-    const [output, setOutput] = useState('')
-    const [format, setFormat] = useState<ColorFormat>('hex')
-    const [rgb, setRgb] = useState<Color.RGBColor>({ r: 59, g: 130, b: 246 })
-    const [colorName, setColorName] = useState('')
-    const [isValid, setIsValid] = useState(true)
+    const [input, setInput] = useState(Color.rgbToHex(initialRgb))
+    const [output, setOutput] = useState(Color.formatColor(initialRgb, 'hex'))
+    const [format, setFormat] = useState<Color.ColorFormat>('hex')
+    const [rgb, setRgb] = useState<Color.RGBColor | null>(initialRgb)
+    const [feedback, setFeedback] = useState<Feedback | null>(null)
 
-    const updateColor = (newRgb: Color.RGBColor) => {
-        setRgb(newRgb)
-        setColorName(Color.getColorName(newRgb))
-        
-        let result = ''
-        switch (format) {
-            case 'hex':
-                result = Color.rgbToHex(newRgb)
-                break
-            case 'rgb':
-                result = `rgb(${newRgb.r}, ${newRgb.g}, ${newRgb.b})`
-                break
-            case 'hsl': {
-                const hsl = Color.rgbToHSL(newRgb)
-                result = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`
-                break
-            }
-            case 'hsv': {
-                const hsv = Color.rgbToHSV(newRgb)
-                result = `hsv(${hsv.h}, ${hsv.s}%, ${hsv.v}%)`
-                break
-            }
-            case 'cmyk': {
-                const cmyk = Color.rgbToCMYK(newRgb)
-                result = `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`
-                break
-            }
-            case 'name':
-                result = Color.getColorName(newRgb)
-                break
-        }
-        setOutput(result)
-        setIsValid(true)
+    const commitColor = (nextRgb: Color.RGBColor, nextFormat = format) => {
+        setRgb(nextRgb)
+        setOutput(Color.formatColor(nextRgb, nextFormat))
+        setFeedback({ kind: 'status', message: `Converted: ${Color.getColorName(nextRgb)}.` })
     }
 
     const handleProcess = () => {
-        if (!input.trim()) {
-            alert('Please enter a color')
+        const parsed = Color.parseColorString(input)
+        if (!parsed) {
+            setRgb(null)
+            setOutput('')
+            setFeedback({ kind: 'error', message: 'Invalid color. Use one of the supported formats shown below.' })
             return
         }
+        commitColor(parsed)
+    }
 
-        try {
-            const parsed = Color.parseColorString(input.trim())
-            if (parsed) {
-                updateColor(parsed)
-                alert('Color converted successfully!')
-            } else {
-                setIsValid(false)
-                alert('Invalid color format')
-            }
-        } catch (error) {
-            console.log(error)
-            setIsValid(false)
-            alert('Error processing color')
+    const handleInputChange = (value: string) => {
+        setInput(value)
+        setRgb(null)
+        setOutput('')
+        setFeedback(null)
+    }
+
+    const handleFormatChange = (nextFormat: Color.ColorFormat) => {
+        setFormat(nextFormat)
+        // Reformat only a color that is still committed; never parse the editable input here.
+        if (rgb) {
+            setOutput(Color.formatColor(rgb, nextFormat))
+            setFeedback({ kind: 'status', message: `Output format: ${formats.find(({ value }) => value === nextFormat)?.label}.` })
+        } else {
+            setOutput('')
         }
     }
 
     const handleClear = () => {
         setInput('')
         setOutput('')
-        setRgb({ r: 0, g: 0, b: 0 })
-        setColorName('')
-        setIsValid(true)
-        alert('Cleared!')
+        setRgb(null)
+        setFeedback({ kind: 'status', message: 'Color and results cleared.' })
     }
 
     const handleCopy = async () => {
         if (!output) {
-            alert('Nothing to copy')
+            setFeedback({ kind: 'error', message: 'There is no converted color to copy.' })
             return
         }
-
         try {
+            if (!navigator.clipboard?.writeText) throw new Error('Clipboard access is unavailable.')
             await navigator.clipboard.writeText(output)
-            alert('Copied to clipboard!')
-        } catch (error) {
-            console.log(error)
-            const textarea = document.createElement('textarea')
-            textarea.value = output
-            document.body.appendChild(textarea)
-            textarea.select()
-            document.execCommand('copy')
-            document.body.removeChild(textarea)
-            alert('Copied!')
+            setFeedback({ kind: 'status', message: 'Converted color copied to clipboard.' })
+        } catch {
+            setFeedback({ kind: 'error', message: 'Could not access the clipboard. Copy the result from the text field.' })
         }
     }
 
     const loadSample = () => {
         const samples = ['#3b82f6', '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff']
-        const random = samples[Math.floor(Math.random() * samples.length)]
-        setInput(random)
-        const parsed = Color.parseColorString(random)
-        if (parsed) updateColor(parsed)
+        const sample = samples[Math.floor(Math.random() * samples.length)]
+        const parsed = Color.parseColorString(sample)
+        setInput(sample)
+        if (parsed) commitColor(parsed)
     }
 
-    // Ctrl+Enter
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault()
-                handleProcess()
-            }
+    const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault()
+            handleProcess()
         }
+    }
 
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [input])
-
-    // pcess fmt change
-    useEffect(() => {
-        if (output || colorName) updateColor(rgb)
-    }, [format])
-
-    const formats: { value: ColorFormat; label: string }[] = [
-        { value: 'hex', label: 'HEX' },
-        { value: 'rgb', label: 'RGB' },
-        { value: 'hsl', label: 'HSL' },
-        { value: 'hsv', label: 'HSV' },
-        { value: 'cmyk', label: 'CMYK' },
-        { value: 'name', label: 'Color Name' },
-    ]
-
-    const complementary = Color.getComplementaryColor(rgb)
-    const analogous = Color.getAnalogousColors(rgb)
-    const triadic = Color.getTriadicColors(rgb)
-    const isLight = Color.isLightColor(rgb)
+    const complementary = rgb ? Color.getHueComplementaryColor(rgb) : null
+    const analogous = rgb ? Color.getAnalogousColors(rgb) : []
+    const triadic = rgb ? Color.getTriadicColors(rgb) : []
+    const recommendedText = rgb ? Color.getContrastColor(rgb) : null
+    const contrastRatio = rgb && recommendedText ? Color.getContrastRatio(rgb, recommendedText) : null
+    const hsl = rgb ? Color.rgbToHSL(rgb) : null
+    const hsv = rgb ? Color.rgbToHSV(rgb) : null
+    const cmyk = rgb ? Color.rgbToCMYK(rgb) : null
 
     return (
         <div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <ToolPanel>
-                    <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                        <label className="font-medium flex items-center gap-2">
-                            <i className="fas fa-pen text-secondary"></i>
-                            Input Color
-                            <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">Color</span>
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <label htmlFor="color-converter-input" className="flex items-center gap-2 font-medium">
+                            <i className="fas fa-pen text-secondary" aria-hidden="true" />
+                            Input color
                         </label>
-                        {!isValid && (
-                            <span className="text-xs text-red-500">
-                                <i className="fas fa-exclamation-circle"></i> Invalid color
-                            </span>
-                        )}
+                        <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-white">Color</span>
                     </div>
                     <div className="space-y-3">
                         <input
+                            id="color-converter-input"
                             type="text"
-                            className="w-full bg-input border border-border rounded-lg p-3 text-primary font-mono text-sm focus:outline-none focus:ring-2 focus:ring-border-focus"
+                            className="w-full rounded-lg border border-border bg-input p-3 font-mono text-sm text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
                             value={input}
-                            onChange={(e) => setInput(e.target.value)}
+                            onChange={(event) => handleInputChange(event.target.value)}
+                            onKeyDown={handleInputKeyDown}
                             placeholder="#3b82f6, rgb(59, 130, 246), blue"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleProcess()
-                            }}
+                            aria-invalid={feedback?.kind === 'error' || undefined}
+                            aria-describedby="color-converter-hint color-converter-feedback"
+                            autoComplete="off"
+                            spellCheck={false}
                         />
-                        <div className="flex gap-2">
-                            <input
-                                type="color"
-                                value={Color.rgbToHex(rgb)}
-                                onChange={(e) => {
-                                    const hex = e.target.value
-                                    setInput(hex)
-                                    try {
+                        <p id="color-converter-hint" className="text-xs text-secondary">
+                            Enter HEX, RGB, HSL, HSV, CMYK, or one of the listed color names.
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <label className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-input p-1">
+                                <span className="sr-only">Choose a color visually</span>
+                                <input
+                                    type="color"
+                                    value={rgb ? Color.rgbToHex(rgb) : '#000000'}
+                                    aria-label="Choose a color visually"
+                                    onChange={(event) => {
+                                        const hex = event.target.value
                                         const parsed = Color.parseColorString(hex)
-                                        if (parsed) updateColor(parsed)
-                                    } catch (error) {
-                                        console.log(error)
-                                    }
-                                }}
-                                className="w-12 h-12 rounded-lg border border-border cursor-pointer p-1 bg-input"
-                            />
-                            <div 
-                                className="flex-1 rounded-lg border border-border"
-                                style={{ 
-                                    backgroundColor: Color.rgbToHex(rgb),
-                                    minHeight: '3rem'
-                                }}
+                                        setInput(hex)
+                                        if (parsed) commitColor(parsed)
+                                    }}
+                                    className="h-full w-full cursor-pointer border-0 bg-transparent"
+                                />
+                            </label>
+                            <div
+                                className="min-h-12 flex-1 rounded-lg border border-border"
+                                style={{ backgroundColor: rgb ? Color.rgbToHex(rgb) : 'transparent' }}
+                                role="img"
+                                aria-label={rgb ? `Color preview ${Color.rgbToHex(rgb)}` : 'No color preview'}
                             />
                         </div>
                     </div>
-                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap gap-2">
                             <button
+                                type="button"
                                 onClick={handleProcess}
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
+                                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition hover:opacity-90"
                             >
-                                <i className="fas fa-play"></i> Convert
+                                <i className="fas fa-play" aria-hidden="true" /> Convert
                             </button>
                             <button
+                                type="button"
                                 onClick={handleClear}
-                                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
+                                className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition hover:bg-hover"
                             >
-                                <i className="fas fa-eraser"></i> Clear
+                                <i className="fas fa-eraser" aria-hidden="true" /> Clear
                             </button>
                         </div>
-                        <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-                            <i className="fas fa-info-circle"></i> {colorName || 'Unknown'}
-                        </div>
+                        <span className="rounded-full border border-border bg-input px-3 py-1 text-sm text-secondary" aria-live="polite">
+                            {rgb ? Color.getColorName(rgb) : 'No valid color'}
+                        </span>
                     </div>
+                    <p
+                        id="color-converter-feedback"
+                        role={feedback?.kind === 'error' ? 'alert' : 'status'}
+                        aria-live={feedback?.kind === 'error' ? 'assertive' : 'polite'}
+                        className={`mt-3 min-h-6 text-sm ${feedback?.kind === 'error' ? 'text-red-600 dark:text-red-300' : 'text-secondary'}`}
+                    >
+                        {feedback?.message ?? ''}
+                    </p>
                 </ToolPanel>
 
                 <ToolPanel>
-                    <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                        <label className="font-medium flex items-center gap-2">
-                            <i className="fas fa-file-code text-green-500"></i>
-                            Converted Color
-                            <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">result</span>
-                        </label>
-                        <div className="flex gap-2">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="flex items-center gap-2 font-medium text-primary">
+                            <i className="fas fa-file-code text-green-500" aria-hidden="true" /> Converted color
+                        </h2>
+                        <label className="flex items-center gap-2 text-sm text-secondary" htmlFor="color-converter-format">
+                            Output format
                             <select
+                                id="color-converter-format"
                                 value={format}
-                                onChange={(e) => setFormat(e.target.value as ColorFormat)}
-                                className="px-2 py-1 border border-border rounded bg-input text-primary text-sm"
+                                onChange={(event) => handleFormatChange(event.target.value as Color.ColorFormat)}
+                                className="rounded border border-border bg-input px-2 py-1 text-sm text-primary"
                             >
-                                {formats.map((f) => (
-                                    <option key={f.value} value={f.value}>{f.label}</option>
-                                ))}
+                                {formats.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
                             </select>
-                        </div>
+                        </label>
                     </div>
                     <textarea
-                        className="w-full bg-input-readonly border border-border rounded-lg p-4 text-primary min-h-35 font-mono text-sm resize-y focus:outline-none"
+                        aria-label="Converted color result"
+                        aria-live="polite"
+                        className="min-h-35 w-full resize-y rounded-lg border border-border bg-input-readonly p-4 font-mono text-sm text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
                         value={output}
                         readOnly
                         spellCheck={false}
-                        placeholder="Converted color will appear here…"
+                        placeholder="Converted color appears here after a valid input."
                     />
-                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={handleCopy}
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-copy"></i> Copy
-                            </button>
-                            <button
-                                onClick={loadSample}
-                                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-rotate-right"></i> Random
-                            </button>
-                        </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            onClick={handleCopy}
+                            disabled={!output}
+                            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <i className="fas fa-copy" aria-hidden="true" /> Copy
+                        </button>
+                        <button
+                            type="button"
+                            onClick={loadSample}
+                            className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition hover:bg-hover"
+                        >
+                            <i className="fas fa-rotate-right" aria-hidden="true" /> Random color
+                        </button>
                     </div>
                 </ToolPanel>
             </div>
 
-            {/* prev && hmnies */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* current */}
-                <div className="p-4 bg-card border border-border rounded-lg">
-                    <h3 className="font-semibold text-primary mb-3">Color Preview</h3>
-                    <div 
-                        className="w-full h-20 rounded-lg border border-border"
-                        style={{ backgroundColor: Color.rgbToHex(rgb) }}
-                    />
-                    <div className="grid grid-cols-3 gap-2 mt-3 text-sm">
-                        <div>
-                            <span className="text-secondary">Light</span>
-                            <p className="font-semibold text-primary">{isLight ? '✅ Yes' : '❌ No'}</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Brightness</span>
-                            <p className="font-semibold text-primary">
-                                {Math.round(Color.getColorBrightness(rgb) * 100)}%
-                            </p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Contrast</span>
-                            <p className="font-semibold text-primary">
-                                {Color.isLightColor(rgb) ? 'Black' : 'White'}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+            {rgb && (
+                <>
+                    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <section className="rounded-lg border border-border bg-card p-4" aria-labelledby="color-preview-title">
+                            <h2 id="color-preview-title" className="mb-3 font-semibold text-primary">Color preview</h2>
+                            <div
+                                className="h-20 w-full rounded-lg border border-border"
+                                style={{ backgroundColor: Color.rgbToHex(rgb) }}
+                                role="img"
+                                aria-label={`Current color ${Color.rgbToHex(rgb)}`}
+                            />
+                            <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <dt className="text-secondary">Relative luminance</dt>
+                                    <dd className="font-semibold text-primary">{(Color.getRelativeLuminance(rgb) * 100).toFixed(1)}%</dd>
+                                </div>
+                                <div>
+                                    <dt className="text-secondary">Best black/white text contrast</dt>
+                                    <dd className="font-semibold text-primary">
+                                        {recommendedText && contrastRatio !== null && `${Color.rgbToHex(recommendedText)} · ${contrastRatio.toFixed(2)}:1`}
+                                    </dd>
+                                </div>
+                            </dl>
+                        </section>
 
-                {/* hmnies */}
-                <div className="p-4 bg-card border border-border rounded-lg">
-                    <h3 className="font-semibold text-primary mb-3">Color Harmonies</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <span className="text-sm text-secondary">Complementary</span>
-                            <div className="flex gap-2 mt-1">
-                                <div 
-                                    className="w-12 h-12 rounded border border-border"
-                                    style={{ backgroundColor: Color.rgbToHex(rgb) }}
-                                />
-                                <div 
-                                    className="w-12 h-12 rounded border border-border"
-                                    style={{ backgroundColor: Color.rgbToHex(complementary) }}
-                                />
+                        <section className="rounded-lg border border-border bg-card p-4" aria-labelledby="color-harmonies-title">
+                            <h2 id="color-harmonies-title" className="mb-3 font-semibold text-primary">Color harmonies</h2>
+                            <div className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm text-secondary">Hue complementary</h3>
+                                    <div className="mt-1 flex gap-2" aria-label="Hue-complementary color pair">
+                                        {[rgb, complementary].map((color, index) => color && (
+                                            <span
+                                                key={index}
+                                                className="h-12 w-12 rounded border border-border"
+                                                style={{ backgroundColor: Color.rgbToHex(color) }}
+                                                role="img"
+                                                aria-label={Color.rgbToHex(color)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm text-secondary">Analogous</h3>
+                                    <div className="mt-1 flex gap-2" aria-label="Analogous colors">
+                                        {analogous.map((color) => <span key={Color.rgbToHex(color)} className="h-12 w-12 rounded border border-border" style={{ backgroundColor: Color.rgbToHex(color) }} role="img" aria-label={Color.rgbToHex(color)} />)}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm text-secondary">Triadic</h3>
+                                    <div className="mt-1 flex gap-2" aria-label="Triadic colors">
+                                        {triadic.map((color) => <span key={Color.rgbToHex(color)} className="h-12 w-12 rounded border border-border" style={{ backgroundColor: Color.rgbToHex(color) }} role="img" aria-label={Color.rgbToHex(color)} />)}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <span className="text-sm text-secondary">Analogous</span>
-                            <div className="flex gap-2 mt-1">
-                                {analogous.map((c, i) => (
-                                    <div 
-                                        key={i}
-                                        className="w-12 h-12 rounded border border-border"
-                                        style={{ backgroundColor: Color.rgbToHex(c) }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <span className="text-sm text-secondary">Triadic</span>
-                            <div className="flex gap-2 mt-1">
-                                {triadic.map((c, i) => (
-                                    <div 
-                                        key={i}
-                                        className="w-12 h-12 rounded border border-border"
-                                        style={{ backgroundColor: Color.rgbToHex(c) }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                        </section>
                     </div>
-                </div>
-            </div>
 
-            <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <i className="fas fa-lightbulb text-yellow-500"></i>
-                    Quick Tips
-                </h3>
-                <ul className="text-sm text-secondary space-y-1">
-                    <li>• Press <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Ctrl</kbd> + <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Enter</kbd> to convert quickly</li>
-                    <li>• Supports HEX, RGB, HSL, HSV, CMYK, and named colors</li>
-                    <li>• All processing happens in your browser — no data is sent to any server</li>
-                    <li>• Color harmonies automatically generated from your input</li>
-                    <li>• Use the color picker to select colors visually</li>
-                </ul>
-            </div>
-
-            {/* all fmts */}
-            {rgb.r !== 0 && (
-                <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-                    <h4 className="font-semibold mb-3 text-primary">All Color Formats</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                        <div>
-                            <span className="text-secondary">HEX</span>
-                            <p className="font-mono text-primary">{Color.rgbToHex(rgb)}</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">RGB</span>
-                            <p className="font-mono text-primary">rgb({rgb.r}, {rgb.g}, {rgb.b})</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">HSL</span>
-                            <p className="font-mono text-primary">
-                                hsl({Color.rgbToHSL(rgb).h}, {Color.rgbToHSL(rgb).s}%, {Color.rgbToHSL(rgb).l}%)
-                            </p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">HSV</span>
-                            <p className="font-mono text-primary">
-                                hsv({Color.rgbToHSV(rgb).h}, {Color.rgbToHSV(rgb).s}%, {Color.rgbToHSV(rgb).v}%)
-                            </p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">CMYK</span>
-                            <p className="font-mono text-primary">
-                                cmyk({Color.rgbToCMYK(rgb).c}%, {Color.rgbToCMYK(rgb).m}%, {Color.rgbToCMYK(rgb).y}%, {Color.rgbToCMYK(rgb).k}%)
-                            </p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Name</span>
-                            <p className="font-mono text-primary">{Color.getColorName(rgb)}</p>
-                        </div>
-                    </div>
-                </div>
+                    <section className="mt-6 rounded-lg border border-border bg-card p-4" aria-labelledby="all-color-formats-title">
+                        <h2 id="all-color-formats-title" className="mb-3 font-semibold text-primary">All color formats</h2>
+                        <dl className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
+                            <div><dt className="text-secondary">HEX</dt><dd className="font-mono text-primary">{Color.rgbToHex(rgb)}</dd></div>
+                            <div><dt className="text-secondary">RGB</dt><dd className="font-mono text-primary">rgb({rgb.r}, {rgb.g}, {rgb.b})</dd></div>
+                            <div><dt className="text-secondary">HSL</dt><dd className="font-mono text-primary">hsl({hsl?.h}, {hsl?.s}%, {hsl?.l}%)</dd></div>
+                            <div><dt className="text-secondary">HSV</dt><dd className="font-mono text-primary">hsv({hsv?.h}, {hsv?.s}%, {hsv?.v}%)</dd></div>
+                            <div><dt className="text-secondary">CMYK</dt><dd className="font-mono text-primary">cmyk({cmyk?.c}%, {cmyk?.m}%, {cmyk?.y}%, {cmyk?.k}%)</dd></div>
+                            <div><dt className="text-secondary">Name</dt><dd className="font-mono text-primary">{Color.getColorName(rgb)}</dd></div>
+                        </dl>
+                    </section>
+                </>
             )}
+
+            <section className="mt-6 rounded-lg border border-border bg-card p-4" aria-labelledby="color-converter-tips-title">
+                <h2 id="color-converter-tips-title" className="mb-2 flex items-center gap-2 font-semibold text-primary">
+                    <i className="fas fa-lightbulb text-yellow-500" aria-hidden="true" /> Quick tips
+                </h2>
+                <ul className="space-y-1 text-sm text-secondary">
+                    <li>Press <kbd className="rounded border border-border bg-input px-2 py-0.5 text-xs">Ctrl</kbd> or <kbd className="rounded border border-border bg-input px-2 py-0.5 text-xs">⌘</kbd> + <kbd className="rounded border border-border bg-input px-2 py-0.5 text-xs">Enter</kbd> while focused in the color input to convert.</li>
+                    <li>Accepts 3- or 6-digit HEX, integer RGB/HSL/HSV, integer-percentage CMYK, and 23 supported names.</li>
+                    <li>Conversion runs in your browser; no color input is sent to a server.</li>
+                    <li>Complementary colors rotate HSL hue by 180°. Contrast uses WCAG relative luminance and the better of black or white.</li>
+                </ul>
+            </section>
         </div>
     )
 }

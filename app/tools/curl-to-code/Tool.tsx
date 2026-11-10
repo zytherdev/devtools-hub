@@ -1,143 +1,178 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
-import { 
-  parseCurl, 
-  generateCode, 
+import {
+  parseCurl,
+  generateCode,
   sampleCurlCommands,
-  type CurlToCodeOptions 
+  type CurlToCodeOptions,
 } from '@/app/tools/curl-to-code/logic'
-import { useToast } from '@zyther/react-toastify'
+
+type Feedback = { kind: 'error' | 'status'; message: string } | null
+
+const MAX_INPUT_LENGTH = 100_000
+const LANGUAGE_EXTENSIONS: Record<CurlToCodeOptions['language'], string> = {
+  javascript: 'js',
+  python: 'py',
+  php: 'php',
+  go: 'go',
+  ruby: 'rb',
+  java: 'java',
+  csharp: 'cs',
+}
+
+const languages: { value: CurlToCodeOptions['language']; label: string; icon: string }[] = [
+  { value: 'javascript', label: 'JavaScript (fetch)', icon: 'fa-brands fa-js' },
+  { value: 'python', label: 'Python (requests)', icon: 'fa-brands fa-python' },
+  { value: 'php', label: 'PHP (cURL)', icon: 'fa-brands fa-php' },
+  { value: 'go', label: 'Go', icon: 'fa-brands fa-golang' },
+  { value: 'ruby', label: 'Ruby', icon: 'fa-brands fa-ruby' },
+  { value: 'java', label: 'Java', icon: 'fa-brands fa-java' },
+  { value: 'csharp', label: 'C# (.NET)', icon: 'fa-solid fa-code' },
+]
+
+const focusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus'
 
 export default function CurlToCode() {
   const [input, setInput] = useState('')
-  const toast = useToast()
   const [output, setOutput] = useState('')
   const [language, setLanguage] = useState<CurlToCodeOptions['language']>('javascript')
   const [parsedOptions, setParsedOptions] = useState<CurlToCodeOptions | null>(null)
-  const [inputChars, setInputChars] = useState(0)
-  const [outputChars, setOutputChars] = useState(0)
+  const [feedback, setFeedback] = useState<Feedback>(null)
+
+  const invalidateOutput = () => {
+    setOutput('')
+    setParsedOptions(null)
+  }
+
+  const handleInputChange = (value: string) => {
+    setInput(value)
+    invalidateOutput()
+    setFeedback(null)
+  }
 
   const handleConvert = () => {
+    invalidateOutput()
+    setFeedback(null)
     if (!input.trim()) {
-      toast.error('Please paste a cURL command')
+      setFeedback({ kind: 'error', message: 'Paste a cURL command before converting.' })
       return
     }
-
     const parsed = parseCurl(input)
     if (!parsed) {
-      toast.error('Invalid cURL command')
+      setFeedback({ kind: 'error', message: 'Invalid or unsupported cURL command. Check its syntax and supported options.' })
       return
     }
+    try {
+      const code = generateCode({ ...parsed, language })
+      setParsedOptions(parsed)
+      setOutput(code)
+      setFeedback({ kind: 'status', message: `Converted to ${languages.find(item => item.value === language)?.label ?? language}.` })
+    } catch (error) {
+      setFeedback({ kind: 'error', message: error instanceof Error ? error.message : 'Could not generate code for this request.' })
+    }
+  }
 
-    setParsedOptions(parsed)
-    
-    const code = generateCode({ ...parsed, language })
-    setOutput(code)
-    toast.success('cURL converted to code!')
+  const handleLanguageChange = (nextLanguage: CurlToCodeOptions['language']) => {
+    setLanguage(nextLanguage)
+    if (!parsedOptions) return
+    try {
+      const code = generateCode({ ...parsedOptions, language: nextLanguage })
+      setOutput(code)
+      setFeedback({ kind: 'status', message: `Converted to ${languages.find(item => item.value === nextLanguage)?.label ?? nextLanguage}.` })
+    } catch (error) {
+      setOutput('')
+      setFeedback({ kind: 'error', message: error instanceof Error ? error.message : 'Could not generate code for this request.' })
+    }
   }
 
   const handleClear = () => {
     setInput('')
-    setOutput('')
-    setParsedOptions(null)
-    setInputChars(0)
-    setOutputChars(0)
-    toast.success('Cleared!')
+    invalidateOutput()
+    setFeedback({ kind: 'status', message: 'Input and generated code cleared.' })
+  }
+
+  const loadSample = (index: number) => {
+    const sample = sampleCurlCommands[index]
+    if (!sample) return
+    setInput(sample.command)
+    invalidateOutput()
+    setFeedback({ kind: 'status', message: `${sample.name} example loaded. Convert it to generate code.` })
   }
 
   const handleCopy = async () => {
     if (!output) {
-      toast.error('Nothing to copy')
+      setFeedback({ kind: 'error', message: 'Convert a cURL command before copying code.' })
       return
     }
     try {
       await navigator.clipboard.writeText(output)
-      toast.success('Copied to clipboard!')
-    } catch (error) {
-      console.log(error)
-      toast.error('Failed to copy')
+      setFeedback({ kind: 'status', message: 'Generated code copied to the clipboard.' })
+    } catch {
+      setFeedback({ kind: 'error', message: 'Could not copy to the clipboard. Check browser permissions.' })
     }
   }
 
-  const loadSample = (index: number) => {
-    setInput(sampleCurlCommands[index].command)
-    setOutput('')
-    setParsedOptions(null)
-    toast.success('Sample loaded!')
+  const handleDownload = () => {
+    if (!output) return
+    const blob = new Blob([output], { type: 'text/plain;charset=utf-8' })
+    const objectUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = objectUrl
+    link.download = `curl-request.${LANGUAGE_EXTENSIONS[language]}`
+    link.click()
+    URL.revokeObjectURL(objectUrl)
+    setFeedback({ kind: 'status', message: `Downloaded curl-request.${LANGUAGE_EXTENSIONS[language]}.` })
   }
 
-  // Auto-convert when language changes
-  useEffect(() => {
-    if (parsedOptions) {
-      const code = generateCode({ ...parsedOptions, language })
-      setOutput(code)
-    }
-  }, [language, parsedOptions])
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault()
-        handleConvert()
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [input, language])
-
-  useEffect(() => {
-    setInputChars(input.length)
-  }, [input])
-
-  useEffect(() => {
-    setOutputChars(output.length)
-  }, [output])
-
-  const languages: { value: CurlToCodeOptions['language']; label: string; icon: string }[] = [
-    { value: 'javascript', label: 'JavaScript (fetch)', icon: 'fa-brands fa-js' },
-    { value: 'python', label: 'Python (requests)', icon: 'fa-brands fa-python' },
-    { value: 'php', label: 'PHP (cURL)', icon: 'fa-brands fa-php' },
-    { value: 'go', label: 'Go', icon: 'fa-brands fa-golang' },
-    { value: 'ruby', label: 'Ruby', icon: 'fa-brands fa-ruby' },
-    { value: 'java', label: 'Java', icon: 'fa-brands fa-java' },
-    { value: 'csharp', label: 'C# (.NET)', icon: 'fa-solid fa-code' },
-  ]
+  const hasCredentials = Boolean(parsedOptions?.auth || parsedOptions?.bearerToken ||
+    Object.keys(parsedOptions?.headers ?? {}).some(key => key.toLowerCase() === 'authorization'))
 
   return (
     <div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ToolPanel>
-          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-            <label className="font-medium flex items-center gap-2">
-              <i className="fas fa-terminal text-secondary"></i>
-              cURL Command
-              <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">cURL</span>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="curl-command" className="flex items-center gap-2 font-medium">
+              <i className="fas fa-terminal text-secondary" aria-hidden="true"></i>
+              cURL command
+              <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-white">cURL</span>
             </label>
-            <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-              <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{inputChars}</span>
-            </div>
+            <span className="rounded-full border border-border bg-input px-3 py-1 text-sm text-secondary" aria-live="polite">
+              {input.length.toLocaleString()} / {MAX_INPUT_LENGTH.toLocaleString()} characters
+            </span>
           </div>
           <textarea
-            className="w-full bg-input border border-border rounded-lg p-4 text-primary min-h-50 font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-border-focus"
+            id="curl-command"
+            className={`min-h-50 w-full resize-y rounded-lg border border-border bg-input p-4 font-mono text-sm text-primary focus-visible:ring-2 focus-visible:ring-border-focus ${focusClass}`}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            maxLength={MAX_INPUT_LENGTH}
+            onChange={event => handleInputChange(event.target.value)}
+            onKeyDown={event => {
+              if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault()
+                handleConvert()
+              }
+            }}
             spellCheck={false}
+            aria-describedby="curl-limit privacy-note"
+            aria-invalid={feedback?.kind === 'error' ? true : undefined}
             placeholder="curl https://api.example.com/data"
           />
-          
-          <div className="mt-3">
-            <span className="text-sm text-secondary">Samples:</span>
-            <div className="flex flex-wrap gap-2 mt-1">
+          <p id="curl-limit" className="mt-2 text-xs text-secondary">
+            Maximum 100,000 characters. Commands are parsed locally; they are never executed or sent to the URL.
+          </p>
+
+          <div className="mt-4">
+            <p className="text-sm text-secondary">Examples</p>
+            <div className="mt-2 flex flex-wrap gap-2">
               {sampleCurlCommands.map((sample, index) => (
                 <button
-                  key={index}
+                  key={sample.name}
+                  type="button"
                   onClick={() => loadSample(index)}
-                  className="px-3 py-1 text-xs border border-border rounded hover:bg-hover transition"
+                  className={`rounded-lg border border-border px-3 py-1.5 text-xs transition hover:bg-hover ${focusClass}`}
                 >
                   {sample.name}
                 </button>
@@ -145,117 +180,125 @@ export default function CurlToCode() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
             <button
+              type="button"
               onClick={handleConvert}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
+              className={`flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition hover:opacity-90 ${focusClass}`}
             >
-              <i className="fas fa-exchange-alt"></i> Convert
+              <i className="fas fa-exchange-alt" aria-hidden="true"></i> Convert
             </button>
             <button
+              type="button"
               onClick={handleClear}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
+              className={`flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition hover:bg-hover ${focusClass}`}
             >
-              <i className="fas fa-eraser"></i> Clear
+              <i className="fas fa-eraser" aria-hidden="true"></i> Clear
             </button>
           </div>
         </ToolPanel>
 
         <ToolPanel>
-          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-            <label className="font-medium flex items-center gap-2">
-              <i className="fas fa-file-code text-green-500"></i>
-              Generated Code
-              <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
-                {language.toUpperCase()}
-              </span>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="generated-code" className="flex items-center gap-2 font-medium">
+              <i className="fas fa-file-code text-green-500" aria-hidden="true"></i>
+              Generated code
+              <span className="rounded-full bg-green-600 px-2 py-0.5 text-xs text-white">{language.toUpperCase()}</span>
             </label>
-            <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-              <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{outputChars}</span>
-            </div>
+            <span className="rounded-full border border-border bg-input px-3 py-1 text-sm text-secondary" aria-live="polite">
+              {output.length.toLocaleString()} characters
+            </span>
           </div>
           <textarea
-            className="w-full bg-input-readonly border border-border rounded-lg p-4 text-primary min-h-50 font-mono text-sm resize-y focus:outline-none"
+            id="generated-code"
+            className={`min-h-50 w-full resize-y rounded-lg border border-border bg-input-readonly p-4 font-mono text-sm text-primary focus-visible:ring-2 focus-visible:ring-border-focus ${focusClass}`}
             value={output}
             readOnly
             spellCheck={false}
+            aria-describedby="generated-code-status"
             placeholder="Generated code will appear here…"
           />
+          <p
+            id="generated-code-status"
+            className={`mt-3 min-h-6 text-sm ${feedback?.kind === 'error' ? 'text-red-600 dark:text-red-300' : 'text-secondary'}`}
+            role={feedback?.kind === 'error' ? 'alert' : 'status'}
+            aria-live={feedback?.kind === 'error' ? 'assertive' : 'polite'}
+          >
+            {feedback?.message ?? 'Generated code appears here after conversion.'}
+          </p>
 
-          <div className="mt-3">
-            <label className="text-sm text-secondary block mb-1">Target Language</label>
+          <fieldset className="mt-3">
+            <legend className="mb-2 text-sm font-medium text-secondary">Target language</legend>
             <div className="flex flex-wrap gap-2">
-              {languages.map((lang) => (
+              {languages.map(lang => (
                 <button
                   key={lang.value}
-                  onClick={() => setLanguage(lang.value)}
-                  className={`
-                    px-3 py-1.5 rounded-lg text-sm transition flex items-center gap-2
-                    ${language === lang.value
-                      ? 'bg-primary text-white'
-                      : 'bg-input border border-border hover:bg-hover'
-                    }
-                  `}
+                  type="button"
+                  aria-pressed={language === lang.value}
+                  onClick={() => handleLanguageChange(lang.value)}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition ${focusClass} ${language === lang.value ? 'bg-primary text-white' : 'border border-border bg-input text-primary hover:bg-hover'}`}
                 >
-                  <i className={lang.icon}></i>
+                  <i className={lang.icon} aria-hidden="true"></i>
                   {lang.label}
                 </button>
               ))}
             </div>
+          </fieldset>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleCopy}
+              disabled={!output}
+              className={`flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${focusClass}`}
+            >
+              <i className="fas fa-copy" aria-hidden="true"></i> Copy
+            </button>
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={!output}
+              className={`flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50 ${focusClass}`}
+            >
+              <i className="fas fa-download" aria-hidden="true"></i> Download .{LANGUAGE_EXTENSIONS[language]}
+            </button>
           </div>
 
-          <button
-            onClick={handleCopy}
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-          >
-            <i className="fas fa-copy"></i> Copy
-          </button>
+          {hasCredentials && (
+            <p className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-primary" role="note">
+              This request contains credentials. They are included in the generated code and downloaded file; review and remove secrets before sharing or committing it.
+            </p>
+          )}
         </ToolPanel>
       </div>
 
       {parsedOptions && (
-        <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-          <h3 className="font-semibold mb-2 text-primary flex items-center gap-2">
-            <i className="fas fa-info-circle text-blue-500"></i>
-            Parsed Information
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-secondary">Method</span>
-              <p className="font-semibold text-primary">{parsedOptions.method}</p>
-            </div>
-            <div>
-              <span className="text-secondary">URL</span>
-              <p className="font-mono text-primary text-xs truncate">{parsedOptions.url}</p>
-            </div>
-            <div>
-              <span className="text-secondary">Headers</span>
-              <p className="font-semibold text-primary">{Object.keys(parsedOptions.headers).length}</p>
-            </div>
-            <div>
-              <span className="text-secondary">Auth</span>
-              <p className="font-semibold text-primary">
-                {parsedOptions.bearerToken ? 'Bearer Token' : 
-                 parsedOptions.auth ? 'Basic Auth' : 
-                 'None'}
-              </p>
-            </div>
-          </div>
-        </div>
+        <section className="mt-6 rounded-lg border border-border bg-card p-4" aria-labelledby="parsed-info-title">
+          <h2 id="parsed-info-title" className="mb-3 flex items-center gap-2 font-semibold text-primary">
+            <i className="fas fa-info-circle text-blue-500" aria-hidden="true"></i>
+            Parsed request
+          </h2>
+          <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+            <div><dt className="text-secondary">Method</dt><dd className="font-semibold text-primary">{parsedOptions.method}</dd></div>
+            <div><dt className="text-secondary">URL</dt><dd className="truncate font-mono text-xs text-primary" title={parsedOptions.url}>{parsedOptions.url}</dd></div>
+            <div><dt className="text-secondary">Headers</dt><dd className="font-semibold text-primary">{Object.keys(parsedOptions.headers).length}</dd></div>
+            <div><dt className="text-secondary">Authentication</dt><dd className="font-semibold text-primary">{hasCredentials ? 'Credentials present' : 'None'}</dd></div>
+          </dl>
+        </section>
       )}
 
-      <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-        <h3 className="font-semibold mb-2 flex items-center gap-2">
-          <i className="fas fa-lightbulb text-yellow-500"></i>
-          Quick Tips
-        </h3>
-        <ul className="text-sm text-secondary space-y-1">
-          <li>• Press <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Ctrl</kbd> + <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Enter</kbd> to convert quickly</li>
-          <li>• Supports <strong>-X</strong> (method), <strong>-H</strong> (headers), <strong>-d</strong> (data)</li>
-          <li>• Supports <strong>-u</strong> (basic auth) and <strong>Authorization: Bearer</strong></li>
-          <li>• All processing happens in your browser</li>
+      <section className="mt-6 rounded-lg border border-border bg-card p-4" aria-labelledby="quick-tips-title">
+        <h2 id="quick-tips-title" className="mb-2 flex items-center gap-2 font-semibold text-primary">
+          <i className="fas fa-lightbulb text-yellow-500" aria-hidden="true"></i>
+          Quick tips and limitations
+        </h2>
+        <ul className="space-y-1 text-sm text-secondary">
+          <li>Press <kbd className="rounded border border-border bg-input px-2 py-0.5 text-xs">Ctrl</kbd> + <kbd className="rounded border border-border bg-input px-2 py-0.5 text-xs">Enter</kbd> to convert (or <kbd className="rounded border border-border bg-input px-2 py-0.5 text-xs">⌘</kbd> + <kbd className="rounded border border-border bg-input px-2 py-0.5 text-xs">Enter</kbd> on Mac).</li>
+          <li>Supports common URL, method, header, body, form, and authentication flags. Unsupported options are rejected instead of silently dropped.</li>
+          <li>Generated snippets use the HTTP client for each target language; verify client-specific defaults and review them before running.</li>
+          <li id="privacy-note">Conversion happens in this browser. The pasted command is not executed and no request is made. Credentials in the command appear in the generated code.</li>
         </ul>
-      </div>
+      </section>
     </div>
   )
 }

@@ -1,16 +1,40 @@
-
 export interface GradientStop {
   color: string
   position: number // 0-100
 }
 
+export type GradientType = 'linear' | 'radial' | 'conic'
+export type RadialShape = 'circle' | 'ellipse'
+export type RadialPosition =
+  | 'center'
+  | 'top'
+  | 'right'
+  | 'bottom'
+  | 'left'
+  | 'top left'
+  | 'top right'
+  | 'bottom left'
+  | 'bottom right'
+
 export interface Gradient {
-  type: 'linear' | 'radial' | 'conic'
-  angle?: number // f/ linear
-  shape?: 'circle' | 'ellipse' // f/ radial
-  position?: string // f/ radial
+  type: GradientType
+  angle?: number
+  shape?: RadialShape
+  position?: RadialPosition
   stops: GradientStop[]
 }
+
+export const radialPositions: RadialPosition[] = [
+  'center',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'top left',
+  'top right',
+  'bottom left',
+  'bottom right'
+]
 
 export const presetGradients: { name: string; gradient: Gradient }[] = [
   {
@@ -104,68 +128,116 @@ export const presetGradients: { name: string; gradient: Gradient }[] = [
   }
 ]
 
-export function generateGradientCSS(gradient: Gradient): string {
-  const validStops = [...gradient.stops]
-    .filter(stop => isValidColor(stop.color) && Number.isFinite(stop.position))
-    .sort((a, b) => a.position - b.position)
-  const stops = validStops
-    .map(stop => `${stop.color.trim()} ${Math.max(0, Math.min(100, stop.position))}%`)
-    .join(', ')
-  if (validStops.length < 2) return 'background: none'
+const namedColors = new Set([
+  'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
+  'black', 'white', 'gray', 'grey', 'cyan', 'magenta', 'lime', 'teal',
+  'navy', 'maroon', 'coral', 'gold', 'silver', 'transparent'
+])
 
-  if (gradient.type === 'linear') {
-    const angle = Number.isFinite(gradient.angle) ? Math.max(0, Math.min(360, gradient.angle!)) : 90
-    return `background: linear-gradient(${angle}deg, ${stops})`
+export function isValidColor(color: string): boolean {
+  if (typeof color !== 'string') return false
+  const value = color.trim()
+  if (/^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(value)) return true
+
+  const rgb = value.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/i)
+  if (rgb && rgb.slice(1, 4).every(channel => Number(channel) <= 255)) return true
+
+  const hsl = value.match(/^hsla?\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/i)
+  if (hsl && Number(hsl[1]) <= 360 && Number(hsl[2]) <= 100 && Number(hsl[3]) <= 100) return true
+
+  return namedColors.has(value.toLowerCase())
+}
+
+export function validateGradient(gradient: Gradient): string | null {
+  if (!gradient || !['linear', 'radial', 'conic'].includes(gradient.type)) {
+    return 'Choose a supported gradient type.'
+  }
+  if (!Array.isArray(gradient.stops)) return 'Color stops must be a list.'
+  if (gradient.stops.length < 2) return 'A gradient needs at least 2 color stops.'
+  if (gradient.stops.length > 6) return 'A gradient can have at most 6 color stops.'
+
+  if ((gradient.type === 'linear' || gradient.type === 'conic') &&
+      (!Number.isFinite(gradient.angle) || gradient.angle! < 0 || gradient.angle! > 360)) {
+    return 'Angle must be a number from 0 to 360 degrees.'
   }
 
   if (gradient.type === 'radial') {
-    const shape = gradient.shape || 'circle'
-    const position = gradient.position || 'center'
-    return `background: radial-gradient(${shape} at ${position}, ${stops})`
+    if (gradient.shape !== 'circle' && gradient.shape !== 'ellipse') {
+      return 'Choose circle or ellipse for the radial shape.'
+    }
+    if (!radialPositions.includes(gradient.position as RadialPosition)) {
+      return 'Choose a supported radial gradient position.'
+    }
   }
 
-  // conic
-  const angle = Number.isFinite(gradient.angle) ? Math.max(0, Math.min(360, gradient.angle!)) : 0
-  return `background: conic-gradient(from ${angle}deg, ${stops})`
+  for (const [index, stop] of gradient.stops.entries()) {
+    if (!stop || !isValidColor(stop.color)) {
+      return `Color stop ${index + 1} has an invalid color.`
+    }
+    if (!Number.isFinite(stop.position) || stop.position < 0 || stop.position > 100) {
+      return `Color stop ${index + 1} position must be a number from 0 to 100.`
+    }
+  }
+  return null
+}
+
+function requireValidGradient(gradient: Gradient): void {
+  const error = validateGradient(gradient)
+  if (error) throw new Error(error)
+}
+
+export function generateGradientCSS(gradient: Gradient): string {
+  requireValidGradient(gradient)
+  const stops = [...gradient.stops]
+    .sort((a, b) => a.position - b.position)
+    .map(stop => `${stop.color.trim()} ${stop.position}%`)
+    .join(', ')
+
+  if (gradient.type === 'linear') {
+    return `background: linear-gradient(${gradient.angle}deg, ${stops});`
+  }
+  if (gradient.type === 'radial') {
+    return `background: radial-gradient(${gradient.shape} at ${gradient.position}, ${stops});`
+  }
+  return `background: conic-gradient(from ${gradient.angle}deg, ${stops});`
 }
 
 export function generatePreviewStyle(gradient: Gradient): string {
   return generateGradientCSS(gradient)
 }
 
-export function isValidColor(color: string): boolean {
-  if (typeof color !== 'string') return false
-  color = color.trim()
-  // hex
-  if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color)) return true
-  // RGB
-  const rgb = color.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i)
-  if (rgb && rgb.slice(1).every(value => Number(value) <= 255)) return true
-  // HSL
-  const hsl = color.match(/^hsl\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*\)$/i)
-  if (hsl && Number(hsl[1]) <= 360 && Number(hsl[2]) <= 100 && Number(hsl[3]) <= 100) return true
-  // nmd colors
-  const namedColors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'cyan', 'magenta', 'lime', 'teal', 'navy', 'maroon', 'coral', 'gold', 'silver']
-  if (namedColors.includes(color.trim().toLowerCase())) return true
-  return false
-}
-
 export function addStop(gradient: Gradient, color: string, position: number): Gradient {
-  const newStops = [...gradient.stops, { color, position }]
-  return { ...gradient, stops: newStops }
+  requireValidGradient(gradient)
+  if (gradient.stops.length >= 6) throw new Error('A gradient can have at most 6 color stops.')
+  if (!isValidColor(color)) throw new Error('Enter a valid color for the new stop.')
+  if (!Number.isFinite(position) || position < 0 || position > 100) {
+    throw new Error('Stop position must be a number from 0 to 100.')
+  }
+  return { ...gradient, stops: [...gradient.stops, { color: color.trim(), position }] }
 }
 
 export function removeStop(gradient: Gradient, index: number): Gradient {
-  if (gradient.stops.length <= 2) return gradient
-  const newStops = gradient.stops.filter((_, i) => i !== index)
-  return { ...gradient, stops: newStops }
+  if (!Number.isInteger(index) || index < 0 || index >= gradient.stops.length) {
+    throw new Error('Choose an existing color stop to remove.')
+  }
+  if (gradient.stops.length <= 2) throw new Error('A gradient needs at least 2 color stops.')
+  return { ...gradient, stops: gradient.stops.filter((_, stopIndex) => stopIndex !== index) }
 }
 
 export function updateStop(gradient: Gradient, index: number, color: string, position: number): Gradient {
-  const newStops = gradient.stops.map((stop, i) => 
-    i === index ? { color, position } : stop
-  )
-  return { ...gradient, stops: newStops }
+  if (!Number.isInteger(index) || index < 0 || index >= gradient.stops.length) {
+    throw new Error('Choose an existing color stop to update.')
+  }
+  if (typeof color !== 'string') throw new Error('Color must be text.')
+  if (!Number.isFinite(position) || position < 0 || position > 100) {
+    throw new Error('Stop position must be a number from 0 to 100.')
+  }
+  return {
+    ...gradient,
+    stops: gradient.stops.map((stop, stopIndex) =>
+      stopIndex === index ? { color, position } : stop
+    )
+  }
 }
 
 export function generateRandomGradient(): Gradient {
@@ -175,25 +247,17 @@ export function generateRandomGradient(): Gradient {
     '#f12711', '#f5af19', '#11998e', '#38ef7d', '#4facfe',
     '#00f2fe', '#f093fb', '#f5576c', '#2b5876', '#4e4376'
   ]
-  
-  const numStops = Math.floor(Math.random() * 3) + 2 // 2-4 stops
+  const numStops = Math.floor(Math.random() * 3) + 2
   const stops: GradientStop[] = []
-  const usedColors: string[] = []
-  
-  for (let i = 0; i < numStops; i++) {
-    let color
-    do {
-      color = colors[Math.floor(Math.random() * colors.length)]
-    } while (usedColors.includes(color))
-    usedColors.push(color)
-    
-    const position = Math.round((i / (numStops - 1)) * 100)
+  const usedColors = new Set<string>()
+
+  while (stops.length < numStops) {
+    const color = colors[Math.floor(Math.random() * colors.length)]
+    if (usedColors.has(color)) continue
+    usedColors.add(color)
+    const position = Math.round((stops.length / (numStops - 1)) * 100)
     stops.push({ color, position })
   }
-  
-  return {
-    type: 'linear',
-    angle: Math.floor(Math.random() * 360),
-    stops
-  }
+
+  return { type: 'linear', angle: Math.floor(Math.random() * 360), stops }
 }

@@ -1,313 +1,373 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
 import * as Gradient from '@/app/tools/gradient-generator/logic'
 
+const focusClass = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus'
+const buttonClass = `rounded-lg px-3 py-2 transition ${focusClass}`
+
 export default function GradientGenerator() {
   const [gradient, setGradient] = useState<Gradient.Gradient>(Gradient.presetGradients[0].gradient)
-  const [cssCode, setCssCode] = useState('')
-  const [selectedPreset, setSelectedPreset] = useState(0)
+  const [selectedPreset, setSelectedPreset] = useState<number | null>(0)
   const [colorInput, setColorInput] = useState('#ff6b6b')
   const [positionInput, setPositionInput] = useState(50)
+  const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
 
-  useEffect(() => {
-    setCssCode(Gradient.generateGradientCSS(gradient))
+  const { cssCode, validationError } = useMemo(() => {
+    try {
+      return { cssCode: Gradient.generateGradientCSS(gradient), validationError: '' }
+    } catch (error) {
+      return {
+        cssCode: '',
+        validationError: error instanceof Error ? error.message : 'The gradient is invalid.'
+      }
+    }
   }, [gradient])
+  const gradientValue = cssCode ? cssCode.slice('background: '.length, -1) : 'none'
+  const fullCss = cssCode ? `.gradient {\n  ${cssCode}\n}` : ''
+
+  const commitGradient = (nextGradient: Gradient.Gradient) => {
+    setGradient(nextGradient)
+    setSelectedPreset(null)
+    setFeedback(null)
+  }
 
   const handlePresetSelect = (index: number) => {
+    const preset = Gradient.presetGradients[index]
+    if (!preset) return
+    setGradient(preset.gradient)
     setSelectedPreset(index)
-    setGradient(Gradient.presetGradients[index].gradient)
+    setFeedback({ kind: 'success', message: `${preset.name} preset selected.` })
   }
 
   const handleAddStop = () => {
-    if (gradient.stops.length >= 6) {
-      alert('Maximum 6 stops allowed')
-      return
+    try {
+      commitGradient(Gradient.addStop(gradient, colorInput, positionInput))
+      setFeedback({ kind: 'success', message: 'Color stop added.' })
+    } catch (error) {
+      setFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Could not add the color stop.'
+      })
     }
-    if (!Gradient.isValidColor(colorInput)) {
-      alert('Invalid color format')
-      return
-    }
-    const newGradient = Gradient.addStop(gradient, colorInput, positionInput)
-    setGradient(newGradient)
-    alert('Stop added!')
   }
 
   const handleRemoveStop = (index: number) => {
-    if (gradient.stops.length <= 2) {
-      alert('Minimum 2 stops required')
-      return
-    }
-    const newGradient = Gradient.removeStop(gradient, index)
-    setGradient(newGradient)
-    alert('Stop removed')
-  }
-
-  const handleStopChange = (index: number, field: 'color' | 'position', value: string | number) => {
-    const newStops = gradient.stops.map((stop, i) => {
-      if (i === index) {
-        return { ...stop, [field]: value }
-      }
-      return stop
-    })
-    setGradient({ ...gradient, stops: newStops })
-  }
-
-  const handleTypeChange = (type: 'linear' | 'radial' | 'conic') => {
-    setGradient({ ...gradient, type })
-  }
-
-  const handleAngleChange = (angle: number) => {
-    setGradient({ ...gradient, angle })
-  }
-
-  const handleRandom = () => {
-    const random = Gradient.generateRandomGradient()
-    setGradient(random)
-    alert('Random gradient generated!')
-  }
-
-  const handleCopy = async () => {
-    if (!cssCode) {
-      alert('Nothing to copy')
-      return
-    }
     try {
-      await navigator.clipboard.writeText(cssCode)
-      alert('CSS copied!')
+      commitGradient(Gradient.removeStop(gradient, index))
+      setFeedback({ kind: 'success', message: 'Color stop removed.' })
     } catch (error) {
-      console.error(error)
-      alert('Failed to copy')
+      setFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Could not remove the color stop.'
+      })
     }
   }
 
-  const handleCopyAll = async () => {
-    const fullCss = `.gradient {\n  ${cssCode}\n}`
+  const handleStopChange = (index: number, color: string, position: number) => {
     try {
-      await navigator.clipboard.writeText(fullCss)
-      alert('Full CSS copied!')
+      commitGradient(Gradient.updateStop(gradient, index, color, position))
     } catch (error) {
-      console.log(error)
-      alert('Failed to copy')
+      setFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Could not update the color stop.'
+      })
     }
+  }
+
+  const handleTypeChange = (type: Gradient.GradientType) => {
+    const nextGradient: Gradient.Gradient = { ...gradient, type }
+    if (type === 'radial') {
+      nextGradient.shape = gradient.shape ?? 'circle'
+      nextGradient.position = gradient.position ?? 'center'
+    }
+    commitGradient(nextGradient)
+  }
+
+  const handleCopy = async (value: string, label: string) => {
+    if (!value) return
+    try {
+      await navigator.clipboard.writeText(value)
+      setFeedback({ kind: 'success', message: `${label} copied to clipboard.` })
+    } catch {
+      setFeedback({ kind: 'error', message: 'Clipboard access failed. Select and copy the CSS output instead.' })
+    }
+  }
+
+  const handleDownload = () => {
+    if (!cssCode) return
+    const objectUrl = URL.createObjectURL(new Blob([fullCss], { type: 'text/css;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = objectUrl
+    link.download = 'gradient.css'
+    link.click()
+    URL.revokeObjectURL(objectUrl)
+    setFeedback({ kind: 'success', message: 'gradient.css downloaded.' })
   }
 
   const resetGradient = () => {
     setGradient(Gradient.presetGradients[0].gradient)
     setSelectedPreset(0)
-    alert('Reset to default')
+    setFeedback({ kind: 'success', message: 'Reset to the Sunset preset.' })
   }
 
   return (
-    <div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* preview */}
+    <div className="min-w-0">
+      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-2">
         <ToolPanel>
-          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-            <label className="font-medium flex items-center gap-2">
-              <i className="fas fa-eye text-secondary"></i>
-              Preview
-            </label>
-            <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">live</span>
-          </div>
-          
-          {/* grdt vw */}
-          <div 
-            className="w-full h-64 rounded-lg border border-border"
-            style={{ background: cssCode.replace('background: ', '') }}
-          />
-          
-          {/* CSS output */}
-          <div className="mt-4">
-            <label className="font-medium text-primary mb-2 flex items-center gap-2">
-              <i className="fas fa-code text-secondary"></i>
-              CSS Code
-            </label>
-            <div className="bg-input border border-border rounded-lg p-4 font-mono text-sm text-primary overflow-x-auto">
-              <code>
-                <span className="text-secondary">background: </span>
-                <span className="text-green-500">{cssCode.replace('background: ', '')}</span>
-              </code>
+          <section aria-labelledby="gradient-preview-heading" className="min-w-0">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 id="gradient-preview-heading" className="flex items-center gap-2 font-medium text-primary">
+                <i className="fas fa-eye text-secondary" aria-hidden="true" /> Preview
+              </h2>
+              <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-white">Live preview</span>
             </div>
-          </div>
 
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button
-              onClick={handleCopy}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-            >
-              <i className="fas fa-copy"></i> Copy CSS
-            </button>
-            <button
-              onClick={handleCopyAll}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-            >
-              <i className="fas fa-copy"></i> Copy Full
-            </button>
-            <button
-              onClick={resetGradient}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-            >
-              <i className="fas fa-undo"></i> Reset
-            </button>
-          </div>
+            <div
+              className="h-56 w-full rounded-lg border border-border sm:h-64"
+              style={{ background: gradientValue }}
+              role="img"
+              aria-label={validationError ? 'Gradient preview unavailable while the gradient is invalid' : 'Live gradient preview'}
+            />
+
+            <div className="mt-4 min-w-0">
+              <label htmlFor="gradient-css-output" className="mb-2 flex items-center gap-2 font-medium text-primary">
+                <i className="fas fa-code text-secondary" aria-hidden="true" /> CSS output
+              </label>
+              <textarea
+                id="gradient-css-output"
+                aria-label="Generated CSS declaration"
+                aria-invalid={Boolean(validationError)}
+                aria-describedby="gradient-validation"
+                className="min-h-24 w-full resize-y rounded-lg border border-border bg-input-readonly p-3 font-mono text-sm text-primary focus-visible:ring-2 focus-visible:ring-border-focus"
+                value={cssCode}
+                readOnly
+                spellCheck={false}
+                placeholder="Valid CSS appears here."
+              />
+              <p
+                id="gradient-validation"
+                role={validationError ? 'alert' : 'status'}
+                aria-live={validationError ? 'polite' : 'off'}
+                className={`mt-2 min-h-6 text-sm ${validationError ? 'text-red-600 dark:text-red-300' : 'text-secondary'}`}
+              >
+                {validationError}
+              </p>
+            </div>
+
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button type="button" onClick={() => void handleCopy(cssCode, 'CSS')} disabled={!cssCode} className={`${buttonClass} bg-primary text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50`}>
+                <i className="fas fa-copy mr-2" aria-hidden="true" />Copy declaration
+              </button>
+              <button type="button" onClick={() => void handleCopy(fullCss, 'Full CSS')} disabled={!fullCss} className={`${buttonClass} border border-border hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50`}>
+                <i className="fas fa-copy mr-2" aria-hidden="true" />Copy full rule
+              </button>
+              <button type="button" onClick={handleDownload} disabled={!cssCode} className={`${buttonClass} border border-border hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50`}>
+                <i className="fas fa-download mr-2" aria-hidden="true" />Download .css
+              </button>
+              <button type="button" onClick={resetGradient} className={`${buttonClass} border border-border hover:bg-hover`}>
+                <i className="fas fa-undo mr-2" aria-hidden="true" />Reset
+              </button>
+            </div>
+          </section>
         </ToolPanel>
 
-        {/* ctrls */}
         <ToolPanel>
-          <div className="space-y-4">
-            <div>
-              <label className="font-medium text-primary mb-2 flex items-center gap-2">
-                <i className="fas fa-preset text-secondary"></i>
-                Presets
-              </label>
+          <div className="space-y-5">
+            <section aria-labelledby="gradient-presets-heading">
+              <h2 id="gradient-presets-heading" className="mb-2 flex items-center gap-2 font-medium text-primary">
+                <i className="fas fa-swatchbook text-secondary" aria-hidden="true" />Presets
+              </h2>
               <div className="grid grid-cols-4 gap-2">
                 {Gradient.presetGradients.map((preset, index) => (
                   <button
-                    key={index}
+                    key={preset.name}
+                    type="button"
                     onClick={() => handlePresetSelect(index)}
-                    className={`
-                      h-12 rounded-lg border-2 transition
-                      ${selectedPreset === index 
-                        ? 'border-primary' 
-                        : 'border-border hover:border-primary/50'
-                      }
-                    `}
-                    style={{ 
-                      background: Gradient.generateGradientCSS(preset.gradient).replace('background: ', '')
-                    }}
-                    title={preset.name}
+                    aria-label={`Use ${preset.name} preset`}
+                    aria-pressed={selectedPreset === index}
+                    className={`h-12 rounded-lg border-2 transition ${focusClass} ${selectedPreset === index ? 'border-primary' : 'border-border hover:border-primary/50'}`}
+                    style={{ background: Gradient.generateGradientCSS(preset.gradient).slice('background: '.length, -1) }}
                   />
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* tipo & angle */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-secondary block mb-1">Type</label>
-                <div className="flex gap-1">
-                  {(['linear', 'radial', 'conic'] as const).map((type) => (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <fieldset>
+                <legend className="mb-1 text-sm text-secondary">Gradient type</legend>
+                <div className="flex flex-wrap gap-1" role="group" aria-label="Gradient type">
+                  {(['linear', 'radial', 'conic'] as const).map(type => (
                     <button
                       key={type}
+                      type="button"
                       onClick={() => handleTypeChange(type)}
-                      className={`
-                        px-3 py-1.5 rounded-lg text-sm transition capitalize
-                        ${gradient.type === type
-                          ? 'bg-primary text-white'
-                          : 'bg-input border border-border hover:bg-hover'
-                        }
-                      `}
+                      aria-pressed={gradient.type === type}
+                      className={`${buttonClass} px-2 text-sm capitalize ${gradient.type === type ? 'bg-primary text-white' : 'border border-border bg-input hover:bg-hover'}`}
                     >
                       {type}
                     </button>
                   ))}
                 </div>
-              </div>
-              <div>
-                <label className="text-sm text-secondary block mb-1">Angle {gradient.angle}°</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={gradient.angle || 90}
-                  onChange={(e) => handleAngleChange(Number(e.target.value))}
-                  className="w-full accent-primary"
-                />
-              </div>
+              </fieldset>
+
+              {gradient.type !== 'radial' && (
+                <div>
+                  <label htmlFor="gradient-angle" className="mb-1 block text-sm text-secondary">
+                    {gradient.type === 'linear' ? 'Angle' : 'Start angle'}: {gradient.angle ?? 90}°
+                  </label>
+                  <input
+                    id="gradient-angle"
+                    type="range"
+                    min="0"
+                    max="360"
+                    step="1"
+                    value={gradient.angle ?? 90}
+                    onChange={event => commitGradient({ ...gradient, angle: Number(event.target.value) })}
+                    className={`w-full accent-primary ${focusClass}`}
+                    aria-label={`${gradient.type === 'linear' ? 'Linear' : 'Conic'} gradient angle`}
+                  />
+                </div>
+              )}
+
+              {gradient.type === 'radial' && (
+                <>
+                  <div>
+                    <label htmlFor="radial-shape" className="mb-1 block text-sm text-secondary">Radial shape</label>
+                    <select
+                      id="radial-shape"
+                      value={gradient.shape ?? 'circle'}
+                      onChange={event => commitGradient({ ...gradient, shape: event.target.value as Gradient.RadialShape })}
+                      className={`w-full rounded-lg border border-border bg-input px-3 py-2 text-primary ${focusClass}`}
+                    >
+                      <option value="circle">Circle</option>
+                      <option value="ellipse">Ellipse</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="radial-position" className="mb-1 block text-sm text-secondary">Radial position</label>
+                    <select
+                      id="radial-position"
+                      value={gradient.position ?? 'center'}
+                      onChange={event => commitGradient({ ...gradient, position: event.target.value as Gradient.RadialPosition })}
+                      className={`w-full rounded-lg border border-border bg-input px-3 py-2 text-primary ${focusClass}`}
+                    >
+                      {Gradient.radialPositions.map(position => <option key={position} value={position}>{position}</option>)}
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
 
-            <div>
-              <label className="font-medium text-primary mb-2 flex items-center gap-2">
-                <i className="fas fa-palette text-secondary"></i>
-                Color Stops
-              </label>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+            <section aria-labelledby="gradient-stops-heading">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 id="gradient-stops-heading" className="flex items-center gap-2 font-medium text-primary">
+                  <i className="fas fa-palette text-secondary" aria-hidden="true" />Color stops
+                </h2>
+                <span className="text-xs text-secondary">{gradient.stops.length} of 6</span>
+              </div>
+              <div className="space-y-2">
                 {gradient.stops.map((stop, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 bg-input rounded-lg border border-border">
-                    <div 
-                      className="w-8 h-8 rounded border border-border shrink-0"
-                      style={{ backgroundColor: stop.color }}
-                    />
+                  <div key={index} className="grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)_minmax(4rem,6rem)_2rem] items-center gap-2 rounded-lg border border-border bg-input p-2">
+                    <div className="h-8 w-8 rounded border border-border" style={{ backgroundColor: stop.color }} aria-hidden="true" />
+                    <label className="sr-only" htmlFor={`stop-color-${index}`}>Color for stop {index + 1}</label>
                     <input
+                      id={`stop-color-${index}`}
                       type="text"
                       value={stop.color}
-                      onChange={(e) => handleStopChange(index, 'color', e.target.value)}
-                      className="flex-1 bg-transparent text-primary font-mono text-sm border border-transparent focus:border-border rounded px-2 py-1"
+                      onChange={event => handleStopChange(index, event.target.value, stop.position)}
+                      aria-invalid={!Gradient.isValidColor(stop.color)}
+                      aria-label={`Color for stop ${index + 1}`}
+                      className={`min-w-0 rounded border border-transparent bg-transparent px-2 py-1 font-mono text-sm text-primary focus-visible:border-border focus-visible:outline-none ${focusClass}`}
                     />
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={stop.position}
-                      onChange={(e) => handleStopChange(index, 'position', Number(e.target.value))}
-                      className="w-24 accent-primary"
-                    />
-                    <span className="text-sm text-secondary w-10">{stop.position}%</span>
-                    {gradient.stops.length > 2 && (
+                    <div className="min-w-0">
+                      <label className="sr-only" htmlFor={`stop-position-${index}`}>Position for stop {index + 1}</label>
+                      <input
+                        id={`stop-position-${index}`}
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={stop.position}
+                        onChange={event => handleStopChange(index, stop.color, Number(event.target.value))}
+                        aria-label={`Position for stop ${index + 1}`}
+                        aria-valuetext={`${stop.position}%`}
+                        className={`w-full accent-primary ${focusClass}`}
+                      />
+                      <span className="block text-right text-xs text-secondary">{stop.position}%</span>
+                    </div>
+                    {gradient.stops.length > 2 ? (
                       <button
+                        type="button"
                         onClick={() => handleRemoveStop(index)}
-                        className="text-red-500 hover:text-red-700 transition"
+                        aria-label={`Remove color stop ${index + 1}`}
+                        className={`${buttonClass} px-1 text-red-600 hover:text-red-700 dark:text-red-300`}
                       >
-                        <i className="fas fa-times"></i>
+                        <i className="fas fa-times" aria-hidden="true" />
                       </button>
-                    )}
+                    ) : <span aria-hidden="true" />}
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* + stop */}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={colorInput}
-                onChange={(e) => setColorInput(e.target.value)}
-                className="flex-1 bg-input border border-border rounded-lg px-3 py-2 text-primary text-sm focus:outline-none focus:ring-2 focus:ring-border-focus"
-                placeholder="#ff6b6b"
-              />
-              <input
-                type="number"
-                value={positionInput}
-                onChange={(e) => setPositionInput(Number(e.target.value))}
-                min="0"
-                max="100"
-                className="w-20 bg-input border border-border rounded-lg px-2 py-2 text-primary text-sm focus:outline-none focus:ring-2 focus:ring-border-focus"
-              />
-              <button
-                onClick={handleAddStop}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition"
-              >
-                <i className="fas fa-plus"></i>
-              </button>
-              <button
-                onClick={handleRandom}
-                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition"
-                title="Random gradient"
-              >
-                <i className="fas fa-dice"></i>
-              </button>
-            </div>
+            <section aria-labelledby="add-stop-heading">
+              <h2 id="add-stop-heading" className="mb-2 font-medium text-primary">Add a color stop</h2>
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(7rem,1fr)] items-center gap-3">
+                <label htmlFor="new-stop-color" className="sr-only">New stop color</label>
+                <input
+                  id="new-stop-color"
+                  type="text"
+                  value={colorInput}
+                  onChange={event => setColorInput(event.target.value)}
+                  aria-label="New stop color"
+                  aria-invalid={colorInput.length > 0 && !Gradient.isValidColor(colorInput)}
+                  className={`min-w-0 rounded-lg border border-border bg-input px-3 py-2 text-sm text-primary ${focusClass}`}
+                  placeholder="#ff6b6b"
+                />
+                <div className="flex min-w-0 items-center gap-2">
+                  <label htmlFor="new-stop-position" className="sr-only">New stop position</label>
+                  <input
+                    id="new-stop-position"
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={positionInput}
+                    onChange={event => setPositionInput(Number(event.target.value))}
+                    aria-label="New stop position"
+                    aria-valuetext={`${positionInput}%`}
+                    className={`min-w-0 flex-1 accent-primary ${focusClass}`}
+                  />
+                  <span className="w-10 text-right text-sm text-secondary">{positionInput}%</span>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddStop}
+                  disabled={gradient.stops.length >= 6 || Boolean(validationError)}
+                  className={`${buttonClass} bg-primary text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  <i className="fas fa-plus mr-2" aria-hidden="true" />Add stop
+                </button>
+                <button type="button" onClick={() => commitGradient(Gradient.generateRandomGradient())} className={`${buttonClass} border border-border hover:bg-hover`}>
+                  <i className="fas fa-dice mr-2" aria-hidden="true" />Random gradient
+                </button>
+              </div>
+            </section>
           </div>
         </ToolPanel>
       </div>
 
-      <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-        <h3 className="font-semibold mb-2 flex items-center gap-2">
-          <i className="fas fa-lightbulb text-yellow-500"></i>
-          Quick Tips
-        </h3>
-        <ul className="text-sm text-secondary space-y-1">
-          <li>• Click on color swatches to change colors</li>
-          <li>• Drag the position slider to adjust stop placement</li>
-          <li>• Use the Random button for inspiration</li>
-          <li>• Supports HEX, RGB, HSL, and named colors</li>
-          <li>• All processing happens in your browser</li>
-        </ul>
-      </div>
+      <p
+        role={feedback?.kind === 'error' ? 'alert' : 'status'}
+        aria-live={feedback?.kind === 'error' ? 'assertive' : 'polite'}
+        className={`mt-4 min-h-6 text-sm ${feedback?.kind === 'error' ? 'text-red-600 dark:text-red-300' : 'text-secondary'}`}
+      >
+        {feedback?.message ?? ''}
+      </p>
     </div>
   )
 }

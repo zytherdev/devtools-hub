@@ -3,14 +3,14 @@ import type { ToolDefinition } from '@/app/tools/types'
 export const tool: ToolDefinition = {
   "id": "color-converter",
   "name": "Color Converter",
-  "description": "Convert between HEX, RGB, HSL, and more. Preview colors in real-time.",
+  "description": "Convert HEX, RGB, HSL, HSV, CMYK, and supported named colors. Preview WCAG contrast and hue harmonies.",
   "icon": "fa-solid fa-palette",
   "color": "#ec4899",
   "badge": "",
   "href": "/color-converter",
   "categoryId": "converter",
   "status": "implemented",
-  "exampleInput": "",
-  "defaultOptions": {},
+  "exampleInput": "#3b82f6",
+  "defaultOptions": { "format": "hex" },
   "outputExtension": "txt"
 }

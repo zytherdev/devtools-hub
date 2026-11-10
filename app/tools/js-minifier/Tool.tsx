@@ -1,184 +1,176 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { minifyJS } from '@/app/tools/js-minifier/logic';
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { ToolPanel } from '@/app/components/ToolPanel'
+import { tool } from './definition'
+import { MAX_INPUT_LENGTH, minifyJS, summarizeSizeChange } from './logic'
+
+type Feedback = { kind: 'success' | 'error' | 'info'; message: string } | null
 
 export default function JSMinifier() {
   const [input, setInput] = useState('')
-  const [output, setOutput] = useState('')
-  const [inputChars, setInputChars] = useState(0)
-  const [outputChars, setOutputChars] = useState(0)
-  const [stats, setStats] = useState('⚡ ready')
+  const [output, setOutput] = useState<string | null>(null)
+  const [feedback, setFeedback] = useState<Feedback>(null)
+  const [sizeSummary, setSizeSummary] = useState('')
 
-  const sampleCode = `/**
-  * A simple calculator module
-  */
-  const Calculator = {
-    add: function(a, b) {
-      return a + b;
-    },
-    subtract: function(a, b) {
-      return a - b;
-    },
-    multiply: function(a, b) {
-      return a * b;
-    },
-    divide: function(a, b) {
-      if (b === 0) {
-        throw new Error('Division by zero');
-      }
-      return a / b;
-    }
-  };
+  const handleMinify = () => {
+    setOutput(null)
+    setSizeSummary('')
 
-  // Export for use
-  export default Calculator;`
-
-  const handleMinify = async () => {
     try {
-      const result = await minifyJS(input)
+      const result = minifyJS(input)
       setOutput(result)
-      
-      const saved = input.length - result.length
-      const percent = input.length > 0 ? Math.round((saved / input.length) * 100) : 0
-      setStats(`⬇ saved ${saved} chars · ${percent}% smaller`)
+      setSizeSummary(summarizeSizeChange(input.length, result.length))
+      setFeedback({ kind: 'success', message: 'JavaScript minified locally. Review the output before using it.' })
     } catch (error) {
-      alert('Error minifying code' + (error instanceof Error ? `: ${error.message}` : ''))
+      setFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Could not minify this JavaScript input.',
+      })
     }
+  }
+
+  const handleInputChange = (value: string) => {
+    const hadOutput = output !== null
+    setInput(value)
+    setOutput(null)
+    setSizeSummary('')
+    setFeedback(hadOutput
+      ? { kind: 'info', message: 'Input changed. Minify again to refresh the output.' }
+      : null)
   }
 
   const handleClear = () => {
     setInput('')
-    setOutput('')
-    setStats('⚡ ready')
-    setInputChars(0)
-    setOutputChars(0)
-  }
-
-  const handleCopy = () => {
-    if (!output) {
-      alert('Nothing to copy')
-      return
-    }
-    navigator.clipboard.writeText(output)
-    alert('Copied!')
+    setOutput(null)
+    setSizeSummary('')
+    setFeedback({ kind: 'info', message: 'Input and output cleared.' })
   }
 
   const loadSample = () => {
-    setInput(sampleCode)
-    setOutput('')
-    setStats('⚡ ready')
+    setInput(tool.exampleInput)
+    setOutput(null)
+    setSizeSummary('')
+    setFeedback({ kind: 'info', message: 'Sample loaded. Minify it to create fresh output.' })
   }
 
-  useEffect(() => {
-    setInputChars(input.length)
-  }, [input])
+  const handleCopy = async () => {
+    if (output === null) return
 
-  useEffect(() => {
-    setOutputChars(output.length)
-  }, [output])
-
-  // Ctrl + Enter
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'Enter') {
-        handleMinify()
-      }
+    try {
+      await navigator.clipboard.writeText(output)
+      setFeedback({ kind: 'success', message: 'Minified JavaScript copied to the clipboard.' })
+    } catch {
+      setFeedback({ kind: 'error', message: 'Clipboard access is unavailable. Select and copy the output manually.' })
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  })
+  }
+
+  const handleDownload = () => {
+    if (output === null) return
+
+    const blob = new Blob([output], { type: 'text/javascript;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `minified.${tool.outputExtension}`
+    link.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 0)
+  }
+
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault()
+      handleMinify()
+    }
+  }
 
   return (
-    <div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="tool-panel bg-card border border-border rounded-xl p-5">
-          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-            <label className="font-medium flex items-center gap-2">
-              <i className="fas fa-file-code text-secondary"></i>
-              Input JavaScript
-              <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">JS</span>
-            </label>
-            <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-              <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{inputChars}</span>
-            </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="js-minifier-input" className="font-medium">JavaScript input</label>
+            <span id="js-minifier-input-count" className="text-sm text-secondary">
+              {input.length.toLocaleString()} / {MAX_INPUT_LENGTH.toLocaleString()} characters
+            </span>
           </div>
           <textarea
-            className="w-full bg-input border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y"
+            id="js-minifier-input"
+            aria-describedby="js-minifier-input-count js-minifier-shortcut"
+            className="min-h-72 w-full resize-y rounded-lg border border-border bg-input p-4 font-mono text-sm text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            maxLength={MAX_INPUT_LENGTH}
+            onChange={event => handleInputChange(event.target.value)}
+            onKeyDown={handleInputKeyDown}
             spellCheck={false}
-            placeholder="/* Paste your JavaScript here */"
+            placeholder="Paste supported JavaScript here…"
           />
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-            <div className="flex gap-2">
-              <button
-                onClick={handleMinify}
-                className="px-4 py-2 bg-primary hover:bg-primary/70 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-              >
-                <i className="fas fa-bolt"></i> Minify
-              </button>
-              <button
-                onClick={handleClear}
-                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-              >
-                <i className="fas fa-eraser"></i> Clear
-              </button>
-            </div>
-            <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-              <i className="fas fa-bolt"></i> {stats}
-            </div>
+          <p id="js-minifier-shortcut" className="mt-2 text-xs text-secondary">
+            Press Ctrl+Enter (or ⌘+Enter) while this input is focused to minify.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button type="button" onClick={handleMinify} className="btn btn-primary text-sm">
+              <i aria-hidden="true" className="fa-solid fa-bolt" /> Minify
+            </button>
+            <button type="button" onClick={handleClear} className="btn btn-outline text-sm">
+              <i aria-hidden="true" className="fa-solid fa-eraser" /> Clear
+            </button>
+            <button type="button" onClick={loadSample} className="btn btn-outline text-sm">
+              <i aria-hidden="true" className="fa-solid fa-rotate-right" /> Load sample
+            </button>
           </div>
-        </div>
+        </ToolPanel>
 
-        <div className="tool-panel bg-card border border-border rounded-xl p-5">
-          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-            <label className="font-medium flex items-center gap-2">
-              <i className="fas fa-file-code text-green-500"></i>
-              Minified Output
-              <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">output</span>
-            </label>
-            <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-              <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{outputChars}</span>
-            </div>
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="js-minifier-output" className="font-medium">Minified JavaScript</label>
+            <span className="text-sm text-secondary">
+              {(output?.length ?? 0).toLocaleString()} characters
+            </span>
           </div>
           <textarea
-            className="w-full bg-input-readonly border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y"
-            value={output}
+            id="js-minifier-output"
+            aria-label="Minified JavaScript output"
+            className="min-h-72 w-full resize-y rounded-lg border border-border bg-input-readonly p-4 font-mono text-sm text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
+            value={output ?? ''}
             readOnly
             spellCheck={false}
-            placeholder="Minified JavaScript will appear here…"
+            placeholder="Minified JavaScript appears here after processing."
           />
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-            <div className="flex gap-2">
-              <button
-                onClick={handleCopy}
-                className="px-4 py-2 bg-primary hover:bg-primary/70 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-              >
-                <i className="fas fa-copy"></i> Copy
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={handleCopy} disabled={output === null} className="btn btn-outline text-sm disabled:cursor-not-allowed disabled:opacity-40">
+                <i aria-hidden="true" className="fa-solid fa-copy" /> Copy output
               </button>
-              <button
-                onClick={loadSample}
-                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-              >
-                <i className="fas fa-rotate-right"></i> Sample
+              <button type="button" onClick={handleDownload} disabled={output === null} className="btn btn-outline text-sm disabled:cursor-not-allowed disabled:opacity-40">
+                <i aria-hidden="true" className="fa-solid fa-download" /> Download .js
               </button>
             </div>
+            {sizeSummary && <span className="text-sm text-secondary" aria-label="Output size comparison">{sizeSummary}</span>}
           </div>
-        </div>
+        </ToolPanel>
       </div>
 
-      <div className="mt-8 p-4 bg-card border border-border rounded-lg">
-        <h3 className="font-semibold mb-2 flex items-center gap-2">
-          <i className="fas fa-lightbulb text-yellow-500"></i>
-          Quick Tips
-        </h3>
-        <ul className="text-sm text-secondary space-y-1">
-          <li>• Press <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Ctrl</kbd> + <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Enter</kbd> to minify quickly</li>
-          <li>• All processing happens in your browser — no data is sent to any server</li>
-          <li>• Minified code is optimized for production use</li>
+      <p
+        role={feedback?.kind === 'error' ? 'alert' : 'status'}
+        aria-live={feedback?.kind === 'error' ? 'assertive' : 'polite'}
+        aria-atomic="true"
+        className={`min-h-6 text-sm ${feedback?.kind === 'error' ? 'text-red-600 dark:text-red-300' : feedback?.kind === 'success' ? 'text-green-700 dark:text-green-300' : 'text-secondary'}`}
+      >
+        {feedback?.message ?? ''}
+      </p>
+
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-2 flex items-center gap-2 font-semibold">
+          <i aria-hidden="true" className="fa-solid fa-lightbulb text-yellow-500" /> How it works and limits
+        </h2>
+        <ul className="space-y-1 text-sm text-secondary">
+          <li>Processing happens locally in your browser; pasted source is not uploaded.</li>
+          <li>Ordinary comments are removed. Block comments beginning with /*! are retained.</li>
+          <li>Parsing and code generation use Esprima 4 and Escodegen: supported input is limited to their ECMAScript 2017-era JavaScript grammar. This tool does not transpile or bundle code.</li>
+          <li>JSX, TypeScript, Flow, optional chaining, nullish coalescing, and other syntax unsupported by those packages are not accepted.</li>
+          <li>Input is limited to {MAX_INPUT_LENGTH.toLocaleString()} characters to bound synchronous browser work.</li>
+          <li>Ctrl/⌘+Enter is handled only while the input editor is focused.</li>
         </ul>
       </div>
     </div>
