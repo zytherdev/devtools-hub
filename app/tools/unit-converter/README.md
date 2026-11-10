@@ -1,41 +1,35 @@
-# Unit Converter
+# Conversor de unidades
 
-**Status:** Planned
+**Status:** Implementado
 
-Convert between units: length, weight, temperature, area, volume, and more.
+Conversor local para comprimento, massa, volume, área, tempo e temperatura.
 
-## Availability
+## Opções
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+Exemplo: para converter `1500` metros em quilômetros, use:
 
 ~~~json
-""
+{"from":"m","to":"km","precision":"4"}
 ~~~
 
-## Default options
+Unidades suportadas:
 
-The options panel starts with this JSON:
+- Comprimento: `mm`, `cm`, `m`, `km`, `in`, `ft`, `yd`, `mi`.
+- Massa: `mg`, `g`, `kg`, `oz`, `lb`.
+- Volume: `ml`, `l`, `m3`, `gal` (galão líquido dos EUA).
+- Área: `mm2`, `cm2`, `m2`, `km2`, `ft2`, `acre`.
+- Tempo: `ms`, `s`, `min`, `h`, `day`.
+- Temperatura: `C`, `F`, `K`.
 
-~~~json
-{}
-~~~
+`from` e `to` precisam pertencer à mesma dimensão. `precision` controla o arredondamento de 0 a 12 casas decimais (padrão 4). Temperaturas abaixo do zero absoluto são rejeitadas. A saída JSON contém o valor de entrada, unidades, dimensão e resultado arredondado.
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+## Limites e privacidade
 
-## Processing and privacy
+Aceita um número decimal finito de até 100 caracteres. O processamento usa fatores de conversão fixos, sem rede ou cotação externa.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Arquivos de contribuição
 
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/unit-converter.test.cjs](../../../tests/tools/unit-converter.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados, exemplo e opções padrão.
+- [logic.ts](logic.ts): tabela de conversão, validação e arredondamento.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/unit-converter.test.cjs](../../../tests/tools/unit-converter.test.cjs).

@@ -1,41 +1,34 @@
-# Timestamp Converter
+# Conversor de timestamp
 
-**Status:** Planned
+**Status:** Implementado
 
-Convert Unix timestamps to human-readable dates and vice versa.
+Converte datas ISO-8601 em timestamps Unix e timestamps Unix em datas UTC, sem depender do fuso local da máquina.
 
-## Availability
+## Opções
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+ISO para epoch:
 
 ~~~json
-""
+{"mode":"iso-to-epoch"}
 ~~~
 
-## Default options
+A entrada deve ter fuso explícito, por exemplo `2026-01-01T12:30:00-03:00`. A fração de segundo aceita de 1 a 3 dígitos. A saída JSON inclui a data UTC normalizada, segundos Unix e milissegundos Unix.
 
-The options panel starts with this JSON:
+Epoch para ISO:
 
 ~~~json
-{}
+{"mode":"epoch-to-iso","unit":"seconds"}
 ~~~
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+`unit` pode ser `seconds` ou `milliseconds`. Essa direção aceita apenas timestamp inteiro. A saída sempre informa ISO UTC, segundos e milissegundos. O intervalo segue os limites de `Date` do JavaScript; datas inexistentes e offsets acima de ±14:00 são rejeitados.
 
-## Processing and privacy
+## Limites e privacidade
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+Entrada de 1 a 100 caracteres. O conversor não consulta relógio ou serviço externo; o resultado depende apenas do valor informado.
 
-## Contribution files
+## Arquivos de contribuição
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/timestamp-converter.test.cjs](../../../tests/tools/timestamp-converter.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados, exemplo e modo padrão.
+- [logic.ts](logic.ts): parser ISO estrito, validação de calendário e conversão Unix.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/timestamp-converter.test.cjs](../../../tests/tools/timestamp-converter.test.cjs).

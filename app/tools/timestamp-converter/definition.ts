@@ -1,16 +1,16 @@
 import type { ToolDefinition } from '@/app/tools/types'
 
 export const tool: ToolDefinition = {
-  "id": "timestamp-converter",
-  "name": "Timestamp Converter",
-  "description": "Convert Unix timestamps to human-readable dates and vice versa.",
-  "icon": "fa-solid fa-clock",
-  "color": "#f59e0b",
-  "badge": "Planned",
-  "href": "/timestamp-converter",
-  "categoryId": "converter",
-  "status": "planned",
-  "exampleInput": "",
-  "defaultOptions": {},
-  "outputExtension": "txt"
+  id: 'timestamp-converter',
+  name: 'Conversor de timestamp',
+  description: 'Converta datas ISO-8601 com fuso explícito e timestamps Unix em segundos ou milissegundos.',
+  icon: 'fa-solid fa-clock',
+  color: '#f59e0b',
+  badge: '',
+  href: '/timestamp-converter',
+  categoryId: 'converter',
+  status: 'implemented',
+  exampleInput: '2026-01-01T00:00:00Z',
+  defaultOptions: { mode: 'iso-to-epoch' },
+  outputExtension: 'json',
 }

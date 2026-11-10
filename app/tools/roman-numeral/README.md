@@ -1,41 +1,32 @@
-# Roman Numeral Converter
+# Conversor de algarismos romanos
 
-**Status:** Planned
+**Status:** Implementado
 
-Convert between Roman numerals and Arabic numbers.
+Converte números inteiros de 1 a 3999 entre algarismos arábicos e romanos.
 
-## Availability
+## Modos
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+De número arábico para romano (modo padrão):
 
 ~~~json
-""
+{"mode":"arabic-to-roman"}
 ~~~
 
-## Default options
-
-The options panel starts with this JSON:
+De romano para arábico:
 
 ~~~json
-{}
+{"mode":"roman-to-arabic"}
 ~~~
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+A entrada romana aceita `I`, `V`, `X`, `L`, `C`, `D`, `M` em maiúsculas ou minúsculas, mas exige notação canônica (por exemplo, `IV`, não `IIII`). Zero, números negativos, frações e valores acima de 3999 não são representáveis neste conversor.
 
-## Processing and privacy
+## Limites e privacidade
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+Entrada de até 100 caracteres. A conversão é determinística e totalmente local.
 
-## Contribution files
+## Arquivos de contribuição
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/roman-numeral.test.cjs](../../../tests/tools/roman-numeral.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados, exemplo e modo padrão.
+- [logic.ts](logic.ts): codificação e validação da forma canônica.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/roman-numeral.test.cjs](../../../tests/tools/roman-numeral.test.cjs).

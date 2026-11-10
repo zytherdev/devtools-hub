@@ -1,41 +1,26 @@
-# File Size Converter
+# Conversor de tamanho de arquivo
 
-**Status:** Planned
+**Status:** Implementado
 
-Convert between B, KB, MB, GB, TB, PB. Understand file sizes easily.
+Converte valores entre bytes, unidades decimais e unidades binárias.
 
-## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Opções
 
 ~~~json
-""
+{"from":"B","to":"KiB","precision":"3"}
 ~~~
 
-## Default options
+Unidades decimais usam potências de 1.000: `B`, `KB`, `MB`, `GB`, `TB`, `PB`. Unidades binárias usam potências de 1.024: `KiB`, `MiB`, `GiB`, `TiB`, `PiB`, `EiB`. `precision` define o arredondamento entre 0 e 12 casas decimais (padrão 3). A saída JSON apresenta o valor de entrada, as unidades e o resultado.
 
-The options panel starts with this JSON:
+Este cálculo converte unidades matemáticas; não inspeciona arquivos nem estima espaço efetivamente ocupado por sistemas de arquivos.
 
-~~~json
-{}
-~~~
+## Limites e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+Aceita número finito não negativo com até 100 caracteres. Não há leitura de arquivos ou tráfego de rede.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/file-size-converter.test.cjs](../../../tests/tools/file-size-converter.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e opções padrão.
+- [logic.ts](logic.ts): fatores decimais/binários e validação.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/file-size-converter.test.cjs](../../../tests/tools/file-size-converter.test.cjs).

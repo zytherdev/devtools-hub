@@ -1,41 +1,26 @@
-# Number Base Converter
+# Conversor de bases numéricas
 
-**Status:** Planned
+**Status:** Implementado
 
-Convert numbers between binary, octal, decimal, hexadecimal, and other bases.
+Converte inteiros com sinal entre qualquer base de 2 a 36, usando aritmética BigInt para não perder precisão.
 
-## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Opções
 
 ~~~json
-""
+{"fromBase":"10","toBase":"16"}
 ~~~
 
-## Default options
+`fromBase` e `toBase` são inteiros de 2 a 36. Os dígitos aceitos são `0–9` e `a–z` (sem distinção de caixa na entrada); a saída usa letras minúsculas. O sinal `+` ou `-` é permitido. Prefixos como `0x` não são interpretados: configure explicitamente a base. Frações não são suportadas.
 
-The options panel starts with this JSON:
+Exemplo: entrada `255` em base 10 produz `ff` em base 16.
 
-~~~json
-{}
-~~~
+## Limites e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+Até 1.000 caracteres de entrada. O cálculo é local, exato e sem rede.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/number-base-converter.test.cjs](../../../tests/tools/number-base-converter.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e bases padrão.
+- [logic.ts](logic.ts): parser de dígitos e conversão BigInt.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/number-base-converter.test.cjs](../../../tests/tools/number-base-converter.test.cjs).

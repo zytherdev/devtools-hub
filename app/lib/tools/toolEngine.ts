@@ -6,6 +6,7 @@ import { run as runCsvFormatter } from '@/app/tools/csv-formatter/logic'
 import { run as runCsvToJson } from '@/app/tools/csv-to-json/logic'
 import { run as runCronGenerator } from '@/app/tools/cron-generator/logic'
 import { run as runDiffChecker } from '@/app/tools/diff-checker/logic'
+import { run as runFileSizeConverter } from '@/app/tools/file-size-converter/logic'
 import { run as runFaviconGenerator } from '@/app/tools/favicon-generator/logic'
 import { run as runHtmlBeautifier } from '@/app/tools/html-beautifier/logic'
 import { run as runHtmlEncoder } from '@/app/tools/html-encoder/logic'
@@ -19,6 +20,7 @@ import { run as runLoremIpsum } from '@/app/tools/lorem-ipsum/logic'
 import { run as runMarkdownToHtml } from '@/app/tools/markdown-to-html/logic'
 import { run as runMimeTypeValidator } from '@/app/tools/mime-type-validator/logic'
 import { run as runMockApiGenerator } from '@/app/tools/mock-api-generator/logic'
+import { run as runNumberBaseConverter } from '@/app/tools/number-base-converter/logic'
 import { run as runOpenApiGenerator } from '@/app/tools/openapi-generator/logic'
 import { run as runPasswordGenerator } from '@/app/tools/password-generator/logic'
 import { run as runPhpJsonConverter } from '@/app/tools/php-json-converter/logic'
@@ -26,12 +28,15 @@ import { run as runQrGenerator } from '@/app/tools/qr-generator/logic'
 import { run as runRandomNumberGenerator } from '@/app/tools/random-number-generator/logic'
 import { run as runRemoveDuplicateLines } from '@/app/tools/remove-duplicate-lines/logic'
 import { run as runRobotsTxtGenerator } from '@/app/tools/robots-txt-generator/logic'
+import { run as runRomanNumeral } from '@/app/tools/roman-numeral/logic'
 import { run as runSitemapGenerator } from '@/app/tools/sitemap-generator/logic'
 import { run as runSlugGenerator } from '@/app/tools/slug-generator/logic'
+import { run as runTimestampConverter } from '@/app/tools/timestamp-converter/logic'
 import { run as runTomlFormatter } from '@/app/tools/toml-formatter/logic'
 import { run as runTomlJsonConverter } from '@/app/tools/toml-json-converter/logic'
 import { run as runTextCaseConverter } from '@/app/tools/text-case-converter/logic'
 import { run as runUnicodeConverter } from '@/app/tools/unicode-converter/logic'
+import { run as runUnitConverter } from '@/app/tools/unit-converter/logic'
 import { run as runUrlEncoder } from '@/app/tools/url-encoder/logic'
 import { run as runUuidGenerator } from '@/app/tools/uuid-generator/logic'
 import { run as runXmlFormatter } from '@/app/tools/xml-formatter/logic'
@@ -48,6 +53,7 @@ const handlers: Record<string, ToolRunner> = {
   'csv-to-json': runCsvToJson,
   'cron-generator': runCronGenerator,
   'diff-checker': runDiffChecker,
+  'file-size-converter': runFileSizeConverter,
   'favicon-generator': runFaviconGenerator,
   'html-beautifier': runHtmlBeautifier,
   'html-encoder': runHtmlEncoder,
@@ -61,6 +67,7 @@ const handlers: Record<string, ToolRunner> = {
   'markdown-to-html': runMarkdownToHtml,
   'mime-type-validator': runMimeTypeValidator,
   'mock-api-generator': runMockApiGenerator,
+  'number-base-converter': runNumberBaseConverter,
   'openapi-generator': runOpenApiGenerator,
   'password-generator': runPasswordGenerator,
   'php-json-converter': runPhpJsonConverter,
@@ -68,12 +75,15 @@ const handlers: Record<string, ToolRunner> = {
   'random-number-generator': runRandomNumberGenerator,
   'remove-duplicate-lines': runRemoveDuplicateLines,
   'robots-txt-generator': runRobotsTxtGenerator,
+  'roman-numeral': runRomanNumeral,
   'sitemap-generator': runSitemapGenerator,
   'slug-generator': runSlugGenerator,
   'text-case-converter': runTextCaseConverter,
+  'timestamp-converter': runTimestampConverter,
   'toml-formatter': runTomlFormatter,
   'toml-json-converter': runTomlJsonConverter,
   'unicode-converter': runUnicodeConverter,
+  'unit-converter': runUnitConverter,
   'url-encoder': runUrlEncoder,
   'uuid-generator': runUuidGenerator,
   'xml-formatter': runXmlFormatter,
