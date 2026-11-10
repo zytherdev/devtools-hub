@@ -2,40 +2,29 @@
 
 **Status:** Implemented
 
-Compress and optimize your CSS code. Remove comments, whitespace, and unnecessary characters.
+Minify CSS by removing ordinary comments and unnecessary whitespace while preserving selector descendant combinators, strings, and the internal whitespace of custom property values. License comments beginning with `/*!` are retained.
 
-## Availability
+## Availability and interface
 
-Available at /css-minifier. The connected processor downloads results as .txt.
+Available at `/css-minifier`. The page provides a CSS input area, a sample, inline validation/status messages, current-result size statistics, copy, and a **Download .css** action that saves `minified.css`. Press Ctrl/⌘ + Enter while the input is focused to minify. There is no Advanced mode or configurable options panel.
 
 ## Example input
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+The catalog example is available from the page's **Load sample** button and in [definition.ts](definition.ts):
 
-~~~json
-""
-~~~
+```css
+.card { color: #222; padding: 1rem; }
+```
 
-## Default options
+## Processing, validation, and limits
 
-The options panel starts with this JSON:
-
-~~~json
-{}
-~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
-
-## Processing and privacy
-
-The current transformation runs in the browser and does not intentionally upload tool input. Standard site hosting and asset requests are described in the project privacy page. Review the logic and tests before using sensitive data.
+Processing is local in the browser; the CSS input is not uploaded. Input is limited to 1,000,000 characters. The lightweight lexical scanner reports unterminated comments or strings and unmatched/unclosed braces, brackets, or parentheses. It is not a full CSS parser or optimizer: it does not rewrite colors, remove units, reorder declarations, or validate every CSS grammar rule. Custom-property values are kept verbatim (including comments and whitespace inside the value) while surrounding declarations can still be minified.
 
 ## Contribution files
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
+- [definition.ts](definition.ts): tool metadata, example input, and `.css` output extension.
+- [logic.ts](logic.ts): typed `run(input, options)` entry point and scanner.
+- [Tool.tsx](Tool.tsx): accessible client-side input/output interface.
 - Focused tests: [tests/tools/css-minifier.test.cjs](../../../tests/tools/css-minifier.test.cjs).
 
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+Before submitting changes, run `npm run check`. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).

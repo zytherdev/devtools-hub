@@ -1,280 +1,151 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
-import { minifyCSS, minifyCSS2 } from './logic'
+import { tool } from './definition'
+import { minifyCSS } from './logic'
 
 export default function CSSMinifier() {
-    const [input, setInput] = useState('')
-    const [output, setOutput] = useState('')
-    const [inputChars, setInputChars] = useState(0)
-    const [outputChars, setOutputChars] = useState(0)
-    const [stats, setStats] = useState('⚡ ready')
-    const [advancedMode, setAdvancedMode] = useState(false)
+  const [input, setInput] = useState('')
+  const [output, setOutput] = useState('')
+  const [error, setError] = useState('')
+  const [status, setStatus] = useState('Ready')
 
-    const sampleCode = `/* ===== MAIN STYLES ===== */
-    .container {
-        display: flex;
-        flex-direction: column;
-        padding: 2rem;
-        background: #f1f5f9;
-        border-radius: 0.75rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  function minify() {
+    setError('')
+    setStatus('')
+    if (!input.trim()) {
+      setOutput('')
+      setError('Paste some CSS code before minifying.')
+      return
     }
 
-    /* Button styles */
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.75rem 1.5rem;
-        background: #0f1724;
-        color: #ffffff;
-        border: none;
-        border-radius: 0.5rem;
-        font-weight: 600;
-        transition: all 0.2s ease;
-        cursor: pointer;
+    try {
+      const result = minifyCSS(input)
+      setOutput(result)
+      if (!result) setStatus('The input contained no CSS after comments and whitespace were removed.')
+      else setStatus('CSS minified successfully.')
+    } catch (cause) {
+      setOutput('')
+      setError(cause instanceof Error ? cause.message : 'Could not minify this CSS.')
     }
+  }
 
-    .btn:hover {
-        background: #1e293b;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.15);
+  function clear() {
+    setInput('')
+    setOutput('')
+    setError('')
+    setStatus('Ready')
+  }
+
+  function loadSample() {
+    setInput(tool.exampleInput)
+    setOutput('')
+    setError('')
+    setStatus('Sample loaded. Minify it to see the result.')
+  }
+
+  async function copy() {
+    if (!output) return
+    try {
+      await navigator.clipboard.writeText(output)
+      setError('')
+      setStatus('CSS copied to the clipboard.')
+    } catch {
+      setError('Clipboard access was denied by this browser.')
+      setStatus('')
     }
+  }
 
-    .btn:active {
-        transform: scale(0.98);
-    }
+  function download() {
+    if (!output) return
+    const url = URL.createObjectURL(new Blob([output], { type: 'text/css;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'minified.css'
+    anchor.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 0)
+    setError('')
+    setStatus('CSS download started.')
+  }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .container {
-            padding: 1rem;
-        }
-        
-        .btn {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-        }
-    }`
+  function handleInputChange(value: string) {
+    setInput(value)
+    setOutput('')
+    setError('')
+    setStatus(value ? 'Input changed. Minify again to update the result.' : 'Ready')
+  }
 
-    const handleMinify = () => {
-        if (!input.trim()) {
-            alert('Please paste some CSS code to minify')
-            return
-        }
+  return (
+    <div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <label htmlFor="css-minifier-input" className="text-sm font-semibold text-primary">Input CSS</label>
+            <span className="text-xs text-secondary">{input.length.toLocaleString()} chars</span>
+          </div>
+          <textarea
+            id="css-minifier-input"
+            value={input}
+            onChange={event => handleInputChange(event.target.value)}
+            onKeyDown={event => {
+              if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault()
+                minify()
+              }
+            }}
+            spellCheck={false}
+            placeholder="Paste your CSS here…"
+            className="min-h-72 w-full resize-y rounded-xl border border-border bg-input p-4 font-mono text-sm leading-6 text-primary placeholder:text-secondary focus:border-[#347a58] focus:outline-none"
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={minify} className="btn btn-primary text-sm"><i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true" />Minify</button>
+            <button type="button" onClick={clear} className="btn btn-outline text-sm"><i className="fa-solid fa-eraser" aria-hidden="true" />Clear</button>
+          </div>
+        </ToolPanel>
 
-        try {
-            const result = advancedMode ? minifyCSS2(input) : minifyCSS(input)
-            setOutput(result)
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <label htmlFor="css-minifier-output" className="text-sm font-semibold text-primary">Minified CSS</label>
+            <span className="text-xs text-secondary">{output.length.toLocaleString()} chars</span>
+          </div>
+          <textarea
+            id="css-minifier-output"
+            value={output}
+            readOnly
+            spellCheck={false}
+            placeholder="Minified CSS will appear here…"
+            className="min-h-72 w-full resize-y rounded-xl border border-border bg-input-readonly p-4 font-mono text-sm leading-6 text-primary placeholder:text-secondary focus:outline-none"
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={copy} disabled={!output} className="btn btn-outline text-sm disabled:cursor-not-allowed disabled:opacity-40"><i className="fa-solid fa-copy" aria-hidden="true" />Copy</button>
+            <button type="button" onClick={download} disabled={!output} className="btn btn-outline text-sm disabled:cursor-not-allowed disabled:opacity-40"><i className="fa-solid fa-download" aria-hidden="true" />Download .css</button>
+            <button type="button" onClick={loadSample} className="btn btn-outline text-sm"><i className="fa-solid fa-rotate-right" aria-hidden="true" />Load sample</button>
+          </div>
+        </ToolPanel>
+      </div>
 
-            const saved = input.length - result.length
-            const percent = input.length > 0 ? Math.round((saved / input.length) * 100) : 0
-            setStats(`⬇ saved ${saved} chars · ${percent}% smaller`)
+      <p role={error ? 'alert' : 'status'} aria-live="polite" className={`mt-3 min-h-6 text-sm ${error ? 'text-red-600 dark:text-red-300' : 'text-secondary'}`}>
+        {error || status}
+      </p>
 
-            if (result.length === 0) {
-                alert('Minification produced empty output')
-            } else {
-                alert('CSS minified successfully!')
-            }
-        } catch (error) {
-            console.error('Minification error:', error)
-            alert('Error minifying CSS. Please check your code.')
-        }
-    }
+      {output && (
+        <section className="tool-panel mt-4 grid grid-cols-2 gap-4 p-4 text-sm md:grid-cols-4" aria-label="Minification statistics">
+          <div><span className="text-secondary">Original size</span><p className="font-semibold text-primary">{input.length.toLocaleString()} chars</p></div>
+          <div><span className="text-secondary">Minified size</span><p className="font-semibold text-primary">{output.length.toLocaleString()} chars</p></div>
+          <div><span className="text-secondary">Saved</span><p className="font-semibold text-primary">{(input.length - output.length).toLocaleString()} chars</p></div>
+          <div><span className="text-secondary">Reduction</span><p className="font-semibold text-primary">{input.length ? Math.round(((input.length - output.length) / input.length) * 100) : 0}%</p></div>
+        </section>
+      )}
 
-    const handleClear = () => {
-        setInput('')
-        setOutput('')
-        setStats('⚡ ready')
-        setInputChars(0)
-        setOutputChars(0)
-        alert('Cleared!')
-    }
-
-    const handleCopy = async () => {
-        if (!output) {
-            alert('Nothing to copy')
-            return
-        }
-
-        try {
-            await navigator.clipboard.writeText(output)
-            alert('Copied to clipboard!')
-        } catch (error) {
-            console.error('Copy error:', error)
-            const textarea = document.createElement('textarea')
-            textarea.value = output
-            document.body.appendChild(textarea)
-            textarea.select()
-            document.execCommand('copy')
-            document.body.removeChild(textarea)
-            alert('Copied!')
-        }
-    }
-
-    const loadSample = () => {
-        setInput(sampleCode)
-        setOutput('')
-        setStats('⚡ ready')
-        alert('Sample loaded!')
-    }
-
-    // Ctrl+Enter
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault()
-                handleMinify()
-            }
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [input, advancedMode])
-
-    useEffect(() => {
-        setInputChars(input.length)
-    }, [input])
-
-    useEffect(() => {
-        setOutputChars(output.length)
-    }, [output])
-
-    return (
-        <div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ToolPanel>
-                    <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                        <label className="font-medium flex items-center gap-2">
-                            <i className="fas fa-file-code text-secondary"></i>
-                            Input CSS
-                            <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">CSS</span>
-                        </label>
-                        <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-                            <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{inputChars}</span>
-                        </div>
-                    </div>
-                    <textarea
-                        className="w-full bg-input border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-border-focus"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        spellCheck={false}
-                        placeholder="/* Paste your CSS here */"
-                    />
-                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={handleMinify}
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-bolt"></i> Minify
-                            </button>
-                            <button
-                                onClick={handleClear}
-                                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-eraser"></i> Clear
-                            </button>
-                            <button
-                                onClick={() => setAdvancedMode(!advancedMode)}
-                                className={`
-                                    px-4 py-2 border rounded-lg transition flex items-center gap-2
-                                    ${advancedMode 
-                                        ? 'bg-primary text-white border-primary' 
-                                        : 'border-border hover:bg-hover'
-                                    }
-                                `}
-                            >
-                                <i className="fas fa-star"></i> 
-                                {advancedMode ? 'Advanced ON' : 'Advanced'}
-                            </button>
-                        </div>
-                        <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-                            <i className="fas fa-bolt"></i> {stats}
-                        </div>
-                    </div>
-                </ToolPanel>
-
-                <ToolPanel>
-                    <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                        <label className="font-medium flex items-center gap-2">
-                            <i className="fas fa-file-code text-green-500"></i>
-                            Minified Output
-                            <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">output</span>
-                        </label>
-                        <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-                            <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{outputChars}</span>
-                        </div>
-                    </div>
-                    <textarea
-                        className="w-full bg-input-readonly border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y focus:outline-none"
-                        value={output}
-                        readOnly
-                        spellCheck={false}
-                        placeholder="Minified CSS will appear here…"
-                    />
-                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={handleCopy}
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-copy"></i> Copy
-                            </button>
-                            <button
-                                onClick={loadSample}
-                                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-rotate-right"></i> Sample
-                            </button>
-                        </div>
-                    </div>
-                </ToolPanel>
-            </div>
-
-            <div className="mt-8 p-4 bg-card border border-border rounded-lg">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <i className="fas fa-lightbulb text-yellow-500"></i>
-                    Quick Tips
-                </h3>
-                <ul className="text-sm text-secondary space-y-1">
-                    <li>• Press <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Ctrl</kbd> + <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Enter</kbd> to minify quickly</li>
-                    <li>• All processing happens in your browser — no data is sent to any server</li>
-                    <li>• Minified code is optimized for production use</li>
-                    <li>• <strong>Advanced mode</strong> includes color optimization, unit removal, and more</li>
-                </ul>
-            </div>
-
-            {output && (
-                <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-                    <h4 className="font-semibold mb-2 text-primary">Minification Results</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                            <span className="text-secondary">Original Size</span>
-                            <p className="font-semibold text-primary">{inputChars} chars</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Minified Size</span>
-                            <p className="font-semibold text-primary">{outputChars} chars</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Saved</span>
-                            <p className="font-semibold text-green-500">{inputChars - outputChars} chars</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Compression</span>
-                            <p className="font-semibold text-blue-500">
-                                {inputChars > 0 ? Math.round(((inputChars - outputChars) / inputChars) * 100) : 0}%
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    )
+      <div className="tool-panel mt-4 p-4">
+        <h2 className="mb-2 text-sm font-semibold text-primary">Quick tips</h2>
+        <ul className="space-y-1 text-sm text-secondary">
+          <li>Press <kbd className="rounded border border-border px-1.5 py-0.5">Ctrl</kbd> or <kbd className="rounded border border-border px-1.5 py-0.5">⌘</kbd> + <kbd className="rounded border border-border px-1.5 py-0.5">Enter</kbd> to minify.</li>
+          <li>Processing happens in your browser; your CSS is not uploaded.</li>
+          <li>Regular comments are removed, license comments are kept, and custom property values retain their internal whitespace.</li>
+        </ul>
+      </div>
+    </div>
+  )
 }

@@ -3,7 +3,7 @@ import type { ToolDefinition } from '@/app/tools/types'
 export const tool: ToolDefinition = {
   "id": "regex-tester",
   "name": "Regex Tester",
-  "description": "Test and debug regular expressions with real-time matching and replacement.",
+  "description": "Run regex matching, replacement, and splitting in a timed browser worker.",
   "icon": "fa-solid fa-code",
   "color": "#06b6d4",
   "badge": "",

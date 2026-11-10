@@ -1,263 +1,208 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
-import { htmlToJSX, isValidHTML, sampleHTML, type HTMLToJSXOptions } from '@/app/tools/html-to-jsx/logic'
-import { useToast } from '@zyther/react-toastify'
+import { defaultHTMLToJSXOptions, htmlToJSX, sampleHTML, type HTMLToJSXOptions } from './logic'
+import { MAX_HTML_INPUT_LENGTH } from './lib/constants'
 
 export default function HTMLToJSX() {
-  const toast = useToast() 
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
-  const [inputChars, setInputChars] = useState(0)
-  const [outputChars, setOutputChars] = useState(0)
-  const [isValid, setIsValid] = useState(true)
-  const [options, setOptions] = useState<HTMLToJSXOptions>({
-    preserveComments: false,
-    preserveWhitespace: false,
-    selfClosingTags: true,
-    convertStyle: true,
-    className: 'className',
-    htmlFor: 'htmlFor',
-    inlineStyle: true,
-  })
+  const [options, setOptions] = useState<HTMLToJSXOptions>(defaultHTMLToJSXOptions)
+  const [error, setError] = useState('')
+  const [status, setStatus] = useState('Ready. Paste HTML and convert it to JSX.')
 
-  const handleConvert = () => {
+  function handleInputChange(value: string) {
+    setInput(value)
+    setOutput('')
+    setError(value.length > MAX_HTML_INPUT_LENGTH
+      ? `Input exceeds the ${MAX_HTML_INPUT_LENGTH.toLocaleString()} character limit.`
+      : '')
+    setStatus(value ? 'Input changed. Convert again to generate a fresh result.' : 'Ready. Paste HTML and convert it to JSX.')
+  }
+
+  function updateOption<K extends keyof HTMLToJSXOptions>(key: K, value: HTMLToJSXOptions[K]) {
+    setOptions(current => ({ ...current, [key]: value }))
+    setOutput('')
+    setError('')
+    setStatus('Options changed. Convert again to generate a fresh result.')
+  }
+
+  function handleConvert() {
+    setOutput('')
+    setError('')
     if (!input.trim()) {
-      toast.error('Please paste some HTML code')
+      setError('Paste HTML in the input before converting.')
+      setStatus('Input is required.')
       return
     }
-
-    if (!isValidHTML(input)) {
-      setIsValid(false)
-      toast.error('Invalid HTML format')
-      return
-    }
-
-    setIsValid(true)
-
     try {
       const result = htmlToJSX(input, options)
       setOutput(result)
-      toast.success('HTML converted to JSX!')
-    } catch (error) {
-      console.error('Conversion error:', error)
-      toast.error('Error converting HTML to JSX')
+      setStatus('Conversion completed.')
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'Could not convert this HTML to JSX.'
+      setError(message)
+      setStatus('Conversion failed. Correct the input or options and try again.')
     }
   }
 
-  const handleClear = () => {
+  function clear() {
     setInput('')
     setOutput('')
-    setInputChars(0)
-    setOutputChars(0)
-    setIsValid(true)
-    toast.success('Cleared!')
+    setError('')
+    setStatus('Cleared.')
   }
 
-  const handleCopy = async () => {
-    if (!output) {
-      toast.error('Nothing to copy')
-      return
-    }
+  function loadSample() {
+    handleInputChange(sampleHTML)
+    setStatus('Sample loaded. Convert it to see the JSX output.')
+  }
+
+  async function copyOutput() {
+    if (!output) return
     try {
       await navigator.clipboard.writeText(output)
-      toast.success('Copied to clipboard!')
-    } catch (error) {
-      console.log(error)
-      toast.error('Failed to copy')
+      setError('')
+      setStatus('JSX copied to the clipboard.')
+    } catch {
+      setError('Clipboard access was denied by this browser.')
+      setStatus('Could not copy the output.')
     }
   }
 
-  const loadSample = () => {
-    setInput(sampleHTML)
-    setOutput('')
-    setIsValid(true)
-    toast.success('Sample loaded!')
+  function downloadOutput() {
+    if (!output) return
+    const url = URL.createObjectURL(new Blob([output], { type: 'text/plain;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'converted.jsx'
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 0)
+    setError('')
+    setStatus('Download started: converted.jsx')
   }
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault()
-        handleConvert()
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [input, options])
-
-  useEffect(() => {
-    setInputChars(input.length)
-  }, [input])
-
-  useEffect(() => {
-    setOutputChars(output.length)
-  }, [output])
 
   return (
     <div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ToolPanel>
-          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-            <label className="font-medium flex items-center gap-2">
-              <i className="fas fa-file-code text-secondary"></i>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="html-to-jsx-input" className="flex items-center gap-2 font-medium">
+              <i className="fas fa-file-code text-secondary" aria-hidden="true" />
               Input HTML
-              <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">HTML</span>
+              <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-white">HTML</span>
             </label>
-            <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-              <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{inputChars}</span>
-            </div>
+            <span className="rounded-full border border-border bg-input px-3 py-1 text-sm text-secondary">
+              {input.length.toLocaleString()} / {MAX_HTML_INPUT_LENGTH.toLocaleString()} chars
+            </span>
           </div>
           <textarea
-            className="w-full bg-input border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-border-focus"
+            id="html-to-jsx-input"
+            className="min-h-72 w-full resize-y rounded-xl border border-border bg-input p-4 font-mono text-sm leading-6 text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={event => handleInputChange(event.target.value)}
+            onKeyDown={event => {
+              if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault()
+                handleConvert()
+              }
+            }}
+            aria-describedby="html-to-jsx-status"
             spellCheck={false}
-            placeholder="<!-- Paste your HTML here -->"
+            placeholder="Paste your HTML here…"
           />
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button
-              onClick={handleConvert}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-            >
-              <i className="fas fa-exchange-alt"></i> Convert
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button type="button" onClick={handleConvert} className="btn btn-primary text-sm">
+              <i className="fa-solid fa-play" aria-hidden="true" />Convert
             </button>
-            <button
-              onClick={handleClear}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-            >
-              <i className="fas fa-eraser"></i> Clear
+            <button type="button" onClick={clear} className="btn btn-outline text-sm">
+              <i className="fa-solid fa-eraser" aria-hidden="true" />Clear
             </button>
-            <button
-              onClick={loadSample}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-            >
-              <i className="fas fa-rotate-right"></i> Sample
+            <button type="button" onClick={loadSample} className="btn btn-outline text-sm">
+              <i className="fa-solid fa-rotate-right" aria-hidden="true" />Load sample
             </button>
           </div>
         </ToolPanel>
 
-        <ToolPanel>
-          <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-            <label className="font-medium flex items-center gap-2">
-              <i className="fas fa-file-code text-green-500"></i>
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="html-to-jsx-output" className="flex items-center gap-2 font-medium">
+              <i className="fas fa-file-code text-green-500" aria-hidden="true" />
               JSX Output
-              <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">JSX</span>
+              <span className="rounded-full bg-green-600 px-2 py-0.5 text-xs text-white">.jsx</span>
             </label>
-            <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-              <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{outputChars}</span>
-            </div>
+            <span className="rounded-full border border-border bg-input px-3 py-1 text-sm text-secondary">
+              {output.length.toLocaleString()} chars
+            </span>
           </div>
           <textarea
-            className="w-full bg-input-readonly border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y focus:outline-none"
+            id="html-to-jsx-output"
+            className="min-h-72 w-full resize-y rounded-xl border border-border bg-input-readonly p-4 font-mono text-sm leading-6 text-primary focus:outline-none"
             value={output}
             readOnly
             spellCheck={false}
-            placeholder="JSX will appear here…"
+            placeholder="JSX output will appear here…"
           />
-          <button
-            onClick={handleCopy}
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-          >
-            <i className="fas fa-copy"></i> Copy
-          </button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button type="button" onClick={copyOutput} disabled={!output} className="btn btn-outline text-sm disabled:cursor-not-allowed disabled:opacity-40">
+              <i className="fa-solid fa-copy" aria-hidden="true" />Copy
+            </button>
+            <button type="button" onClick={downloadOutput} disabled={!output} className="btn btn-outline text-sm disabled:cursor-not-allowed disabled:opacity-40">
+              <i className="fa-solid fa-download" aria-hidden="true" />Download .jsx
+            </button>
+          </div>
         </ToolPanel>
       </div>
 
-      <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-        <h3 className="font-semibold mb-3 text-primary flex items-center gap-2">
-          <i className="fas fa-sliders-h text-secondary"></i>
-          Conversion Options
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="preserveComments"
-              checked={options.preserveComments}
-              onChange={(e) => setOptions({ ...options, preserveComments: e.target.checked })}
-              className="w-4 h-4 accent-primary"
-            />
-            <label htmlFor="preserveComments" className="text-sm text-secondary">Preserve comments</label>
-          </div>
+      <p id="html-to-jsx-status" role={error ? 'alert' : 'status'} aria-live={error ? 'assertive' : 'polite'} className={`mt-3 min-h-6 text-sm ${error ? 'text-red-600 dark:text-red-300' : 'text-secondary'}`}>
+        {error || status}
+      </p>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="preserveWhitespace"
-              checked={options.preserveWhitespace}
-              onChange={(e) => setOptions({ ...options, preserveWhitespace: e.target.checked })}
-              className="w-4 h-4 accent-primary"
-            />
-            <label htmlFor="preserveWhitespace" className="text-sm text-secondary">Preserve whitespace</label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="selfClosingTags"
-              checked={options.selfClosingTags}
-              onChange={(e) => setOptions({ ...options, selfClosingTags: e.target.checked })}
-              className="w-4 h-4 accent-primary"
-            />
-            <label htmlFor="selfClosingTags" className="text-sm text-secondary">Self-closing tags</label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="convertStyle"
-              checked={options.convertStyle}
-              onChange={(e) => setOptions({ ...options, convertStyle: e.target.checked })}
-              className="w-4 h-4 accent-primary"
-            />
-            <label htmlFor="convertStyle" className="text-sm text-secondary">Convert style to object</label>
-          </div>
-
-          <div>
-            <label className="text-sm text-secondary block mb-1">className</label>
-            <select
-              value={options.className}
-              onChange={(e) => setOptions({ ...options, className: e.target.value as 'class' | 'className' })}
-              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-primary text-sm focus:outline-none focus:ring-2 focus:ring-border-focus"
-            >
+      <section className="tool-panel mt-4 p-4" aria-labelledby="html-to-jsx-options-heading">
+        <h2 id="html-to-jsx-options-heading" className="mb-3 font-semibold text-primary">
+          <i className="fas fa-sliders-h mr-2 text-secondary" aria-hidden="true" />Conversion options
+        </h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="flex items-center gap-2 text-sm text-secondary">
+            <input type="checkbox" checked={options.preserveComments} onChange={event => updateOption('preserveComments', event.target.checked)} className="h-4 w-4 accent-primary" />
+            Preserve comments
+          </label>
+          <label className="flex items-center gap-2 text-sm text-secondary">
+            <input type="checkbox" checked={options.preserveWhitespace} onChange={event => updateOption('preserveWhitespace', event.target.checked)} className="h-4 w-4 accent-primary" />
+            Preserve whitespace
+          </label>
+          <label className="flex items-center gap-2 text-sm text-secondary">
+            <input type="checkbox" checked={options.selfClosingTags} onChange={event => updateOption('selfClosingTags', event.target.checked)} className="h-4 w-4 accent-primary" />
+            Self-close empty tags
+          </label>
+          <label className="flex items-center gap-2 text-sm text-secondary">
+            <input type="checkbox" checked={options.convertStyle} onChange={event => updateOption('convertStyle', event.target.checked)} className="h-4 w-4 accent-primary" />
+            Convert inline styles
+          </label>
+          <label className="text-sm text-secondary">
+            class attribute
+            <select value={options.className} onChange={event => updateOption('className', event.target.value as 'class' | 'className')} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2 text-primary focus:outline-none focus:ring-2 focus:ring-border-focus">
               <option value="className">className</option>
               <option value="class">class</option>
             </select>
-          </div>
-
-          <div>
-            <label className="text-sm text-secondary block mb-1">htmlFor</label>
-            <select
-              value={options.htmlFor}
-              onChange={(e) => setOptions({ ...options, htmlFor: e.target.value as 'for' | 'htmlFor' })}
-              className="w-full bg-input border border-border rounded-lg px-3 py-2 text-primary text-sm focus:outline-none focus:ring-2 focus:ring-border-focus"
-            >
+          </label>
+          <label className="text-sm text-secondary">
+            for attribute
+            <select value={options.htmlFor} onChange={event => updateOption('htmlFor', event.target.value as 'for' | 'htmlFor')} className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-2 text-primary focus:outline-none focus:ring-2 focus:ring-border-focus">
               <option value="htmlFor">htmlFor</option>
               <option value="for">for</option>
             </select>
-          </div>
+          </label>
         </div>
-      </div>
+      </section>
 
-      <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-        <h3 className="font-semibold mb-2 flex items-center gap-2">
-          <i className="fas fa-lightbulb text-yellow-500"></i>
-          Quick Tips
-        </h3>
-        <ul className="text-sm text-secondary space-y-1">
-          <li>• Press <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Ctrl</kbd> + <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Enter</kbd> to convert quickly</li>
-          <li>• Supports standard HTML attributes mapping to JSX</li>
-          <li>• Inline styles are converted to JavaScript objects</li>
-          <li>• Boolean attributes are handled correctly</li>
-          <li>• All processing happens in your browser</li>
-        </ul>
-      </div>
+      <p className="mt-4 text-sm text-secondary">
+        Conversion runs locally in your browser. This converter applies targeted attribute filtering; it is not a security sanitizer.
+        Press <kbd className="rounded border border-border bg-input px-1.5 py-0.5 text-xs">Ctrl</kbd> + <kbd className="rounded border border-border bg-input px-1.5 py-0.5 text-xs">Enter</kbd> to convert.
+      </p>
     </div>
   )
 }

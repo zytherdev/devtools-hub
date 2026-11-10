@@ -1,314 +1,188 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ToolPanel } from '@/app/components/ToolPanel'
-import { minifyHTML, minifyHTML2 } from './logic'
+import { tool } from './definition'
+import { MAX_INPUT_LENGTH, run } from './logic'
+
+type Feedback = { kind: 'success' | 'error' | 'info'; message: string } | null
 
 export default function HTMLMinifier() {
-    const [input, setInput] = useState('')
-    const [output, setOutput] = useState('')
-    const [inputChars, setInputChars] = useState(0)
-    const [outputChars, setOutputChars] = useState(0)
-    const [stats, setStats] = useState('⚡ ready')
-    const [advancedMode, setAdvancedMode] = useState(false)
+  const [input, setInput] = useState('')
+  const [output, setOutput] = useState('')
+  const [feedback, setFeedback] = useState<Feedback>(null)
 
-    const sampleCode = `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>My Awesome Page</title>
-        <style>
-            /* Main styles */
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background: #f5f5f5;
-            }
-            
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                background: white;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            
-            h1 {
-                color: #333;
-                margin-bottom: 20px;
-            }
-            
-            .btn {
-                display: inline-block;
-                padding: 10px 20px;
-                background: #007bff;
-                color: white;
-                text-decoration: none;
-                border-radius: 4px;
-                transition: background 0.3s;
-            }
-            
-            .btn:hover {
-                background: #0056b3;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <!-- Main header -->
-            <h1>Welcome to My Page</h1>
-            
-            <!-- Content section -->
-            <p>This is a sample page with some content.</p>
-            <p>It includes various HTML elements and styles.</p>
-            
-            <!-- Button -->
-            <a href="#" class="btn">Click Me</a>
-            
-            <!-- List -->
-            <ul>
-                <li>Item 1</li>
-                <li>Item 2</li>
-                <li>Item 3</li>
-            </ul>
-            
-            <!-- Script -->
-            <script>
-                // Console log example
-                console.log('Hello, World!');
-                
-                // Function example
-                function greet(name) {
-                    alert('Hello, ' + name + '!');
-                }
-                
-                // Call the function
-                greet('User');
-            </script>
-        </div>
-    </body>
-    </html>`
-
-    const handleMinify = () => {
-        if (!input.trim()) {
-            alert('Please paste some HTML code to minify')
-            return
-        }
-
-        try {
-            const result = advancedMode ? minifyHTML2(input) : minifyHTML(input)
-            setOutput(result)
-
-            const saved = input.length - result.length
-            const percent = input.length > 0 ? Math.round((saved / input.length) * 100) : 0
-            setStats(`⬇ saved ${saved} chars · ${percent}% smaller`)
-
-            if (result.length === 0) {
-                alert('Minification produced empty output')
-            } else {
-                alert('HTML minified successfully!')
-            }
-        } catch (error) {
-            console.error('Minification error:', error)
-            alert('Error minifying HTML. Please check your code.')
-        }
+  const handleMinify = () => {
+    setOutput('')
+    if (!input.trim()) {
+      setFeedback({ kind: 'error', message: 'Paste HTML to minify.' })
+      return
     }
 
-    const handleClear = () => {
-        setInput('')
-        setOutput('')
-        setStats('⚡ ready')
-        setInputChars(0)
-        setOutputChars(0)
-        alert('Cleared!')
+    try {
+      const result = run(input, {})
+      setOutput(result)
+      setFeedback({ kind: 'success', message: 'HTML minified. Review the output before using it.' })
+    } catch (error) {
+      setFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Could not minify this HTML input.',
+      })
+    }
+  }
+
+  const handleInputChange = (value: string) => {
+    setInput(value)
+    setOutput('')
+    setFeedback(null)
+  }
+
+  const handleClear = () => {
+    setInput('')
+    setOutput('')
+    setFeedback({ kind: 'info', message: 'Input and output cleared.' })
+  }
+
+  const loadSample = () => {
+    setInput(tool.exampleInput)
+    setOutput('')
+    setFeedback({ kind: 'info', message: 'Sample loaded. Minify it to create fresh output.' })
+  }
+
+  const handleCopy = async () => {
+    if (!output) {
+      setFeedback({ kind: 'error', message: 'Minify HTML before copying the output.' })
+      return
     }
 
-    const handleCopy = async () => {
-        if (!output) {
-            alert('Nothing to copy')
-            return
-        }
-
-        try {
-            await navigator.clipboard.writeText(output)
-            alert('Copied to clipboard!')
-        } catch (error) {
-            console.error('Copy error:', error)
-            const textarea = document.createElement('textarea')
-            textarea.value = output
-            document.body.appendChild(textarea)
-            textarea.select()
-            document.execCommand('copy')
-            document.body.removeChild(textarea)
-            alert('Copied!')
-        }
+    try {
+      await navigator.clipboard.writeText(output)
+      setFeedback({ kind: 'success', message: 'Minified HTML copied to the clipboard.' })
+    } catch {
+      setFeedback({ kind: 'error', message: 'Clipboard access is unavailable. Select and copy the output manually.' })
     }
+  }
 
-    const loadSample = () => {
-        setInput(sampleCode)
-        setOutput('')
-        setStats('⚡ ready')
-        alert('Sample loaded!')
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault()
+      handleMinify()
     }
+  }
 
-    // Ctrl+Enter
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault()
-                handleMinify()
-            }
-        }
+  const savedCharacters = input.length - output.length
+  const compression = input.length ? Math.round((savedCharacters / input.length) * 100) : 0
+  const sizeSummary = savedCharacters >= 0
+    ? `${savedCharacters} characters saved · ${compression}% smaller`
+    : `${Math.abs(savedCharacters)} characters added · ${Math.abs(compression)}% larger`
 
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [input, advancedMode])
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="html-minifier-input" className="flex items-center gap-2 font-medium">
+              <i aria-hidden="true" className="fas fa-file-code text-secondary" />
+              HTML input
+              <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-white">HTML</span>
+            </label>
+            <span id="html-minifier-input-count" className="text-sm text-secondary">
+              {input.length.toLocaleString()} / {MAX_INPUT_LENGTH.toLocaleString()} characters
+            </span>
+          </div>
+          <textarea
+            id="html-minifier-input"
+            aria-describedby="html-minifier-input-count html-minifier-shortcut"
+            className="min-h-85 w-full resize-y rounded-lg border border-border bg-input p-4 font-mono text-sm text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
+            value={input}
+            maxLength={MAX_INPUT_LENGTH}
+            onChange={(event) => handleInputChange(event.target.value)}
+            onKeyDown={handleInputKeyDown}
+            spellCheck={false}
+            placeholder="<!-- Paste your HTML here -->"
+          />
+          <p id="html-minifier-shortcut" className="mt-2 text-xs text-secondary">
+            Press Ctrl+Enter (or ⌘+Enter) to minify. Input stays in this browser.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleMinify}
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+            >
+              <i aria-hidden="true" className="fas fa-bolt" /> Minify
+            </button>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition hover:bg-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+            >
+              <i aria-hidden="true" className="fas fa-eraser" /> Clear
+            </button>
+            <button
+              type="button"
+              onClick={loadSample}
+              className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition hover:bg-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+            >
+              <i aria-hidden="true" className="fas fa-rotate-right" /> Load sample
+            </button>
+          </div>
+        </ToolPanel>
 
-    useEffect(() => {
-        setInputChars(input.length)
-    }, [input])
+        <ToolPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="html-minifier-output" className="flex items-center gap-2 font-medium">
+              <i aria-hidden="true" className="fas fa-file-code text-green-500" />
+              Minified output
+              <span className="rounded-full bg-green-600 px-2 py-0.5 text-xs text-white">HTML</span>
+            </label>
+            <span className="text-sm text-secondary">
+              {output.length.toLocaleString()} characters
+            </span>
+          </div>
+          <textarea
+            id="html-minifier-output"
+            aria-label="Minified HTML output"
+            className="min-h-85 w-full resize-y rounded-lg border border-border bg-input-readonly p-4 font-mono text-sm text-primary focus:outline-none focus:ring-2 focus:ring-border-focus"
+            value={output}
+            readOnly
+            spellCheck={false}
+            placeholder="Minified HTML appears here after processing."
+          />
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={handleCopy}
+              disabled={!output}
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus"
+            >
+              <i aria-hidden="true" className="fas fa-copy" /> Copy output
+            </button>
+            {output && <span className="text-sm text-secondary">{sizeSummary}</span>}
+          </div>
+        </ToolPanel>
+      </div>
 
-    useEffect(() => {
-        setOutputChars(output.length)
-    }, [output])
+      <p
+        role={feedback?.kind === 'error' ? 'alert' : 'status'}
+        aria-live={feedback?.kind === 'error' ? 'assertive' : 'polite'}
+        aria-atomic="true"
+        className={`min-h-6 text-sm ${feedback?.kind === 'error' ? 'text-red-600 dark:text-red-300' : feedback?.kind === 'success' ? 'text-green-700 dark:text-green-300' : 'text-secondary'}`}
+      >
+        {feedback?.message ?? ''}
+      </p>
 
-    return (
-        <div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ToolPanel>
-                    <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                        <label className="font-medium flex items-center gap-2">
-                            <i className="fas fa-file-code text-secondary"></i>
-                            Input HTML
-                            <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">HTML</span>
-                        </label>
-                        <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-                            <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{inputChars}</span>
-                        </div>
-                    </div>
-                    <textarea
-                        className="w-full bg-input border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-border-focus"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        spellCheck={false}
-                        placeholder="<!-- Paste your HTML here -->"
-                    />
-                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={handleMinify}
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-bolt"></i> Minify
-                            </button>
-                            <button
-                                onClick={handleClear}
-                                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-eraser"></i> Clear
-                            </button>
-                            <button
-                                onClick={() => setAdvancedMode(!advancedMode)}
-                                className={`
-                                    px-4 py-2 border rounded-lg transition flex items-center gap-2
-                                    ${advancedMode 
-                                        ? 'bg-primary text-white border-primary' 
-                                        : 'border-border hover:bg-hover'
-                                    }
-                                `}
-                            >
-                                <i className="fas fa-star"></i> 
-                                {advancedMode ? 'Advanced ON' : 'Advanced'}
-                            </button>
-                        </div>
-                        <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-                            <i className="fas fa-bolt"></i> {stats}
-                        </div>
-                    </div>
-                </ToolPanel>
-
-                <ToolPanel>
-                    <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                        <label className="font-medium flex items-center gap-2">
-                            <i className="fas fa-file-code text-green-500"></i>
-                            Minified Output
-                            <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">output</span>
-                        </label>
-                        <div className="text-sm text-secondary bg-input px-3 py-1 rounded-full border border-border">
-                            <i className="fas fa-characters"></i> chars <span className="font-semibold text-primary">{outputChars}</span>
-                        </div>
-                    </div>
-                    <textarea
-                        className="w-full bg-input-readonly border border-border rounded-lg p-4 text-primary min-h-85 font-mono text-sm resize-y focus:outline-none"
-                        value={output}
-                        readOnly
-                        spellCheck={false}
-                        placeholder="Minified HTML will appear here…"
-                    />
-                    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-                        <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={handleCopy}
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-copy"></i> Copy
-                            </button>
-                            <button
-                                onClick={loadSample}
-                                className="px-4 py-2 border border-border rounded-lg hover:bg-hover transition flex items-center gap-2"
-                            >
-                                <i className="fas fa-rotate-right"></i> Sample
-                            </button>
-                        </div>
-                    </div>
-                </ToolPanel>
-            </div>
-
-            <div className="mt-8 p-4 bg-card border border-border rounded-lg">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <i className="fas fa-lightbulb text-yellow-500"></i>
-                    Quick Tips
-                </h3>
-                <ul className="text-sm text-secondary space-y-1">
-                    <li>• Press <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Ctrl</kbd> + <kbd className="px-2 py-0.5 bg-input border border-border rounded text-xs">Enter</kbd> to minify quickly</li>
-                    <li>• All processing happens in your browser — no data is sent to any server</li>
-                    <li>• Minified code is optimized for production use</li>
-                    <li>• <strong>Advanced mode</strong> removes more attributes and optimizes scripts/styles</li>
-                    <li>• Preserves conditional comments for IE compatibility</li>
-                </ul>
-            </div>
-
-            {output && (
-                <div className="mt-6 p-4 bg-card border border-border rounded-lg">
-                    <h4 className="font-semibold mb-2 text-primary">Minification Results</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                            <span className="text-secondary">Original Size</span>
-                            <p className="font-semibold text-primary">{inputChars} chars</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Minified Size</span>
-                            <p className="font-semibold text-primary">{outputChars} chars</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Saved</span>
-                            <p className="font-semibold text-green-500">{inputChars - outputChars} chars</p>
-                        </div>
-                        <div>
-                            <span className="text-secondary">Compression</span>
-                            <p className="font-semibold text-blue-500">
-                                {inputChars > 0 ? Math.round(((inputChars - outputChars) / inputChars) * 100) : 0}%
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    )
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-2 flex items-center gap-2 font-semibold">
+          <i aria-hidden="true" className="fas fa-lightbulb text-yellow-500" /> How it works
+        </h2>
+        <ul className="space-y-1 text-sm text-secondary">
+          <li>Processing is local; no HTML is sent to a provider.</li>
+          <li>Ordinary comments and safe whitespace are compressed; conditional, SSI, and license comments are kept.</li>
+          <li>Script, style, textarea, and pre contents are preserved, including whitespace and comment-like text.</li>
+          <li>Input is limited to {MAX_INPUT_LENGTH.toLocaleString()} characters. The scanner does not repair or validate HTML.</li>
+        </ul>
+      </div>
+    </div>
+  )
 }

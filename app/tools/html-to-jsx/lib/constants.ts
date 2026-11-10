@@ -1,3 +1,7 @@
+export const MAX_HTML_INPUT_LENGTH = 100_000
+export const MAX_HTML_DEPTH = 100
+export const MAX_JSX_OUTPUT_LENGTH = 1_000_000
+
 export const VOID_ELEMENTS = new Set([
   'area',
   'base',
@@ -46,42 +50,33 @@ export const BOOLEAN_ATTRIBUTES = new Set([
 export const ATTRIBUTE_MAPPINGS: Record<string, string> = {
   class: 'className',
   for: 'htmlFor',
-
+  formaction: 'formAction',
+  'xlink:href': 'xlinkHref',
   tabindex: 'tabIndex',
   readonly: 'readOnly',
   maxlength: 'maxLength',
   minlength: 'minLength',
-
   colspan: 'colSpan',
   rowspan: 'rowSpan',
-
   usemap: 'useMap',
   frameborder: 'frameBorder',
-
   contenteditable: 'contentEditable',
   spellcheck: 'spellCheck',
-
   autofocus: 'autoFocus',
   autocomplete: 'autoComplete',
   autocorrect: 'autoCorrect',
   autocapitalize: 'autoCapitalize',
-
   defaultchecked: 'defaultChecked',
   defaultvalue: 'defaultValue',
-
   srcdoc: 'srcDoc',
   srcset: 'srcSet',
-
   crossorigin: 'crossOrigin',
   allowfullscreen: 'allowFullScreen',
   allowpaymentrequest: 'allowPaymentRequest',
-
   referrerpolicy: 'referrerPolicy',
   fetchpriority: 'fetchPriority',
-
   playsinline: 'playsInline',
   formnovalidate: 'formNoValidate',
-
   // SVG
   viewbox: 'viewBox',
   preserveaspectratio: 'preserveAspectRatio',
