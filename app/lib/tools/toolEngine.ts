@@ -1,5 +1,6 @@
 import YAML from 'yaml'
-import { runDataTool } from './dataTools'
+import { DATA_TOOL_SLUGS, runDataTool } from './dataTools'
+import { transformBase64 } from './base64'
 
 export type ToolOptions = Record<string, string>
 
@@ -87,34 +88,45 @@ function sortObjectKeys(value: unknown): unknown {
   return value
 }
 
-export async function runTool(slug: string, input: string, options: ToolOptions = {}): Promise<string> {
-  if (slug === 'html-beautifier') {
+type ToolHandler = (input: string, options: ToolOptions) => string | Promise<string>
+
+const directToolHandlers: Record<string, ToolHandler> = {
+  'base64-encoder': (input, options) => transformBase64(input, options),
+  'html-beautifier': input => {
     if (!input.trim()) throw new Error('Paste HTML markup to format.')
     return beautifyMarkup(input)
-  }
-  if (slug === 'markdown-to-html') {
+  },
+  'markdown-to-html': input => {
     if (!input.trim()) throw new Error('Paste Markdown to convert.')
     return markdownToHtml(input)
-  }
-  if (slug === 'favicon-generator') {
+  },
+  'favicon-generator': (input, options) => {
     const label = [...(input.trim() || 'D')].slice(0, 3).join('')
-    const foreground = /^#[\da-f]{3,8}$/i.test(options.foreground || '') ? options.foreground : '#ffffff'
-    const background = /^#[\da-f]{3,8}$/i.test(options.background || '') ? options.background : '#347a58'
+    const isHexColor = (value: string | undefined) => Boolean(value && /^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.test(value))
+    const foreground = isHexColor(options.foreground) ? options.foreground : '#ffffff'
+    const background = isHexColor(options.background) ? options.background : '#347a58'
     const shape = options.shape === 'circle' ? `<circle cx="128" cy="128" r="120" fill="${background}"/>` : `<rect width="256" height="256" rx="48" fill="${background}"/>`
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><title>${escapeHtml(label)} favicon</title>${shape}<text x="128" y="145" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="${label.length > 2 ? 88 : 118}" font-weight="700" fill="${foreground}">${escapeHtml(label)}</text></svg>`
-  }
-  if (slug === 'xml-formatter') {
+  },
+  'xml-formatter': input => {
     if (!input.trim()) throw new Error('Paste XML data to format.')
     return formatXml(input)
-  }
-  if (slug === 'yaml-formatter') {
+  },
+  'yaml-formatter': (input, options) => {
     if (!input.trim()) throw new Error('Paste YAML data to format.')
     const document = YAML.parseDocument(input, { uniqueKeys: true })
     if (document.errors.length) throw new Error(document.errors.map(error => error.message).join('\n'))
     const value = document.toJS()
     return YAML.stringify(options.sortKeys === 'true' ? sortObjectKeys(value) : value, { indent: Number(options.indent) || 2, lineWidth: 0 })
-  }
+  },
+}
+
+export const genericToolSlugs = [...Object.keys(directToolHandlers), ...DATA_TOOL_SLUGS]
+
+export async function runTool(slug: string, input: string, options: ToolOptions = {}): Promise<string> {
+  const directHandler = directToolHandlers[slug]
+  if (directHandler) return directHandler(input, options)
   const dataResult = await runDataTool(slug, input, options)
   if (dataResult !== null) return dataResult
-  throw new Error('This tool is scheduled for a later implementation batch.')
+  throw new Error('This catalog entry is pending implementation. See docs/tool-coverage.md for current status.')
 }

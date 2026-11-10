@@ -1,5 +1,22 @@
+export type ToolDefinition = {
+  id: string
+  name: string
+  description: string
+  icon: string
+  color: string
+  badge: string
+  href: string
+}
 
-export const cssTools = [
+export type ToolCategory = {
+  id: string
+  name: string
+  icon: string
+  color: string
+  tools: ToolDefinition[]
+}
+
+export const cssTools: ToolDefinition[] = [
   {
     id: 'css-minifier',
     name: 'CSS Minifier',
@@ -47,7 +64,7 @@ export const cssTools = [
   },
 ]
 
-export const jsTools = [
+export const jsTools: ToolDefinition[] = [
   {
     id: 'js-minifier',
     name: 'JavaScript Minifier',
@@ -86,7 +103,7 @@ export const jsTools = [
   },
 ]
 
-export const htmlTools = [
+export const htmlTools: ToolDefinition[] = [
   {
     id: 'html-minifier',
     name: 'HTML Minifier',
@@ -125,7 +142,7 @@ export const htmlTools = [
   },
 ]
 
-export const dataTools = [
+export const dataTools: ToolDefinition[] = [
   {
     id: 'json-formatter',
     name: 'JSON Formatter',
@@ -236,7 +253,7 @@ export const dataTools = [
   },
 ]
 
-export const encoderTools = [
+export const encoderTools: ToolDefinition[] = [
   {
     id: 'base64-encoder',
     name: 'Base64 Encoder/Decoder',
@@ -311,7 +328,7 @@ export const encoderTools = [
   },
 ]
 
-export const generatorTools = [
+export const generatorTools: ToolDefinition[] = [
   {
     id: 'uuid-generator',
     name: 'UUID Generator',
@@ -404,7 +421,7 @@ export const generatorTools = [
   },
 ]
 
-export const textTools = [
+export const textTools: ToolDefinition[] = [
   {
     id: 'regex-tester',
     name: 'Regex Tester',
@@ -488,7 +505,7 @@ export const textTools = [
   },
 ]
 
-export const converterTools = [
+export const converterTools: ToolDefinition[] = [
   {
     id: 'color-converter',
     name: 'Color Converter',
@@ -526,7 +543,7 @@ export const converterTools = [
     href: '/number-base-converter',
   },
   {
-    id: 'currenct-converter',
+    id: 'currency-converter',
     name: 'Currency Converter',
     description: 'Convert between currencies with real-time exchange rates.',
     icon: 'fa-solid fa-dollar-sign',
@@ -554,7 +571,7 @@ export const converterTools = [
   },
 ]
 
-export const databaseTools = [
+export const databaseTools: ToolDefinition[] = [
   {
     id: 'sql-formatter',
     name: 'SQL Formatter',
@@ -602,7 +619,7 @@ export const databaseTools = [
   },
 ]
 
-export const securityTools = [
+export const securityTools: ToolDefinition[] = [
   {
     id: 'ssl-checker',
     name: 'SSL Checker',
@@ -695,7 +712,7 @@ export const securityTools = [
   },
 ]
 
-export const dateTools = [
+export const dateTools: ToolDefinition[] = [
   {
     id: 'cron-validator',
     name: 'Cron Validator',
@@ -743,7 +760,7 @@ export const dateTools = [
   },
 ]
 
-export const networkTools = [
+export const networkTools: ToolDefinition[] = [
   {
     id: 'ip-lookup',
     name: 'IP Lookup',
@@ -773,7 +790,7 @@ export const networkTools = [
   },
 ]
 
-export const miscTools = [
+export const miscTools: ToolDefinition[] = [
   {
     id: 'http-status-codes',
     name: 'HTTP Status Codes',
@@ -812,28 +829,7 @@ export const miscTools = [
   },
 ]
 
-export const colorTools = [
-  {
-    id: 'color-converter',
-    name: 'Color Converter',
-    description: 'Convert between HEX, RGB, HSL, and more. Preview colors in real-time.',
-    icon: 'fa-solid fa-palette',
-    color: '#ec4899',
-    badge: '',
-    href: '/color-converter',
-  },
-  {
-    id: 'gradient-generator',
-    name: 'Gradient Generator',
-    description: 'Create beautiful CSS gradients with multiple stops. Preview and copy the code instantly.',
-    icon: 'fa-solid fa-fill-drip',
-    color: '#8b5cf6',
-    badge: '',
-    href: '/gradient-generator',
-  },
-]
-
-export const allTools = [
+export const allTools: ToolDefinition[] = [
   ...cssTools,
   ...jsTools,
   ...htmlTools,
@@ -849,63 +845,66 @@ export const allTools = [
   ...miscTools,
 ]
 
-export const categories = [
+export const colorTools = allTools.filter(tool => tool.id === 'color-converter' || tool.id === 'gradient-generator')
+
+export const categories: ToolCategory[] = [
   { id: 'css', name: 'CSS & Style', icon: 'fa-brands fa-css3-alt', color: '#3b82f6', tools: cssTools },
-  { id: 'js', name: 'JavaScript', icon: 'fa-brands fa-js',color: '#f97316' ,tools: jsTools },
-  { id: 'html', name: 'HTML & Markup', icon: 'fa-brands fa-html5', color:'#ea580c', tools: htmlTools },
+  { id: 'js', name: 'JavaScript', icon: 'fa-brands fa-js', color: '#f97316', tools: jsTools },
+  { id: 'html', name: 'HTML & Markup', icon: 'fa-brands fa-html5', color: '#ea580c', tools: htmlTools },
   { id: 'data', name: 'JSON, YAML, XML, CSV', icon: 'fa-solid fa-file', color: '#22c55e', tools: dataTools },
-  { id: 'encoder', name: 'Encoders & Decoders', icon: 'fa-solid fa-lock', color: '#ef4444',tools: encoderTools },
-  { id: 'generator', name: 'Generators', icon: 'fa-solid fa-wand-magic-sparkles', color: '#eb78de',tools: generatorTools },
-  { id: 'text', name: 'Text & String', icon: 'fa-solid fa-font', color: '#4c8f7',tools: textTools },
-  { id: 'converter', name: 'Converters', icon: 'fa-solid fa-arrows-rotate', color: '#9bd5ed',tools: converterTools },
-  { id: 'database', name: 'Database & DevOps', icon: 'fa-solid fa-database', color: '#75aaf5',tools: databaseTools },
-  { id: 'security', name: 'Security & Crypto', icon: 'fa-solid fa-shield-halved', color: '#fbbf24',tools: securityTools },
-  { id: 'date', name: 'Date & Time', icon: 'fa-solid fa-clock', color: '#55e5',tools: dateTools },
-  { id: 'network', name: 'Network & Lookup', icon: 'fa-solid fa-network-wired', color: '#6afde',tools: networkTools },
-  { id: 'misc', name: 'Miscellaneous', icon: 'fa-solid fa-ellipsis-h', color: '#7d7d7d',tools: miscTools },
+  { id: 'encoder', name: 'Encoders & Decoders', icon: 'fa-solid fa-lock', color: '#ef4444', tools: encoderTools },
+  { id: 'generator', name: 'Generators', icon: 'fa-solid fa-wand-magic-sparkles', color: '#eb78de', tools: generatorTools },
+  { id: 'text', name: 'Text & String', icon: 'fa-solid fa-font', color: '#14b8a6', tools: textTools },
+  { id: 'converter', name: 'Converters', icon: 'fa-solid fa-arrows-rotate', color: '#9bd5ed', tools: converterTools },
+  { id: 'database', name: 'Database & DevOps', icon: 'fa-solid fa-database', color: '#75aaf5', tools: databaseTools },
+  { id: 'security', name: 'Security & Crypto', icon: 'fa-solid fa-shield-halved', color: '#fbbf24', tools: securityTools },
+  { id: 'date', name: 'Date & Time', icon: 'fa-solid fa-clock', color: '#f59e0b', tools: dateTools },
+  { id: 'network', name: 'Network & Lookup', icon: 'fa-solid fa-network-wired', color: '#06b6d4', tools: networkTools },
+  { id: 'misc', name: 'Miscellaneous', icon: 'fa-solid fa-ellipsis-h', color: '#7d7d7d', tools: miscTools },
 ]
 
-export const quickTools = [
-  { 
-    name: 'CSS Minifier', 
-    href: '/css-minifier', 
-    icon: 'fa-brands fa-css3-alt', 
-    color: '#3b82f6',
-    description: 'Compress CSS'
-  },
-  { 
-    name: 'JS Minifier', 
-    href: '/js-minifier', 
-    icon: 'fa-brands fa-js', 
-    color: '#fbbf24',
-    description: 'Minify JS'
-  },
-  { 
-    name: 'HTML Minifier', 
-    href: '/html-minifier', 
-    icon: 'fa-brands fa-html5', 
-    color: '#f97316',
-    description: 'Compress HTML'
-  },
-  { 
-    name: 'JSON Formatter', 
-    href: '/json-formatter', 
-    icon: 'fa-solid fa-file', 
-    color: '#8b5cf6',
-    description: 'Format JSON'
-  },
-  { 
-    name: 'Color Converter', 
-    href: '/color-converter', 
-    icon: 'fa-solid fa-palette', 
-    color: '#ec4899',
-    description: 'Convert Colors'
-  },
-  { 
-    name: 'Regex Tester', 
-    href: '/regex-tester', 
-    icon: 'fa-solid fa-code', 
-    color: '#06b6d4',
-    description: 'Test Regex'
-  },
+const quickToolIds = [
+  'css-minifier',
+  'js-minifier',
+  'html-minifier',
+  'json-formatter',
+  'color-converter',
+  'regex-tester',
 ]
+
+export const quickTools: ToolDefinition[] = quickToolIds
+  .map(id => allTools.find(tool => tool.id === id))
+  .filter((tool): tool is ToolDefinition => tool !== undefined)
+
+export function getToolCatalogIssues(): string[] {
+  const issues: string[] = []
+  const ids = new Set<string>()
+  const hrefs = new Set<string>()
+
+  for (const tool of allTools) {
+    const slug = tool.href.replace(/^\//, '')
+    if (ids.has(tool.id)) issues.push(`Duplicate tool id: ${tool.id}`)
+    if (hrefs.has(tool.href)) issues.push(`Duplicate tool href: ${tool.href}`)
+    if (tool.id !== slug) issues.push(`Tool id and route slug differ: ${tool.id} -> ${tool.href}`)
+    if (!slug || slug.includes('/')) issues.push(`Invalid tool route: ${tool.href}`)
+    ids.add(tool.id)
+    hrefs.add(tool.href)
+  }
+
+  const categoryIds = new Set<string>()
+  const categorizedIds = new Set<string>()
+  for (const category of categories) {
+    if (categoryIds.has(category.id)) issues.push(`Duplicate category id: ${category.id}`)
+    categoryIds.add(category.id)
+    for (const tool of category.tools) {
+      if (categorizedIds.has(tool.id)) issues.push(`Tool appears in multiple categories: ${tool.id}`)
+      categorizedIds.add(tool.id)
+      if (!ids.has(tool.id)) issues.push(`Category references unknown tool: ${tool.id}`)
+    }
+  }
+  for (const tool of allTools) {
+    if (!categorizedIds.has(tool.id)) issues.push(`Tool is missing from categories: ${tool.id}`)
+  }
+
+  return issues
+}

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { allTools } from '@/app/lib/utils/tools'
 import { UniversalTool } from '@/app/components/UniversalTool'
+import { PageIntro } from '@/app/components/PageIntro'
 
 const specializedTools = {
   'box-shadow-generator': dynamic(() => import('@/app/components/tools/box-shadow-generator')),
@@ -41,16 +42,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
         <i className="fa-solid fa-chevron-right text-[9px]" aria-hidden="true" />
         <span className="text-primary">{tool.name}</span>
       </div>
-      <header className="mb-8">
-        <div className="mb-3 flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-xl" style={{ color: tool.color, backgroundColor: `${tool.color}18` }}>
-            <i className={`${tool.icon} text-lg`} aria-hidden="true" />
-          </span>
-          <span className="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-secondary">Developer tool</span>
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-primary sm:text-4xl">{tool.name}</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-secondary sm:text-base">{tool.description}</p>
-      </header>
+      <PageIntro title={tool.name} description={tool.description} icon={tool.icon} color={tool.color} />
       {SpecializedTool
         ? <SpecializedTool />
         : <UniversalTool tool={tool} slug={slug} />}

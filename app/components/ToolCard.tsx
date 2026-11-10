@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import type { ToolDefinition } from '../lib/utils/tools'
 
-interface ToolCardProps { id: string; name: string; description: string; icon: string; color: string; badge?: string; href: string; viewMode?: 'grid' | 'list' }
+type ToolCardProps = ToolDefinition & { viewMode?: 'grid' | 'list' }
 
 export function ToolCard({ name, description, icon, color, badge, href, viewMode = 'grid' }: ToolCardProps) {
   if (viewMode === 'list') return <Link href={href} className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition hover:border-[#347a58]/50 hover:shadow-md">

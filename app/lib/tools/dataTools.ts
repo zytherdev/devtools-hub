@@ -1,6 +1,10 @@
 import * as TOML from '@iarna/toml'
 import YAML from 'yaml'
 import type { ToolOptions } from './toolEngine'
+import { csvToJson } from './csvToJson'
+import { convertPhpJson } from './phpJsonConverter'
+import { convertTomlJson } from './tomlJsonConverter'
+import { generateJsonSchema } from './jsonSchemaGenerator'
 
 function parseCsv(source: string, delimiter: string) {
   const rows: string[][] = []
@@ -83,9 +87,15 @@ function jsonValueToXml(value: unknown, name: string): string {
   return `<${safeName}>${escapeXml(value === null ? '' : String(value))}</${safeName}>`
 }
 
+export const DATA_TOOL_SLUGS = ['csv-formatter', 'toml-formatter', 'xml-to-json', 'yaml-to-json', 'json-to-xml', 'csv-to-json', 'toml-json-converter', 'php-json-converter', 'json-schema-generator'] as const
+
 export async function runDataTool(slug: string, input: string, options: ToolOptions = {}): Promise<string | null> {
-  if (!['csv-formatter', 'toml-formatter', 'xml-to-json', 'yaml-to-json', 'json-to-xml'].includes(slug)) return null
+  if (!(DATA_TOOL_SLUGS as readonly string[]).includes(slug)) return null
   if (!input.trim()) throw new Error('Paste data to process.')
+  if (slug === 'csv-to-json') return csvToJson(input, options)
+  if (slug === 'toml-json-converter') return convertTomlJson(input, options)
+  if (slug === 'php-json-converter') return convertPhpJson(input, options)
+  if (slug === 'json-schema-generator') return generateJsonSchema(input, options)
   if (slug === 'csv-formatter') {
     const delimiter = getDelimiter(options.delimiter)
     const rows = parseCsv(input, delimiter)
