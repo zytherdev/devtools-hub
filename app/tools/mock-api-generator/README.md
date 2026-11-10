@@ -1,41 +1,55 @@
-# Mock API Generator
+# Gerador de API Mock
 
-**Status:** Planned
+**Status:** Implementado
 
-Generate mock REST API endpoints with realistic data for testing and development.
+Gera fixtures JSON de forma local a partir de um objeto-template JSON. Cada registro recebe uma cópia independente dos dados de entrada e, opcionalmente, um campo raiz com identificador incremental. A ferramenta não cria nem hospeda endpoints HTTP.
 
-## Availability
+## Uso
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Cole um objeto JSON simples na entrada. Com o template `{"name":"Ada","role":"engineer"}` e as opções abaixo:
 
-## Example input
+```json
+{
+  "count": "3",
+  "wrapper": "data",
+  "idField": "id"
+}
+```
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+a saída é:
 
-~~~json
-""
-~~~
+```json
+{
+  "data": [
+    { "name": "Ada", "role": "engineer", "id": 1 },
+    { "name": "Ada", "role": "engineer", "id": 2 },
+    { "name": "Ada", "role": "engineer", "id": 3 }
+  ],
+  "meta": { "count": 3 }
+}
+```
 
-## Default options
+A saída é formatada com indentação de dois espaços. Se `wrapper` for a string vazia, o resultado será somente um array de registros, sem objeto wrapper nem metadados. O nome `meta` é reservado para os metadados e não pode ser usado como wrapper.
 
-The options panel starts with this JSON:
+## Opções
 
-~~~json
-{}
-~~~
+Todas as opções são strings e são opcionais:
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+- `count` (padrão `"3"`): quantidade de registros; deve ser um inteiro de `1` a `100`.
+- `wrapper` (padrão `"data"`): propriedade que contém o array; pode ser vazia para retornar o array cru.
+- `idField` (padrão `"id"`): propriedade raiz que recebe os números incrementais de `1` até `count`. Se vazia, nenhum identificador é adicionado. Quando essa propriedade já existe no template, o valor do template é substituído nos registros, sem alterar propriedades aninhadas homônimas.
 
-## Processing and privacy
+Opções desconhecidas são rejeitadas. `wrapper` e `idField` aceitam até 64 caracteres e não podem conter caracteres de controle.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Validação e segurança
 
-## Contribution files
+A entrada precisa ser JSON válido cuja raiz seja um objeto simples; arrays, valores primitivos e `null` não são aceitos como template. O limite de entrada é 100.000 caracteres. O template permite profundidade máxima de 20 níveis, até 10.000 itens por array, até 10.000 propriedades por objeto e 20.000 valores JSON no total. A saída é limitada a 1.000.000 de bytes. Números não finitos e entradas que excedem os limites geram erro.
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/mock-api-generator.test.cjs](../../../tests/tools/mock-api-generator.test.cjs).
+A implementação usa somente o parser e serializador JSON nativos, não usa `eval` nem faz solicitações de rede. O processamento é local ao ambiente da ferramenta.
 
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+## Arquivos
+
+- [definition.ts](definition.ts): metadados, exemplo, opções padrão e extensão de saída.
+- [logic.ts](logic.ts): processamento, validação e limites.
+- [Tool.tsx](Tool.tsx): integração com `UniversalTool` pelo slug `mock-api-generator`.
+- Testes focados: [tests/tools/mock-api-generator.test.cjs](../../../tests/tools/mock-api-generator.test.cjs).

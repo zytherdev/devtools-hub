@@ -1,41 +1,38 @@
-# Word Counter
+# Contador de palavras
 
-**Status:** Planned
+**Status:** Implementado
 
-Count words, characters, sentences, and paragraphs in your text. Get detailed statistics.
+Analise um texto localmente e obtenha contagens de palavras, caracteres Unicode, caracteres sem espaços, linhas, parágrafos e frases, além de uma estimativa de tempo de leitura.
 
-## Availability
+## Como usar
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+Cole o texto no campo de entrada da ferramenta. O resultado é JSON, com os campos nesta ordem estável:
 
 ~~~json
-""
+{
+  "words": 7,
+  "characters": 42,
+  "charactersWithoutWhitespace": 35,
+  "lines": 2,
+  "paragraphs": 1,
+  "sentences": 2,
+  "readingMinutes": 0.035
+}
 ~~~
 
-## Default options
+Os números do exemplo são ilustrativos. A contagem de palavras usa `Intl.Segmenter` com granularidade de palavra e considera somente segmentos `isWordLike`. Os caracteres são agrupamentos de grafemas Unicode (com fallback para pontos de código em ambientes sem suporte). Linhas são separadas por LF, CRLF ou CR; parágrafos são blocos não vazios separados por uma ou mais linhas em branco. Frases são segmentadas por `Intl.Segmenter` quando disponível. O tempo aproximado é calculado a 200 palavras por minuto, em minutos decimais (`words / 200`). Uma entrada vazia resulta em zero em todas as contagens.
 
-The options panel starts with this JSON:
+## Opções e limites
 
-~~~json
-{}
-~~~
+Não há opções aceitas; qualquer chave fornecida é rejeitada. A entrada deve ser uma string com até 1.000.000 de unidades de código UTF-16. Entradas maiores são rejeitadas.
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+## Privacidade
 
-## Processing and privacy
+Todo o processamento ocorre no navegador, sem solicitações de rede e sem envio do texto para serviços externos.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Arquivos
 
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/word-counter.test.cjs](../../../tests/tools/word-counter.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados, estado e extensão JSON.
+- [logic.ts](logic.ts): validação e análise local.
+- [Tool.tsx](Tool.tsx): interface baseada em `UniversalTool`.
+- Testes focados: [word-counter.test.cjs](../../../tests/tools/word-counter.test.cjs).

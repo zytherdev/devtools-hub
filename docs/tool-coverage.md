@@ -1,6 +1,6 @@
 # Cobertura de implementação das ferramentas
 
-**Referência: 10 de novembro de 2026.** O catálogo contém 86 ferramentas: 43 têm implementação conectada e 43 estão explicitamente marcadas como planejadas. Cada ferramenta tem uma pasta canônica em `app/tools/<slug>/`; aparecer no catálogo, por si só, não significa que processe entradas. Atualize esta página sempre que o status de uma implementação mudar.
+**Referência: 10 de novembro de 2026.** O catálogo contém 86 ferramentas: 48 têm implementação conectada e 38 estão explicitamente marcadas como planejadas. Cada ferramenta tem uma pasta canônica em `app/tools/<slug>/`; aparecer no catálogo, por si só, não significa que processe entradas. Atualize esta página sempre que o status de uma implementação mudar.
 
 ## Implementadas
 
@@ -11,8 +11,8 @@
 | HTML e marcação | `html-minifier`, `html-beautifier`, `markdown-to-html`, `favicon-generator` |
 | Dados | `json-formatter`, `xml-formatter`, `yaml-formatter`, `csv-formatter`, `toml-formatter`, `xml-to-json`, `yaml-to-json`, `json-to-xml`, `csv-to-json`, `toml-json-converter`, `php-json-converter`, `json-schema-generator` |
 | Codificadores e decodificadores | `base64-encoder`, `url-encoder`, `html-encoder`, `jwt-decoder`, `jwt-generator`, `unicode-converter`, `ascii-converter`, `mime-type-validator` |
-| Geradores | `uuid-generator`, `password-generator`, `qr-generator`, `robots-txt-generator`, `sitemap-generator`, `random-number-generator`, `cron-generator`, `barcode-generator` |
-| Texto | `regex-tester` |
+| Geradores | `uuid-generator`, `password-generator`, `qr-generator`, `robots-txt-generator`, `sitemap-generator`, `random-number-generator`, `cron-generator`, `barcode-generator`, `openapi-generator`, `mock-api-generator` |
+| Texto | `regex-tester`, `text-case-converter`, `word-counter`, `diff-checker` |
 | Conversores | `color-converter` |
 
 Cada ferramenta implementada contém metadados e opções de exemplo/padrão em `definition.ts`, processamento em `logic.ts` e uma entrada de interface em `Tool.tsx`. `app/tools/registry.ts` registra os metadados; `app/tools/componentRegistry.ts` registra estaticamente as entradas de interface usadas pela rota dinâmica compartilhada. Interfaces simples reutilizam `UniversalTool`; controles mais ricos seguem o mesmo sistema visual compartilhado.
@@ -24,8 +24,8 @@ Todas as ferramentas planejadas seguem o mesmo contrato de pastas e exibem expli
 | Área | Slugs planejados |
 | --- | --- |
 | Codificadores e decodificadores | — |
-| Geradores | `openapi-generator`, `mock-api-generator` |
-| Texto e strings | `text-case-converter`, `word-counter`, `diff-checker`, `json-diff`, `lorem-ipsum`, `remove-duplicate-lines`, `slug-generator`, `line-sorter` |
+| Geradores | — |
+| Texto e strings | `json-diff`, `lorem-ipsum`, `remove-duplicate-lines`, `slug-generator`, `line-sorter` |
 | Conversores | `unit-converter`, `timestamp-converter`, `number-base-converter`, `currency-converter`, `file-size-converter`, `roman-numeral` |
 | Banco de dados e DevOps | `sql-formatter`, `docker-compose-converter`, `kubernetes-decoder`, `chmod-calculator`, `subnet-calculator` |
 | Segurança e criptografia | `ssl-checker`, `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `rsa-key-generator`, `bcrypt-generator`, `hmac-generator`, `aes-encryptor`, `certificate-decoder` |

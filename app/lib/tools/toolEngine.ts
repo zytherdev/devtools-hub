@@ -5,6 +5,7 @@ import { run as runBarcodeGenerator } from '@/app/tools/barcode-generator/logic'
 import { run as runCsvFormatter } from '@/app/tools/csv-formatter/logic'
 import { run as runCsvToJson } from '@/app/tools/csv-to-json/logic'
 import { run as runCronGenerator } from '@/app/tools/cron-generator/logic'
+import { run as runDiffChecker } from '@/app/tools/diff-checker/logic'
 import { run as runFaviconGenerator } from '@/app/tools/favicon-generator/logic'
 import { run as runHtmlBeautifier } from '@/app/tools/html-beautifier/logic'
 import { run as runHtmlEncoder } from '@/app/tools/html-encoder/logic'
@@ -14,6 +15,8 @@ import { run as runJwtDecoder } from '@/app/tools/jwt-decoder/logic'
 import { run as runJwtGenerator } from '@/app/tools/jwt-generator/logic'
 import { run as runMarkdownToHtml } from '@/app/tools/markdown-to-html/logic'
 import { run as runMimeTypeValidator } from '@/app/tools/mime-type-validator/logic'
+import { run as runMockApiGenerator } from '@/app/tools/mock-api-generator/logic'
+import { run as runOpenApiGenerator } from '@/app/tools/openapi-generator/logic'
 import { run as runPasswordGenerator } from '@/app/tools/password-generator/logic'
 import { run as runPhpJsonConverter } from '@/app/tools/php-json-converter/logic'
 import { run as runQrGenerator } from '@/app/tools/qr-generator/logic'
@@ -22,6 +25,7 @@ import { run as runRobotsTxtGenerator } from '@/app/tools/robots-txt-generator/l
 import { run as runSitemapGenerator } from '@/app/tools/sitemap-generator/logic'
 import { run as runTomlFormatter } from '@/app/tools/toml-formatter/logic'
 import { run as runTomlJsonConverter } from '@/app/tools/toml-json-converter/logic'
+import { run as runTextCaseConverter } from '@/app/tools/text-case-converter/logic'
 import { run as runUnicodeConverter } from '@/app/tools/unicode-converter/logic'
 import { run as runUrlEncoder } from '@/app/tools/url-encoder/logic'
 import { run as runUuidGenerator } from '@/app/tools/uuid-generator/logic'
@@ -29,6 +33,7 @@ import { run as runXmlFormatter } from '@/app/tools/xml-formatter/logic'
 import { run as runXmlToJson } from '@/app/tools/xml-to-json/logic'
 import { run as runYamlFormatter } from '@/app/tools/yaml-formatter/logic'
 import { run as runYamlToJson } from '@/app/tools/yaml-to-json/logic'
+import { run as runWordCounter } from '@/app/tools/word-counter/logic'
 
 const handlers: Record<string, ToolRunner> = {
   'ascii-converter': runAsciiConverter,
@@ -37,6 +42,7 @@ const handlers: Record<string, ToolRunner> = {
   'csv-formatter': runCsvFormatter,
   'csv-to-json': runCsvToJson,
   'cron-generator': runCronGenerator,
+  'diff-checker': runDiffChecker,
   'favicon-generator': runFaviconGenerator,
   'html-beautifier': runHtmlBeautifier,
   'html-encoder': runHtmlEncoder,
@@ -46,12 +52,15 @@ const handlers: Record<string, ToolRunner> = {
   'jwt-generator': runJwtGenerator,
   'markdown-to-html': runMarkdownToHtml,
   'mime-type-validator': runMimeTypeValidator,
+  'mock-api-generator': runMockApiGenerator,
+  'openapi-generator': runOpenApiGenerator,
   'password-generator': runPasswordGenerator,
   'php-json-converter': runPhpJsonConverter,
   'qr-generator': runQrGenerator,
   'random-number-generator': runRandomNumberGenerator,
   'robots-txt-generator': runRobotsTxtGenerator,
   'sitemap-generator': runSitemapGenerator,
+  'text-case-converter': runTextCaseConverter,
   'toml-formatter': runTomlFormatter,
   'toml-json-converter': runTomlJsonConverter,
   'unicode-converter': runUnicodeConverter,
@@ -61,6 +70,7 @@ const handlers: Record<string, ToolRunner> = {
   'xml-to-json': runXmlToJson,
   'yaml-formatter': runYamlFormatter,
   'yaml-to-json': runYamlToJson,
+  'word-counter': runWordCounter,
 }
 
 export const genericToolSlugs = Object.keys(handlers)

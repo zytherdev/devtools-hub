@@ -1,41 +1,57 @@
-# OpenAPI Generator
+# Gerador OpenAPI
 
-**Status:** Planned
+**Status:** implementado.
 
-Generate OpenAPI/Swagger documentation from your API code or JSON data.
+Gera localmente uma especificação **OpenAPI 3.1.0 em JSON** a partir de um objeto JSON com título, versão, servidores, endpoints e schemas de resposta. A saída pode ser copiada ou baixada como `.json` na interface padrão do projeto.
 
-## Availability
+## Exemplo de entrada
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+```json
+{
+  "title": "Example API",
+  "version": "1.0.0",
+  "description": "",
+  "servers": ["https://api.example.com"],
+  "endpoints": [
+    {
+      "path": "/users",
+      "method": "get",
+      "summary": "List users",
+      "responseDescription": "Success",
+      "responseSchema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "name": { "type": "string" }
+          }
+        }
+      }
+    }
+  ]
+}
+```
 
-## Example input
+Cada endpoint gera uma operação com resposta `200` e conteúdo `application/json`, usando o `responseSchema` informado. Os schemas são transportados para a saída; a ferramenta não infere schemas nem valida completamente a semântica do vocabulário JSON Schema.
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Campos e validação
 
-~~~json
-""
-~~~
+- `title` e `version` são textos obrigatórios, limitados a 128 e 64 caracteres.
+- `description` é opcional (até 2.000 caracteres); se vazio, não aparece em `info`.
+- `servers` deve conter de 1 a 20 URLs absolutas `http://` ou `https://`, cada uma com até 2.048 caracteres. Credenciais e fragmentos `#` são proibidos.
+- `endpoints` deve conter de 1 a 100 itens. O método deve ser `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` ou `OPTIONS`; método e caminho não podem se repetir.
+- O `path` tem até 512 caracteres, deve começar com `/` e não pode incluir query (`?`) ou fragmento (`#`). `summary` e `responseDescription` têm até 256 caracteres.
+- `responseSchema` deve ser um objeto JSON com no máximo 16 níveis de profundidade e 20.000 valores. `$ref`, `$dynamicRef` e `$recursiveRef` são rejeitados.
+- A entrada inteira está limitada a 100.000 caracteres; a saída, a 1 MB. Campos fora do formato documentado e opções não vazias são rejeitados.
 
-## Default options
+## Limitações e privacidade
 
-The options panel starts with this JSON:
+O processamento ocorre no navegador e não faz requisições de rede; URLs de servidor são apenas incluídas na especificação gerada, nunca acessadas. Esta ferramenta não lê código-fonte, não importa documentos, não consulta servidores e não verifica se os endpoints existem. Cada operação recebe somente uma resposta `200` JSON; não há configuração de parâmetros, autenticação, segurança, erros adicionais, cabeçalhos ou conteúdo alternativo. Referências a schemas não são aceitas. A saída é uma especificação inicial que deve ser revisada antes de uso em produção.
 
-~~~json
-{}
-~~~
+## Arquivos
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
-
-## Processing and privacy
-
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/openapi-generator.test.cjs](../../../tests/tools/openapi-generator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- `definition.ts`: metadados, exemplo, opções vazias e extensão JSON.
+- `logic.ts`: validação limitada e geração local.
+- `Tool.tsx`: composição com `UniversalTool` e slug `openapi-generator`.
+- Testes focados: `tests/tools/openapi-generator.test.cjs`.

@@ -1,41 +1,44 @@
-# Text Case Converter
+# Conversor de caixa de texto
 
-**Status:** Planned
+**Status:** Implementado
 
-Convert text between cases: UPPER, lower, Title, Sentence, camelCase, snake_case, and more.
+Converta texto localmente entre nove formatos: `camel`, `pascal`, `snake`, `kebab`, `constant`, `title`, `sentence`, `lower` e `upper`. O resultado é texto simples (`.txt`).
 
-## Availability
+## Entrada e opções
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+A entrada pode ter até 100.000 caracteres. O exemplo carregável é:
 
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
-
-~~~json
-""
+~~~text
+Olá, Mundo! revisão 2:Texto
 ~~~
 
-## Default options
-
-The options panel starts with this JSON:
+A única opção aceita é `mode`; o padrão é `camel`.
 
 ~~~json
-{}
+{"mode":"camel"}
 ~~~
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+| Modo | Resultado de `Olá, Mundo! revisão 2:Texto` | Comportamento |
+| --- | --- | --- |
+| `camel` | `oláMundoRevisão2Texto` | Primeira palavra em minúsculas; seguintes com inicial maiúscula, sem separador. |
+| `pascal` | `OláMundoRevisão2Texto` | Inicial maiúscula em todas as palavras, sem separador. |
+| `snake` | `olá_mundo_revisão_2_texto` | Minúsculas separadas por `_`. |
+| `kebab` | `olá-mundo-revisão-2-texto` | Minúsculas separadas por `-`. |
+| `constant` | `OLÁ_MUNDO_REVISÃO_2_TEXTO` | Maiúsculas separadas por `_`. |
+| `title` | `Olá Mundo Revisão 2 Texto` | Inicial maiúscula em cada palavra, separadas por espaço. |
+| `sentence` | `Olá, mundo! revisão 2:texto` | Texto completo em minúsculas, exceto a primeira letra em maiúscula; pontuação e espaçamento são preservados. |
+| `lower` | `olá, mundo! revisão 2:texto` | Converte a string inteira para minúsculas; preserva pontuação e espaçamento. |
+| `upper` | `OLÁ, MUNDO! REVISÃO 2:TEXTO` | Converte a string inteira para maiúsculas; preserva pontuação e espaçamento. |
 
-## Processing and privacy
+Nos modos que formam palavras, letras e números Unicode são reconhecidos, inclusive letras acentuadas. Pontuação e espaços separam palavras; também são reconhecidos limites de maiúsculas/minúsculas (por exemplo, `meuTexto` e `HTTPServidor`) e mudanças entre letras e números. A separação por palavras normaliza os delimitadores para o separador do modo escolhido. Entradas sem tokens, como uma string vazia ou só com pontuação, são válidas e não causam erro.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Validação e privacidade
 
-## Contribution files
+Entradas acima de 100.000 caracteres, modos inválidos e opções diferentes de `mode` retornam erro de validação. Nenhuma solicitação de rede é feita: o processamento ocorre localmente no navegador.
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/text-case-converter.test.cjs](../../../tests/tools/text-case-converter.test.cjs).
+## Arquivos de contribuição
 
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados, amostra, modo padrão e extensão de saída.
+- [logic.ts](logic.ts): tokenização Unicode, conversões e validação.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/text-case-converter.test.cjs](../../../tests/tools/text-case-converter.test.cjs).

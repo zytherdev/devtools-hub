@@ -14,8 +14,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 43)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 43)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 48)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 38)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -34,7 +34,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 30)
+  assert.equal(genericToolSlugs.length, 35)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -57,6 +57,11 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
     runTool('random-number-generator', '', { min: '1', max: '10', count: '2', unique: 'false' }),
     runTool('cron-generator', '', { minute: '0', hour: '9', dayOfMonth: '*', month: '*', dayOfWeek: '1-5' }),
     runTool('barcode-generator', 'DEMO-123', { format: 'code128', scale: '3', height: '12', includeText: 'true' }),
+    runTool('openapi-generator', JSON.stringify({ title: 'API', version: '1.0.0', servers: ['https://example.com'], endpoints: [{ path: '/health', method: 'get', summary: 'Health', responseDescription: 'Success', responseSchema: { type: 'object', properties: { ok: { type: 'boolean' } } } }] })),
+    runTool('mock-api-generator', '{"name":"Ada"}', { count: '2', wrapper: 'data', idField: 'id' }),
+    runTool('text-case-converter', 'Hello world', { mode: 'snake' }),
+    runTool('word-counter', 'One two'),
+    runTool('diff-checker', 'old\n---8<---\nnew'),
   ])
   assert.deepEqual(JSON.parse(outputs[0]), [{ name: 'Ada' }])
   assert.deepEqual(JSON.parse(outputs[1]), { x: 1 })
@@ -73,6 +78,11 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
   assert.equal(outputs[12].split('\n').length, 2)
   assert.match(outputs[13], /Cron expression: 0 9 \* \* 1-5/)
   assert.match(outputs[14], /^<svg viewBox=/)
+  assert.equal(JSON.parse(outputs[15]).openapi, '3.1.0')
+  assert.equal(JSON.parse(outputs[16]).data.length, 2)
+  assert.equal(outputs[17], 'hello_world')
+  assert.equal(JSON.parse(outputs[18]).words, 2)
+  assert.match(outputs[19], /-old\n\+new/)
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
 })
 
