@@ -1,43 +1,48 @@
 # Architecture
 
+## Canonical tool structure
+
+Every catalog entry has the same home under `app/tools/<slug>/`:
+
+```text
+app/tools/<slug>/
+├── definition.ts       # metadata, category, status, sample/defaults and output type
+├── logic.ts            # public run(input, options) entry point
+├── Tool.tsx            # the tool's page UI entry point
+├── README.md           # usage, options, limitations and privacy notes
+└── lib/                # private helpers used only by this tool (when needed)
+
+tests/tools/<slug>.test.cjs  # focused behavior and integration tests
+```
+
+Do not put tool-specific implementation in `app/components/tools`, `app/lib/tools`, or the dynamic route. `app/components` is for shared interface primitives; `app/lib/tools` is reserved for helpers used by more than one tool. If a helper is tool-specific, place it in that tool's `lib/` folder. A generic `Tool.tsx` composes the shared `UniversalTool`; a bespoke `Tool.tsx` may provide richer controls, but both use the same page shell and design tokens.
+
 ## Route and data flow
 
 ```text
-app/lib/utils/tools.ts
-  ├─ categories / allTools ──> home, category pages, header, footer
-  └─ href slug ──────────────> app/(tools)/[slug]/page.tsx
-                                  ├─ specializedTools map
-                                  │    └─ app/components/tools/*.tsx
-                                  │         └─ app/lib/tools/** utilities
-                                  └─ UniversalTool
-                                       └─ app/lib/tools/toolEngine.ts
-                                            └─ app/lib/tools/dataTools.ts
+app/tools/<slug>/definition.ts ──> app/tools/registry.ts ──> app/lib/utils/tools.ts
+                                             │                  ├─> home, categories, navigation
+                                             │                  └─> tool metadata/page shell
+app/tools/<slug>/Tool.tsx ───────> app/tools/componentRegistry.ts ──> app/(tools)/[slug]/page.tsx
+app/tools/<slug>/logic.ts ───────> bespoke Tool.tsx
+                         └───────> toolEngine.ts ──> UniversalTool (standard text tools)
+tests/tools/<slug>.test.cjs ─────> logic and registry contracts
 ```
 
-The App Router uses one dynamic route for tool pages. Its `generateStaticParams()` derives slugs from `allTools`; invalid slugs return a 404. Category pages use the same catalog and a dynamic category route. Do not create a duplicate page route or manually maintain a second list of tool URLs.
+The App Router uses one dynamic route for tool pages. Its `generateStaticParams()` derives slugs from the registry; invalid slugs return a 404. Category pages use the same registry and one dynamic category route. Do not create a separate Next.js page for a tool or manually maintain a second list of tool URLs.
 
-## Catalog
+## Definitions and registry
 
-`app/lib/utils/tools.ts` is the source for tool and category metadata. Each tool has an `id`, display name, description, icon, color, and `href`. The canonical invariant is `id === href.slice(1)`. `allTools`, category views, `colorTools`, and `quickTools` should be derived from the category arrays rather than copying tool objects. `getToolCatalogIssues()` reports duplicate IDs/routes, invalid slugs, duplicate categories, and missing or multiply assigned category entries.
+`definition.ts` is the single source for that tool's slug, name, description, category, icon/color, implementation status, sample input, default options, and output extension. The slug, folder name, and route slug must match exactly. `app/tools/registry.ts` imports each definition and derives categories; `app/tools/componentRegistry.ts` contains statically analyzable dynamic imports of each `Tool.tsx`. `app/lib/utils/tools.ts` exposes derived catalog/category views for existing app consumers. Keep both registries synchronized; do not copy tool objects into quick links or separate route lists.
 
-Catalog metadata controls discovery and page headings; it does **not** by itself implement a tool. A tool is functional only when a generic executor or specialized UI is connected and tested. See [Tool coverage](tool-coverage.md).
+A catalog entry is not automatically implemented. Mark `status: 'implemented'` only when `logic.ts`, `Tool.tsx`, and meaningful passing tests are connected. Planned entries use the same folder contract and an explicit planned state. See [Tool coverage](tool-coverage.md).
 
-## UI modes
+## Logic and UI
 
-### Generic tools
+`logic.ts` exports the typed `run(input, options)` function. It performs bounded, validated local work and returns a result string or throws a useful error. It does not import React or mutate UI state. Keep tool-private parser/helper files under that tool's `lib/`. A helper belongs in shared `app/lib/tools/` only when at least two tools genuinely reuse it.
 
-`app/components/UniversalTool.tsx` provides the shared input/output editor, options JSON, sample input, copy/download actions, processing state, and inline errors. The generic dynamic route renders the same shell for all generic tools. Add samples, default options, and output extensions to its per-slug configuration when adding a tool.
-
-`app/lib/tools/toolEngine.ts` is the generic execution entry point. It handles simple text/markup tools and delegates structured data tools to `app/lib/tools/dataTools.ts`. Keep reusable transforms in separate modules under `app/lib/tools/`; validate input/options and return result strings or throw useful errors.
-
-### Specialized tools
-
-Use `app/components/tools/<tool>.tsx` when the tool needs interactive controls that do not fit the generic text-in/text-out editor. Add its component to the `specializedTools` map in `app/(tools)/[slug]/page.tsx`. Its utility logic should remain separate under `app/lib/tools/` when practical.
-
-## Shared styling
-
-Tool pages use `PageIntro`, `ToolPanel`, `UniversalTool`, `ToolCard`, and the CSS variables/classes in `app/styles/globals.css`. Keep new and existing tools on the same border, surface, spacing, typography, interaction, and theme tokens. Do not add a separate design system for a single tool. Public content pages use `ContentPage` and the same `PageIntro`/panel tokens; the home page has a distinct discovery hero but shares cards and global navigation.
+Every `Tool.tsx` is the UI entry point. Simple text-in/text-out tools compose `app/components/UniversalTool.tsx` with the tool definition and slug; `app/lib/tools/toolEngine.ts` maps generic slugs to each folder's `logic.ts`. Tools needing richer controls may use a bespoke component and call their local logic, but should still use shared `PageIntro`, `ToolPanel`, CSS tokens, inline errors, accessibility patterns, and light/dark theme support.
 
 ## Tests and checks
 
-The Node test suite is under `tests/` and runs with `npm test`. Tests load focused TypeScript utility modules through the installed TypeScript compiler; no extra test framework is required. Use `npm run check` for ESLint, TypeScript, tests, and a production build. Add coverage for normal, malformed, boundary, and privacy-sensitive cases.
+Add focused tests at `tests/tools/<slug>.test.cjs`. Cover success, malformed input/options, boundary limits, and privacy-sensitive behavior. Test the exported logic and the registry connection so a tool cannot be listed without an implementation. The Node test runner is built in; no extra test framework is required. Run `npm run check` for ESLint, TypeScript, tests, and a production build.

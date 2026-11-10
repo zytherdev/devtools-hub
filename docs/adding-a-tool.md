@@ -1,54 +1,50 @@
 # Adding a tool
 
-Use this guide together with [CONTRIBUTING.md](../CONTRIBUTING.md). The usual path is a catalog entry plus a local utility and shared UI integration; a new route page is not needed.
+Use this guide together with [CONTRIBUTING.md](../CONTRIBUTING.md). Each tool has one canonical folder; do not add per-tool Next.js routes or scatter its logic across domain folders.
 
-## 1. Choose and register one slug
+## 1. Create the canonical folder
 
-Choose a lowercase kebab-case slug, for example `csv-to-json`. Add the metadata to the appropriate category array in `app/lib/utils/tools.ts`:
+Choose one lowercase kebab-case slug, such as `csv-to-json`, and use it identically for the folder, definition ID, and route:
 
-```ts
-{
-  id: 'example-tool',
-  name: 'Example Tool',
-  description: 'A short, accurate description of the tool.',
-  icon: 'fa-solid fa-wand-magic-sparkles',
-  color: '#347a58',
-  badge: '',
-  href: '/example-tool',
-}
+```text
+app/tools/csv-to-json/
+├── definition.ts
+├── logic.ts
+├── Tool.tsx
+├── README.md
+└── lib/                 # only for helpers private to this tool
+
+tests/tools/csv-to-json.test.cjs
 ```
 
-Keep `id === href.slice(1)`. Do not add a duplicate copy to `allTools`, `quickTools`, or a separate route; those views are derived from the category arrays. Run `getToolCatalogIssues()` when changing catalog structure.
+Use an existing catalog entry's folder if the tool is already listed. Do not make another entry with a different spelling.
 
-## 2. Implement the transformation
+## 2. Define metadata and UI defaults
 
-Put pure processing logic in `app/lib/tools/<domain>/<tool>.ts` (or the existing flat domain file if that is the established location for the module). Export a function that accepts the input and string-valued options, validates both, and returns the output. Avoid DOM or browser globals in utilities unless the algorithm specifically requires them. Impose practical limits for untrusted or expensive input.
+In `definition.ts`, export the typed definition containing `id`, `name`, `description`, `categoryId`, `href`, icon/color, implementation status, sample input, default options, and output extension. Keep `id === folder name === href.slice(1)`. Add this definition to `app/tools/registry.ts`; do not manually duplicate the object in category arrays or quick links.
 
-## 3. Connect the executor
+## 3. Implement bounded logic
 
-For a simple tool compatible with the shared editor:
+In `logic.ts`, export `run(input, options)`. Keep it pure and typed; validate all options and input, set reasonable size/depth/work limits, and provide useful errors. Put tool-private helpers in the same folder's `lib/`. Only put a helper in shared `app/lib/tools/` if multiple tools truly use it. Do not use `eval`, execute pasted code, or make undisclosed network requests.
 
-1. Add its dispatch to `app/lib/tools/toolEngine.ts`; if it is a structured data conversion, add it to `runDataTool` in `app/lib/tools/dataTools.ts`.
-2. Add a representative input to `samples` in `app/components/UniversalTool.tsx`.
-3. Add valid defaults to `optionSamples` and choose the correct output extension in the shared download map.
-4. Keep option names documented in the utility and example JSON. The UI accepts JSON primitive values and passes their string forms to the executor.
+## 4. Add the UI entry point
 
-The route automatically uses `UniversalTool` for catalog entries without a specialized component.
+Every tool has `Tool.tsx`. Add its static import to `app/tools/componentRegistry.ts`. For a standard text-in/text-out interface, compose the shared `UniversalTool` with this tool's definition and slug; `app/lib/tools/toolEngine.ts` dispatches the slug to `logic.ts`. For richer controls, implement a specialized UI in this same file and call local logic; reuse `PageIntro`, `ToolPanel`, shared CSS tokens, inline errors, and accessible controls. Never add another route page: `app/(tools)/[slug]/page.tsx` resolves every slug.
 
-## 4. Add a specialized interface only when needed
+## 5. Document and test
 
-If the tool needs controls beyond a text editor and options object, create `app/components/tools/<tool>.tsx`, keep its visual shell and controls aligned with shared panels/tokens, and register its dynamic import in the `specializedTools` map in `app/(tools)/[slug]/page.tsx`. Keep processing logic outside React components where possible.
+Update the folder's `README.md` with purpose, options, output, limitations, and data/privacy behavior. Add `tests/tools/<slug>.test.cjs` covering:
 
-## 5. Test behavior and integration
+- A representative success case.
+- Invalid syntax and options with useful errors.
+- Boundary and malformed inputs.
+- Safety/privacy requirements and the registry connection.
 
-Add focused tests under `tests/*.test.cjs`. Cover at least:
+Only set `status: 'implemented'` after the logic and UI are connected and meaningful tests pass. Pending entries use the same folder contract and an explicit pending state.
 
-- A representative successful input and output.
-- Invalid syntax/options and a useful error.
-- Boundary cases such as empty input, malformed quoting, unsafe values, or size/depth limits.
-- The actual `runTool(slug, input, options)` path so the new tool cannot be accidentally omitted from the dispatcher.
+## 6. Validate
 
-The suite uses Node's built-in test runner and TypeScript's compiler API to load TypeScript modules. Run:
+Run the full checks before opening a pull request:
 
 ```bash
 npm run lint
@@ -57,6 +53,4 @@ npm test
 npm run build
 ```
 
-## 6. Keep the UI and documentation accurate
-
-Use the existing `PageIntro`, `ToolPanel`, `UniversalTool`, CSS variables, and light/dark theme conventions. Do not claim that input is processed locally if the tool sends it to a service. If external access is essential, show a clear notice before the request and update the privacy documentation. Update catalog/coverage notes when implementation status changes.
+Or run `npm run check`. Update tool coverage when implementation status changes.

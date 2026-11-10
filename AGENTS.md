@@ -11,9 +11,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Repository conventions
 
 - Read `CONTRIBUTING.md`, `docs/architecture.md`, and `docs/adding-a-tool.md` before changing tool registration, execution, or page structure.
-- `app/lib/utils/tools.ts` is the catalog source. A tool's `id` must match the slug in its `href`; categories and quick links are derived views, not places for duplicate metadata.
-- Tool pages use `app/(tools)/[slug]/page.tsx`. Generic tools share `UniversalTool` and the executor under `app/lib/tools`; specialized UIs live in `app/components/tools` and are registered in the dynamic route map.
-- Reuse `PageIntro`, `ToolPanel`, shared CSS tokens, and existing accessibility/error patterns. Keep user input local unless a tool clearly explains its external request.
-- Keep utility functions typed and bounded; add success, invalid-input, and boundary tests in `tests/`.
+- Every catalog entry has one canonical folder at `app/tools/<slug>/` containing `definition.ts`, `logic.ts`, `Tool.tsx`, and `README.md`; private helpers go in its `lib/` subfolder and tests in `tests/tools/<slug>.test.cjs`.
+- Keep tool `id`, folder name, and route slug identical. Register metadata in `app/tools/registry.ts` and its view in `app/tools/componentRegistry.ts`; `app/lib/utils/tools.ts` exposes derived views only.
+- Use the single dynamic route `app/(tools)/[slug]/page.tsx`; never add a per-tool route page or scatter tool-specific logic under shared folders.
+- Shared UI belongs in `app/components`; helpers used by multiple tools may live in `app/lib/tools`. Reuse `PageIntro`, `ToolPanel`, shared CSS tokens, and existing accessibility/error patterns.
+- Keep input local unless a tool clearly explains its external request. Keep utility functions typed and bounded; add success, invalid-input, and boundary tests.
 - Use npm with the checked-in lockfile: `npm ci`.
 - Before a change is ready, run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` (or `npm run check`).

@@ -1,6 +1,6 @@
 # Tool implementation coverage
 
-**Snapshot: November 10, 2026.** The metadata catalog contains 86 tool entries. At this snapshot, 28 have a connected implementation and 58 remain catalogued but pending. The `tools.ts` catalog is a discovery list, not proof that a route has a working executor. This page is intentionally maintained with implementation batches; update it whenever the coverage changes.
+**Snapshot: November 10, 2026.** The catalog contains 86 entries: 33 have a connected implementation and 53 are explicitly marked as planned. Every entry has one canonical folder under `app/tools/<slug>/`; listing a tool is not, by itself, proof that it can process input. Update this page whenever implementation status changes.
 
 ## Implemented
 
@@ -10,19 +10,19 @@
 | JavaScript | `js-minifier`, `js-beautifier`, `html-to-jsx`, `curl-to-code` |
 | HTML & markup | `html-minifier`, `html-beautifier`, `markdown-to-html`, `favicon-generator` |
 | Data | `json-formatter`, `xml-formatter`, `yaml-formatter`, `csv-formatter`, `toml-formatter`, `xml-to-json`, `yaml-to-json`, `json-to-xml`, `csv-to-json`, `toml-json-converter`, `php-json-converter`, `json-schema-generator` |
-| Encoders | `base64-encoder` |
+| Encoders & decoders | `base64-encoder`, `url-encoder`, `html-encoder`, `jwt-decoder`, `jwt-generator`, `unicode-converter` |
 | Text | `regex-tester` |
 | Converters | `color-converter` |
 
-Specialized interfaces are registered in `app/(tools)/[slug]/page.tsx`. Generic handlers are connected through `app/lib/tools/toolEngine.ts` and `app/lib/tools/dataTools.ts`.
+Each implemented tool has its metadata and sample/default options in `definition.ts`, processing in `logic.ts`, and a page entry in `Tool.tsx`. `app/tools/registry.ts` registers metadata; `app/tools/componentRegistry.ts` statically registers UI entry points for the shared dynamic route. Simple interfaces reuse `UniversalTool`, while richer controls use the same shared design system.
 
 ## Pending in the catalog
 
-Pick a slug from this list when proposing a new implementation, then remove it from the pending section and add it to the implemented table only after the route is connected and tested.
+All pending entries have the same folder/files contract and show an explicit planned state rather than a non-working editor. Choose one of these slugs for a new implementation, then update its definition, logic, UI, README, and focused test together.
 
 | Area | Pending slugs |
 | --- | --- |
-| Encoders & decoders | `url-encoder`, `html-encoder`, `jwt-decoder`, `jwt-generator`, `unicode-converter`, `ascii-converter`, `mime-type-validator` |
+| Encoders & decoders | `ascii-converter`, `mime-type-validator` |
 | Generators | `uuid-generator`, `password-generator`, `qr-generator`, `robots-txt-generator`, `sitemap-generator`, `random-number-generator`, `cron-generator`, `barcode-generator`, `openapi-generator`, `mock-api-generator` |
 | Text & string | `text-case-converter`, `word-counter`, `diff-checker`, `json-diff`, `lorem-ipsum`, `remove-duplicate-lines`, `slug-generator`, `line-sorter` |
 | Converters | `unit-converter`, `timestamp-converter`, `number-base-converter`, `currency-converter`, `file-size-converter`, `roman-numeral` |
@@ -34,4 +34,4 @@ Pick a slug from this list when proposing a new implementation, then remove it f
 
 ## Completion criteria
 
-A pending tool is complete only when it has a validated implementation, a registered generic executor or specialized component, a representative example, consistent shared UI, and tests for successful and invalid/boundary inputs. If it uses a network service, its data flow must be disclosed in the UI and privacy documentation.
+A tool is implemented only when its `definition.ts` says `status: 'implemented'`, its `logic.ts` performs validated and bounded work, `Tool.tsx` is connected through the component registry, its per-tool README describes options and limitations, and focused tests cover success and invalid/boundary cases. Any external request must be disclosed in the UI and privacy documentation.

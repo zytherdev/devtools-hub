@@ -1,22 +1,16 @@
 # DevTools Hub
 
-An open-source collection of practical developer utilities, built with Next.js and TypeScript. The catalog is actively being brought into full implementation coverage; catalog metadata alone does not guarantee that a tool’s executor is complete. Check the shared tool route, component map, and executor before treating an entry as shipped.
+An open-source collection of practical developer utilities, built with Next.js and TypeScript. The catalog is being implemented in focused batches; a listed entry is not considered complete until its tool folder includes connected logic, UI, and meaningful tests. See the [coverage guide](docs/tool-coverage.md) for current status.
 
 [Website](https://devtools.zyther.dev) · [Issues](https://github.com/zytherdev/devtools-hub/issues) · [Contributing](CONTRIBUTING.md)
 
 ## Project principles
 
-- Use one shared route and visual system for tool pages; avoid one-off route pages unless a framework requirement makes them necessary.
-- Keep transformations local by default. If a tool needs an external lookup, clearly disclose what is sent and to whom.
-- Prefer small, typed utility functions with explicit input validation, limits, and errors.
-- Treat tool catalog, route, executor, examples, and tests as one contribution.
+Use one shared route and visual system for tool pages. Keep transformations local by default, validate untrusted input, and disclose any network access. Treat each tool's definition, logic, UI, documentation, and tests as one contribution.
 
-## Requirements
+## Requirements and setup
 
-- Node.js **20.9 or newer** (required by the installed Next.js version).
-- npm and the checked-in `package-lock.json`.
-
-## Run locally
+Use Node.js **20.9 or newer** and npm with the checked-in lockfile:
 
 ```bash
 git clone https://github.com/zytherdev/devtools-hub.git
@@ -34,7 +28,7 @@ Open <http://localhost:3000>.
 | `npm run dev` | Start the local development server. |
 | `npm run lint` | Run ESLint. |
 | `npm run typecheck` | Check TypeScript without emitting files. |
-| `npm test` | Run the Node test suite. |
+| `npm test` | Run the per-tool Node test suite. |
 | `npm run build` | Create a production build. |
 | `npm start` | Serve a production build; run `npm run build` first. |
 | `npm run check` | Run lint, typecheck, tests, and production build in sequence. |
@@ -42,20 +36,23 @@ Open <http://localhost:3000>.
 ## Architecture at a glance
 
 ```text
-app/lib/utils/tools.ts       Tool metadata and category membership
-             │
-             ├── app/page.tsx and shared navigation
-             │
-             └── app/(tools)/[slug]/page.tsx
-                       ├── specialized UI: app/components/tools/*
-                       └── shared UI: UniversalTool → toolEngine → app/lib/tools/*
+app/tools/<slug>/definition.ts   Metadata and UI defaults
+app/tools/<slug>/logic.ts        Pure, bounded implementation
+app/tools/<slug>/Tool.tsx        Standard or specialized UI entry
+app/tools/<slug>/README.md       Usage, options, limits, and privacy
+app/tools/<slug>/lib/            Private helpers for this tool
+
+tests/tools/<slug>.test.cjs      Focused behavior tests
+app/tools/registry.ts            Canonical metadata and category views
+app/tools/componentRegistry.ts   Static imports of each Tool.tsx
+app/(tools)/[slug]/page.tsx      The one dynamic tool route
 ```
 
-Tool routes are derived from the catalog; do not add a separate `page.tsx` for every tool. The tool UI shell (`PageIntro`, `ToolPanel`, `UniversalTool`) and global design tokens keep existing and new tools visually consistent. See [the architecture guide](docs/architecture.md) and [the tool coverage notes](docs/tool-coverage.md).
+Every catalog entry follows this layout. When adding a tool, register its definition in `registry.ts` and its `Tool.tsx` in `componentRegistry.ts`. Shared UI lives in `app/components`; helpers used by multiple tools may live in `app/lib/tools`. Do not add per-tool route pages or leave tool-specific logic in a central dispatcher. Read [Architecture](docs/architecture.md) and [Adding a tool](docs/adding-a-tool.md) before contributing.
 
 ## Add or improve a tool
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), then follow the step-by-step [Adding a tool guide](docs/adding-a-tool.md). In brief: define the tool once in the correct category in `app/lib/utils/tools.ts`, implement it in `app/lib/tools/` or `app/components/tools/`, connect it to the existing generic executor or specialized component map, add an example/options and tests, and run `npm run check`.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), then follow the [step-by-step guide](docs/adding-a-tool.md). A contribution updates the tool's `definition.ts`, `logic.ts`, `Tool.tsx`, `README.md`, and focused test together. Run `npm run check` before opening a pull request.
 
 ## Privacy
 
