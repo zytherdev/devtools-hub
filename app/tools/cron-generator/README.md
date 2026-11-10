@@ -1,41 +1,28 @@
-# Cron Expression Generator
+# Gerador de expressões cron
 
-**Status:** Planned
+**Status:** Implementado
 
-Generate and validate cron expressions. Visualize schedule with human-readable format.
+Monta uma expressão cron padrão de cinco campos e apresenta uma explicação campo a campo. O gerador produz a expressão; não executa nem agenda tarefas.
 
-## Availability
+## Campos e opções
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+A entrada deve ficar vazia. Defina os campos no objeto JSON:
 
 ~~~json
-""
+{"minute":"0","hour":"9","dayOfMonth":"*","month":"*","dayOfWeek":"1-5"}
 ~~~
 
-## Default options
+Os campos seguem a ordem cron tradicional: minuto (0–59), hora (0–23), dia do mês (1–31), mês (1–12) e dia da semana (0–7; 0 e 7 representam domingo). Cada campo aceita curingas (`*`), valores numéricos, listas separadas por vírgula, intervalos (`1-5`) e passos (`*/15`, `1-10/2`). Nomes de mês/dia, macros especiais como `@daily` e extensões específicas de provedores não são aceitos.
 
-The options panel starts with this JSON:
+Quando dia do mês e dia da semana estão ambos restritos, a semântica cron tradicional combina os campos com OR; a explicação da saída destaca esse comportamento.
 
-~~~json
-{}
-~~~
+## Privacidade e limites
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+O processamento é local e determinístico: nenhuma chamada de rede é feita. Cada campo é limitado a 128 caracteres e os valores são validados contra seus intervalos.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/cron-generator.test.cjs](../../../tests/tools/cron-generator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e campos padrão.
+- [logic.ts](logic.ts): validação sintática e explicação do cron.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/cron-generator.test.cjs](../../../tests/tools/cron-generator.test.cjs).

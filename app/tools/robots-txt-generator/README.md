@@ -1,41 +1,33 @@
-# Robots.txt Generator
+# Gerador de Robots.txt
 
-**Status:** Planned
+**Status:** Implementado
 
-Generate robots.txt files for your website. Control search engine crawling.
+Gera um arquivo `robots.txt` local com diretivas de agente, caminhos permitidos e bloqueados, referências de sitemap e atraso de rastreamento.
 
-## Availability
+## Uso e opções
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Informe um caminho por linha na entrada para criar diretivas `Disallow`. Os caminhos devem começar com `/`; espaços, fragmentos e caracteres de controle não são aceitos. Caminhos repetidos são removidos.
 
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+Opções padrão:
 
 ~~~json
-""
+{"userAgent":"*","allow":"/","crawlDelay":"","sitemap":""}
 ~~~
 
-## Default options
+- `userAgent`: `*` ou token de produto com letras, números, ponto, sublinhado e hífen (até 80 caracteres).
+- `allow`: caminhos permitidos separados por linhas, seguindo as mesmas regras da entrada.
+- `crawlDelay`: vazio para omitir a diretiva, ou um número inteiro de segundos entre 0 e 86.400.
+- `sitemap`: URLs absolutas HTTP(S), uma por linha. Credenciais e fragmentos não são permitidos.
 
-The options panel starts with this JSON:
+A saída contém as diretivas `User-agent`, `Allow`, `Disallow`, `Crawl-delay` e `Sitemap` apenas quando aplicáveis. O arquivo é texto simples e pode ser baixado como `robots-txt-generator.txt`.
 
-~~~json
-{}
-~~~
+## Limites e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+A entrada é limitada a 100.000 caracteres, com até 1.000 caminhos por campo e até 50 sitemaps. Nenhuma solicitação de rede é feita; a ferramenta apenas valida e monta texto localmente. Revise as regras antes de publicar, pois políticas incorretas podem afetar a indexação do site.
 
-## Processing and privacy
+## Arquivos de contribuição
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/robots-txt-generator.test.cjs](../../../tests/tools/robots-txt-generator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados e opções padrão.
+- [logic.ts](logic.ts): validação e montagem do arquivo.
+- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
+- Testes: [tests/tools/robots-txt-generator.test.cjs](../../../tests/tools/robots-txt-generator.test.cjs).
