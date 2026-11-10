@@ -1,367 +1,44 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useTheme } from '../providers/ThemeProvider'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import clsx from 'clsx'
-import Image from 'next/image'
-import { categories, quickTools } from '../lib/utils/tools'
-
-const menuItems = [
-  { 
-    name: 'Home', 
-    href: '/', 
-    icon: 'fa-solid fa-house',
-    isActive: (path: string) => path === '/' 
-  },
-  {
-    name: 'Tools',
-    icon: 'fa-solid fa-tools',
-    isActive: (path: string) => path.startsWith('/') && path !== '/',
-    children: categories.map(cat => ({
-      name: cat.name,
-      href: `/category/${cat.id}`,
-      icon: cat.icon,
-      count: cat.tools.length,
-      isActive: (path: string) => path === `/category/${cat.id}`
-    }))
-  },
-  {
-    name: 'Favorites',
-    href: '/favorites',
-    icon: 'fa-solid fa-star',
-    isActive: (path: string) => path === '/favorites'
-  },
-  {
-    name: 'About',
-    href: '/about',
-    icon: 'fa-solid fa-info-circle',
-    isActive: (path: string) => path === '/about'
-  }
-]
+import { categories, allTools } from '../lib/utils/tools'
+import { useTheme } from '../providers/ThemeProvider'
 
 export function Header() {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showSearch, setShowSearch] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const searchRef = useRef<HTMLDivElement>(null)
-  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [query, setQuery] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [categoriesOpen, setCategoriesOpen] = useState(false)
+  const results = useMemo(() => {
+    const term = query.trim().toLowerCase()
+    if (!term) return []
+    return allTools.filter(tool => `${tool.name} ${tool.description} ${tool.id}`.toLowerCase().includes(term)).slice(0, 6)
+  }, [query])
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpenDropdown(null)
-      }
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSearch(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  useEffect(() => {
-    if (showSearch && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 100)
-    }
-  }, [showSearch])
-
-  const toggleDropdown = (name: string) => {
-    setOpenDropdown(openDropdown === name ? null : name)
-  }
-
-  const isActive = (item: any) => {
-    if (item.isActive) return item.isActive(pathname)
-    return false
-  }
-
-  const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return []
-    const query = searchQuery.toLowerCase()
-    const allTools = categories.flatMap(cat => 
-      cat.tools.map(tool => ({ ...tool, category: cat.name }))
-    )
-    return allTools.filter(tool => 
-      tool.name.toLowerCase().includes(query) ||
-      tool.description.toLowerCase().includes(query) ||
-      tool.category.toLowerCase().includes(query)
-    ).slice(0, 8)
-  }, [searchQuery])
-
-  return (
-    <nav className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
-      <div className="container mx-auto py-0.5 px-2">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative w-8 h-8">
-              <Image 
-                src="/assets/icons/favicon.ico" 
-                alt="DevTools Hub" 
-                width={32} 
-                height={32}
-                className="transition-transform group-hover:scale-110"
-              />
-            </div>
-            <div translate="no" className="flex items-center gap-2">
-              <span className="hidden md:flex text-xl font-bold text-primary">DevTools Hub</span>
-              <span className="text-[10px] font-mono bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                zyther.dev
-              </span>
-            </div>
-          </Link>
-
-          {/* pc nav */}
-          <div className="hidden lg:flex items-center gap-1">
-            {menuItems.map((item) => {
-              if (item.children) {
-                // dropdown mnu
-                return (
-                  <div key={item.name} ref={dropdownRef} className="relative">
-                    <button
-                      onClick={() => toggleDropdown(item.name)}
-                      className={clsx(
-                        'nav-link px-3 py-2 rounded-lg transition-colors flex items-center gap-2',
-                        openDropdown === item.name
-                          ? 'bg-primary text-white'
-                          : pathname !== '/' && pathname.startsWith('/') 
-                            ? 'bg-primary/10 text-primary' 
-                            : 'text-secondary hover:bg-hover hover:text-primary'
-                      )}
-                    >
-                      <i className={item.icon}></i>
-                      {item.name}
-                      <i className={`fas fa-chevron-down text-xs transition-transform ${openDropdown === item.name ? 'rotate-180' : ''}`}></i>
-                    </button>
-
-                    {openDropdown === item.name && (
-                      <div className="absolute top-full left-0 mt-2 w-72 bg-card border border-border rounded-xl shadow-lg py-2 max-h-[70vh] overflow-y-auto">
-                        <div className="px-3 py-2 border-b border-border">
-                          <span className="text-xs font-semibold text-secondary uppercase tracking-wider">
-                            All Categories
-                          </span>
-                          <span className="text-xs text-muted ml-2">
-                            ({categories.length})
-                          </span>
-                        </div>
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            onClick={() => setOpenDropdown(null)}
-                            className={clsx(
-                              'flex items-center justify-between px-4 py-2.5 hover:bg-hover transition-colors',
-                              child.isActive?.(pathname) && 'bg-primary/10'
-                            )}
-                          >
-                            <div className="flex items-center gap-3">
-                              <i className={clsx('w-5', child.icon)}></i>
-                              <span className="text-sm text-primary">{child.name}</span>
-                            </div>
-                            <span className="text-xs text-secondary bg-input px-2 py-0.5 rounded-full">
-                              {child.count}
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              }
-
-              // active pg
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href!}
-                  className={clsx(
-                    'nav-link px-3 py-2 rounded-lg transition-colors flex items-center gap-2',
-                    isActive(item)
-                      ? 'bg-primary text-white'
-                      : 'text-secondary hover:bg-hover hover:text-primary'
-                  )}
-                >
-                  <i className={item.icon}></i>
-                  {item.name}
-                </Link>
-              )
-            })}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* busca btn */}
-            <div ref={searchRef} className="relative">
-              <button
-                onClick={() => setShowSearch(!showSearch)}
-                className="p-2 rounded-lg hover:bg-hover transition-colors text-secondary hover:text-primary"
-                aria-label="Search tools"
-              >
-                <i className="fas fa-search text-lg"></i>
-              </button>
-
-              {showSearch && (
-                <div className="absolute right-0 top-full mt-2 w-96 bg-card border border-border rounded-xl shadow-lg p-3">
-                  <div className="relative">
-                    <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-sm"></i>
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search 90+ tools..."
-                      className="w-full bg-input border border-border rounded-lg pl-10 pr-4 py-2.5 text-primary placeholder-secondary focus:outline-none focus:ring-2 focus:ring-border-focus transition"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary transition"
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
-                    )}
-                  </div>
-
-                  {searchQuery && (
-                    <div className="mt-3 max-h-64 overflow-y-auto">
-                      {searchResults.length > 0 ? (
-                        <div className="space-y-1">
-                          {searchResults.map((result) => (
-                            <Link
-                              key={result.id}
-                              href={result.href}
-                              onClick={() => {
-                                setShowSearch(false)
-                                setSearchQuery('')
-                              }}
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-hover transition-colors"
-                            >
-                              <i className={result.icon} style={{ color: result.color }}></i>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-sm text-primary truncate">{result.name}</div>
-                                <div className="text-xs text-secondary truncate">{result.category}</div>
-                              </div>
-                              <i className="fas fa-arrow-right text-secondary text-xs"></i>
-                            </Link>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-secondary text-sm">
-                          <i className="fas fa-search text-2xl block mb-2 text-muted"></i>
-                          No tools found for &quot;{searchQuery}&quot;
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* thm btn */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-hover transition-colors text-secondary hover:text-primary"
-              aria-label="Toggle theme"
-            >
-              <i className={clsx(
-                'text-lg',
-                theme === 'dark' ? 'fas fa-sun text-yellow-500' : 'fas fa-moon'
-              )}></i>
-            </button>
-
-            {/* mbile mnu btn */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-hover transition-colors text-secondary hover:text-primary"
-              aria-label="Toggle menu"
-            >
-              <i className={clsx(
-                'text-xl',
-                mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'
-              )}></i>
-            </button>
-          </div>
-        </div>
-
-        {/* mbile mnu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden py-4 mt-2 border-t border-border">
-            <div className="flex flex-col gap-1">
-              <div className="px-3 py-2">
-                <div className="text-xs font-semibold text-secondary uppercase tracking-wider mb-2">
-                  Quick Tools
-                </div>
-                <div className="grid grid-cols-2 gap-1">
-                  {quickTools.map((tool) => (
-                    <Link
-                      key={tool.href}
-                      href={tool.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-hover transition-colors text-sm"
-                    >
-                      <i className={tool.icon} style={{ color: tool.color }}></i>
-                      <span className="text-primary">{tool.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t border-border my-2"></div>
-
-              {/* main nav */}
-              {menuItems.map((item) => {
-                if (item.children) {
-                  return (
-                    <div key={item.name}>
-                      <div className="px-3 py-2 text-xs font-semibold text-secondary uppercase tracking-wider">
-                        {item.name}
-                      </div>
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={clsx(
-                            'flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors',
-                            child.isActive?.(pathname) && 'bg-primary/10'
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            <i className={child.icon}></i>
-                            <span className="text-sm text-primary">{child.name}</span>
-                          </div>
-                          <span className="text-xs text-secondary">{child.count}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )
-                }
-
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href!}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={clsx(
-                      'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors',
-                      isActive(item)
-                        ? 'bg-primary text-white'
-                        : 'text-secondary hover:bg-hover hover:text-primary'
-                    )}
-                  >
-                    <i className={item.icon}></i>
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        )}
+  return <header className="sticky top-0 z-40 border-b border-border bg-card backdrop-blur-xl">
+    <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+      <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="DevTools Hub home"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#347a58] text-white"><i className="fa-solid fa-code" aria-hidden="true" /></span><span className="hidden font-semibold tracking-tight text-primary sm:inline">DevTools Hub</span></Link>
+      <div className="relative mx-auto hidden w-full max-w-md md:block">
+        <label className="sr-only" htmlFor="global-tool-search">Search tools</label><i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-secondary" aria-hidden="true" />
+        <input id="global-tool-search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search tools…" className="w-full rounded-xl border border-border bg-input py-2.5 pl-10 pr-12 text-sm text-primary placeholder:text-secondary focus:border-[#347a58] focus:outline-none" />
+        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-border px-1.5 py-0.5 text-[10px] text-secondary">⌘ K</kbd>
+        {query && <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-xl border border-border bg-card shadow-xl">{results.length ? results.map(tool => <Link key={tool.href} href={tool.href} onClick={() => setQuery('')} className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-0 hover:bg-hover"><i className={`${tool.icon} w-5 text-center`} style={{ color: tool.color }} aria-hidden="true" /><span className="min-w-0"><span className="block truncate text-sm font-medium text-primary">{tool.name}</span><span className="block truncate text-xs text-secondary">{tool.description}</span></span><i className="fa-solid fa-arrow-up-right-from-square ml-auto text-xs text-muted" aria-hidden="true" /></Link>) : <p className="px-4 py-5 text-center text-sm text-secondary">No tools match “{query}”.</p>}</div>}
       </div>
-    </nav>
-  )
+      <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Main navigation">
+        <Link href="/" className={clsx('nav-link rounded-lg px-3 py-2 text-sm', pathname === '/' && 'bg-hover text-primary')}>All tools</Link>
+        <div className="relative"><button type="button" onClick={() => setCategoriesOpen(value => !value)} className="nav-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm" aria-expanded={categoriesOpen}>Categories <i className="fa-solid fa-chevron-down text-[10px]" aria-hidden="true" /></button>
+          {categoriesOpen && <div className="absolute right-0 top-full mt-2 max-h-[70vh] w-64 overflow-auto rounded-xl border border-border bg-card p-2 shadow-xl">{categories.map(category => <Link key={category.id} href={`/category/${category.id}`} onClick={() => setCategoriesOpen(false)} className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-secondary hover:bg-hover hover:text-primary"><span className="flex items-center gap-2"><i className={category.icon} style={{ color: category.color }} aria-hidden="true" />{category.name}</span><span className="text-xs">{category.tools.length}</span></Link>)}</div>}
+        </div>
+        <Link href="/about" className="nav-link rounded-lg px-3 py-2 text-sm">About</Link>
+      </nav>
+      <button type="button" onClick={toggleTheme} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border text-secondary hover:bg-hover hover:text-primary" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}><i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`} aria-hidden="true" /></button>
+      <button type="button" onClick={() => setMenuOpen(value => !value)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border text-secondary md:hidden" aria-label="Toggle navigation" aria-expanded={menuOpen}><i className={`fa-solid ${menuOpen ? 'fa-xmark' : 'fa-bars'}`} aria-hidden="true" /></button>
+    </div>
+    <div className="border-t border-border px-4 py-3 md:hidden"><div className="relative"><i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-sm text-secondary" aria-hidden="true" /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search tools…" className="w-full rounded-xl border border-border bg-input py-2.5 pl-9 pr-3 text-sm text-primary" aria-label="Search tools" /></div></div>
+    {menuOpen && <nav className="grid gap-1 border-t border-border px-4 py-3 md:hidden" aria-label="Mobile navigation"><Link href="/" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm text-primary hover:bg-hover">All tools</Link>{categories.map(category => <Link key={category.id} href={`/category/${category.id}`} onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm text-secondary hover:bg-hover">{category.name}</Link>)}<Link href="/about" onClick={() => setMenuOpen(false)} className="rounded-lg px-3 py-2 text-sm text-secondary hover:bg-hover">About</Link></nav>}
+  </header>
 }
