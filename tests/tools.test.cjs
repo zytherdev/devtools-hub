@@ -14,8 +14,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 33)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 53)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 38)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 48)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -34,7 +34,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 20)
+  assert.equal(genericToolSlugs.length, 25)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -47,12 +47,22 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
     runTool('toml-json-converter', 'x = 1'),
     runTool('json-schema-generator', '{"x":1}'),
     runTool('base64-encoder', 'ok'),
+    runTool('ascii-converter', 'A', { mode: 'text-to-codes', base: 'decimal' }),
+    runTool('mime-type-validator', 'application/json', { mode: 'validate', target: 'mime' }),
+    runTool('uuid-generator', '', { version: '4', count: '1' }),
+    runTool('password-generator', '', { length: '20', count: '1', uppercase: 'true', lowercase: 'true', numbers: 'true', symbols: 'true', excludeAmbiguous: 'false' }),
+    runTool('qr-generator', 'https://example.com', { errorCorrection: 'M', margin: '4', scale: '4' }),
   ])
   assert.deepEqual(JSON.parse(outputs[0]), [{ name: 'Ada' }])
   assert.deepEqual(JSON.parse(outputs[1]), { x: 1 })
   assert.deepEqual(JSON.parse(outputs[2]), { x: 1 })
   assert.equal(JSON.parse(outputs[3]).type, 'object')
   assert.equal(outputs[4], 'b2s=')
+  assert.equal(outputs[5], '65')
+  assert.match(outputs[6], /valid/i)
+  assert.match(outputs[7], /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+  assert.equal(outputs[8].length, 20)
+  assert.match(outputs[9], /^<svg[\s>]/)
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
 })
 

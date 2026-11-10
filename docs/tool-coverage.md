@@ -1,37 +1,38 @@
-# Tool implementation coverage
+# Cobertura de implementação das ferramentas
 
-**Snapshot: November 10, 2026.** The catalog contains 86 entries: 33 have a connected implementation and 53 are explicitly marked as planned. Every entry has one canonical folder under `app/tools/<slug>/`; listing a tool is not, by itself, proof that it can process input. Update this page whenever implementation status changes.
+**Referência: 10 de novembro de 2026.** O catálogo contém 86 ferramentas: 38 têm implementação conectada e 48 estão explicitamente marcadas como planejadas. Cada ferramenta tem uma pasta canônica em `app/tools/<slug>/`; aparecer no catálogo, por si só, não significa que processe entradas. Atualize esta página sempre que o status de uma implementação mudar.
 
-## Implemented
+## Implementadas
 
-| Area | Slugs |
+| Área | Slugs |
 | --- | --- |
-| CSS & style | `css-minifier`, `css-beautifier`, `gradient-generator`, `box-shadow-generator`, `svg-to-css` |
+| CSS e estilos | `css-minifier`, `css-beautifier`, `gradient-generator`, `box-shadow-generator`, `svg-to-css` |
 | JavaScript | `js-minifier`, `js-beautifier`, `html-to-jsx`, `curl-to-code` |
-| HTML & markup | `html-minifier`, `html-beautifier`, `markdown-to-html`, `favicon-generator` |
-| Data | `json-formatter`, `xml-formatter`, `yaml-formatter`, `csv-formatter`, `toml-formatter`, `xml-to-json`, `yaml-to-json`, `json-to-xml`, `csv-to-json`, `toml-json-converter`, `php-json-converter`, `json-schema-generator` |
-| Encoders & decoders | `base64-encoder`, `url-encoder`, `html-encoder`, `jwt-decoder`, `jwt-generator`, `unicode-converter` |
-| Text | `regex-tester` |
-| Converters | `color-converter` |
+| HTML e marcação | `html-minifier`, `html-beautifier`, `markdown-to-html`, `favicon-generator` |
+| Dados | `json-formatter`, `xml-formatter`, `yaml-formatter`, `csv-formatter`, `toml-formatter`, `xml-to-json`, `yaml-to-json`, `json-to-xml`, `csv-to-json`, `toml-json-converter`, `php-json-converter`, `json-schema-generator` |
+| Codificadores e decodificadores | `base64-encoder`, `url-encoder`, `html-encoder`, `jwt-decoder`, `jwt-generator`, `unicode-converter`, `ascii-converter`, `mime-type-validator` |
+| Geradores | `uuid-generator`, `password-generator`, `qr-generator` |
+| Texto | `regex-tester` |
+| Conversores | `color-converter` |
 
-Each implemented tool has its metadata and sample/default options in `definition.ts`, processing in `logic.ts`, and a page entry in `Tool.tsx`. `app/tools/registry.ts` registers metadata; `app/tools/componentRegistry.ts` statically registers UI entry points for the shared dynamic route. Simple interfaces reuse `UniversalTool`, while richer controls use the same shared design system.
+Cada ferramenta implementada contém metadados e opções de exemplo/padrão em `definition.ts`, processamento em `logic.ts` e uma entrada de interface em `Tool.tsx`. `app/tools/registry.ts` registra os metadados; `app/tools/componentRegistry.ts` registra estaticamente as entradas de interface usadas pela rota dinâmica compartilhada. Interfaces simples reutilizam `UniversalTool`; controles mais ricos seguem o mesmo sistema visual compartilhado.
 
-## Pending in the catalog
+## Planejadas no catálogo
 
-All pending entries have the same folder/files contract and show an explicit planned state rather than a non-working editor. Choose one of these slugs for a new implementation, then update its definition, logic, UI, README, and focused test together.
+Todas as ferramentas planejadas seguem o mesmo contrato de pastas e exibem explicitamente o status planejado, em vez de apresentar um editor sem funcionamento. Para iniciar uma implementação, escolha um slug abaixo e atualize em conjunto sua definição, lógica, interface, README e testes específicos.
 
-| Area | Pending slugs |
+| Área | Slugs planejados |
 | --- | --- |
-| Encoders & decoders | `ascii-converter`, `mime-type-validator` |
-| Generators | `uuid-generator`, `password-generator`, `qr-generator`, `robots-txt-generator`, `sitemap-generator`, `random-number-generator`, `cron-generator`, `barcode-generator`, `openapi-generator`, `mock-api-generator` |
-| Text & string | `text-case-converter`, `word-counter`, `diff-checker`, `json-diff`, `lorem-ipsum`, `remove-duplicate-lines`, `slug-generator`, `line-sorter` |
-| Converters | `unit-converter`, `timestamp-converter`, `number-base-converter`, `currency-converter`, `file-size-converter`, `roman-numeral` |
-| Database & DevOps | `sql-formatter`, `docker-compose-converter`, `kubernetes-decoder`, `chmod-calculator`, `subnet-calculator` |
-| Security & crypto | `ssl-checker`, `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `rsa-key-generator`, `bcrypt-generator`, `hmac-generator`, `aes-encryptor`, `certificate-decoder` |
-| Date & time | `cron-validator`, `eta-calculator`, `date-difference`, `timezone-converter`, `text-statistics` |
-| Network & lookup | `ip-lookup`, `user-agent-parser`, `mac-lookup` |
-| Miscellaneous | `http-status-codes`, `emoji-picker`, `bip39-generator`, `benchmark-tool` |
+| Codificadores e decodificadores | — |
+| Geradores | `robots-txt-generator`, `sitemap-generator`, `random-number-generator`, `cron-generator`, `barcode-generator`, `openapi-generator`, `mock-api-generator` |
+| Texto e strings | `text-case-converter`, `word-counter`, `diff-checker`, `json-diff`, `lorem-ipsum`, `remove-duplicate-lines`, `slug-generator`, `line-sorter` |
+| Conversores | `unit-converter`, `timestamp-converter`, `number-base-converter`, `currency-converter`, `file-size-converter`, `roman-numeral` |
+| Banco de dados e DevOps | `sql-formatter`, `docker-compose-converter`, `kubernetes-decoder`, `chmod-calculator`, `subnet-calculator` |
+| Segurança e criptografia | `ssl-checker`, `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `rsa-key-generator`, `bcrypt-generator`, `hmac-generator`, `aes-encryptor`, `certificate-decoder` |
+| Data e hora | `cron-validator`, `eta-calculator`, `date-difference`, `timezone-converter`, `text-statistics` |
+| Rede e consulta | `ip-lookup`, `user-agent-parser`, `mac-lookup` |
+| Diversos | `http-status-codes`, `emoji-picker`, `bip39-generator`, `benchmark-tool` |
 
-## Completion criteria
+## Critérios de conclusão
 
-A tool is implemented only when its `definition.ts` says `status: 'implemented'`, its `logic.ts` performs validated and bounded work, `Tool.tsx` is connected through the component registry, its per-tool README describes options and limitations, and focused tests cover success and invalid/boundary cases. Any external request must be disclosed in the UI and privacy documentation.
+Uma ferramenta só é considerada implementada quando `definition.ts` declara `status: 'implemented'`, `logic.ts` executa operações validadas e limitadas, `Tool.tsx` está conectado pelo registro de componentes, seu README descreve opções e limitações e os testes específicos cobrem casos válidos e inválidos/de limite. Toda solicitação externa deve ser informada na interface e na documentação de privacidade.

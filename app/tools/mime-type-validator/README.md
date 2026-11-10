@@ -1,41 +1,43 @@
-# MIME Type Validator
+# Validador de MIME Type
 
-**Status:** Planned
+**Status:** Implementado
 
-Validate and lookup MIME types for files and content types.
+Valida a sintaxe de um tipo MIME ou consulta tipos MIME comuns a partir de um nome de arquivo ou extensão. O processamento usa uma tabela local incluída no aplicativo e não faz solicitações de rede.
 
-## Availability
+## Uso
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Informe um valor MIME, como `Application/JSON; Charset=utf-8`, uma extensão, como `.jpg`, ou um nome de arquivo, como `archive.tar.gz`. A saída é formatada como JSON. Tipo/subtipo e nomes de parâmetros não diferenciam maiúsculas de minúsculas; valores de parâmetros válidos e strings entre aspas são verificados e preservados. Sufixos compostos incluídos na tabela são verificados antes dos sufixos mais curtos (por exemplo, `archive.tar.gz` corresponde a `application/gzip`).
 
-## Example input
+A opção `mode` aceita:
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+- `lookup` (padrão): retorna o resultado da tabela local, quando houver correspondência.
+- `validate`: informa separadamente se a sintaxe é válida e se o valor consta na tabela local.
+
+A opção `target` aceita:
+
+- `auto` (padrão): identifica a entrada como MIME quando começa com `tipo/subtipo`; caso contrário, interpreta como extensão ou nome de arquivo.
+- `mime`: interpreta explicitamente um tipo MIME, com parâmetros opcionais.
+- `extension`: interpreta explicitamente uma extensão ou um nome de arquivo.
+
+Exemplo de opções em JSON:
 
 ~~~json
-""
+{"mode":"validate","target":"mime"}
 ~~~
 
-## Default options
+Um tipo MIME ou extensão com sintaxe válida, mas ausente da tabela, retorna `valid: true` e `known: false`; uma sintaxe malformada gera um erro. Os parâmetros MIME têm a sintaxe verificada, mas não são usados para selecionar uma entrada da tabela. A consulta de extensão usa o sufixo final do nome do arquivo, dando precedência aos sufixos compostos conhecidos.
 
-The options panel starts with this JSON:
+## Tabela local de referência
 
-~~~json
-{}
-~~~
+A tabela incorporada abrange formatos comuns de JSON/XML/PDF/arquivos compactados/documentos, web/código-fonte, imagem, áudio, vídeo e fontes. Ela é intencionalmente limitada, não é uma lista completa nem um registro IANA oficial. Algumas extensões têm várias convenções; esta tabela escolhe uma associação (por exemplo, `.xml` corresponde a `application/xml`). Os resultados refletem apenas esta lista local, não as associações do sistema operacional ou o comportamento de um servidor. Valores desconhecidos não são consultados externamente.
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+## Limites e privacidade
 
-## Processing and privacy
+A entrada é limitada a 512 caracteres e a saída serializada a 8 KiB. A ferramenta faz apenas análise local de strings e consulta à tabela. Nenhuma entrada é enviada e não há consulta de rede ou dependência de registros remotos.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Arquivos de contribuição
 
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/mime-type-validator.test.cjs](../../../tests/tools/mime-type-validator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados do catálogo, opções e exemplo de entrada.
+- [logic.ts](logic.ts): analisador limitado e tabela de MIME/extensões.
+- [Tool.tsx](Tool.tsx): entrada compartilhada de `UniversalTool`.
+- Testes específicos: [tests/tools/mime-type-validator.test.cjs](../../../tests/tools/mime-type-validator.test.cjs).

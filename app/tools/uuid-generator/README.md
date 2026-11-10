@@ -1,41 +1,31 @@
-# UUID Generator
+# Gerador de UUID
 
-**Status:** Planned
+**Status:** Implementado
 
-Generate UUID v4, v5, and other versions. Perfect for unique identifiers.
+Gera um ou mais identificadores UUID v4 com segurança criptográfica. A ferramenta emite um UUID em letras minúsculas por linha e realiza a geração localmente no navegador ou em um ambiente compatível.
 
-## Availability
+## Opções
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+A ferramenta aceita um objeto JSON de opções:
 
 ~~~json
-""
+{ "version": "4", "count": "1" }
 ~~~
 
-## Default options
+- `version`: deve ser a string `"4"` (padrão: `"4"`).
+- `count`: string de número inteiro entre `"1"` e `"1000"` (padrão: `"1"`).
 
-The options panel starts with this JSON:
+O texto de entrada não é usado; deixe a área de entrada vazia. UUID v5 e outras versões não são compatíveis. As opções `namespace` e `name` são rejeitadas, pois se aplicam à versão v5, e não são ignoradas silenciosamente. Quantidades acima de 1000, chaves de opção inválidas e opções malformadas geram erro.
 
-~~~json
-{}
-~~~
+## Segurança e privacidade
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+Os bytes do UUID v4 são obtidos exclusivamente pela API `Web Crypto getRandomValues` do ambiente; em seguida, os bits de versão e variante padronizados são definidos. Se o Web Crypto não estiver disponível ou falhar, a geração é interrompida com um erro; não há alternativa baseada em `Math.random`. Nenhuma entrada ou dado gerado é enviado pela rede. A ferramenta não faz solicitações externas.
 
-## Processing and privacy
+UUIDs foram projetados para oferecer alta resistência a colisões, não para funcionar como segredos de autenticação ou substituir tokens de controle de acesso.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Arquivos de contribuição
 
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/uuid-generator.test.cjs](../../../tests/tools/uuid-generator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): metadados do catálogo e opções padrão.
+- [logic.ts](logic.ts): geração limitada de UUID v4 e validação das opções.
+- [Tool.tsx](Tool.tsx): entrada de interface compartilhada `UniversalTool`.
+- Testes específicos: [tests/tools/uuid-generator.test.cjs](../../../tests/tools/uuid-generator.test.cjs).

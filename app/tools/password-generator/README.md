@@ -1,41 +1,26 @@
-# Password Generator
+# Gerador de senhas
 
-**Status:** Planned
+**Status:** Implementado
 
-Generate strong, secure passwords with customizable length and character sets.
+Gera uma ou mais senhas com segurança criptográfica, inteiramente no navegador. Cada senha é exibida em uma linha.
 
-## Availability
+## Opções
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+As opções são informadas como strings JSON no painel compartilhado de opções:
 
-## Example input
+- `length`: comprimento da senha, de 8 a 256 caracteres (padrão `"20"`).
+- `count`: quantidade de senhas, de 1 a 100 (padrão `"1"`).
+- `uppercase`, `lowercase`, `numbers`, `symbols`: habilitam ou desabilitam cada classe de caracteres (todas são `"true"` por padrão). Cada classe habilitada estará representada em todos os resultados.
+- `excludeAmbiguous`: quando `"true"`, remove `I`, `l`, `1`, `O`, `0` e `|` (padrão `"false"`).
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+É necessário habilitar pelo menos uma classe. Se todas as opções forem desativadas, a geração falha com uma mensagem de erro na interface. A ferramenta não utiliza texto de entrada.
 
-~~~json
-""
-~~~
+## Segurança e privacidade
 
-## Default options
+As escolhas aleatórias usam `Web Crypto getRandomValues` do navegador e amostragem por rejeição; `Math.random` nunca é usado. O amostrador escolhe uniformemente entre todas as strings possíveis com o comprimento solicitado que atendem às classes habilitadas, evitando substituir caracteres forçadamente. Se o Web Crypto não estiver disponível ou falhar, a geração é interrompida, sem recorrer a uma fonte de aleatoriedade mais fraca.
 
-The options panel starts with this JSON:
+A geração é local: não há solicitações de rede e esta ferramenta não salva nem envia os segredos. Os resultados permanecem visíveis na página atual até serem apagados ou até a navegação para outra página. A interface compartilhada oferece ações manuais de cópia e download; essas ações do usuário podem transferir ou persistir um segredo, conforme o navegador e o destino escolhido. Para contas críticas, use um gerenciador de senhas confiável e revise a senha gerada antes de armazená-la.
 
-~~~json
-{}
-~~~
+## Limites
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
-
-## Processing and privacy
-
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/password-generator.test.cjs](../../../tests/tools/password-generator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+A ferramenta permite até 256 caracteres por senha e até 100 senhas por execução. É necessário que o navegador/ambiente ofereça Web Crypto; não há alternativa por serviços externos.

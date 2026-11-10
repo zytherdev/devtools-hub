@@ -1,41 +1,17 @@
-# QR Code Generator
+# Gerador de QR Code
 
-**Status:** Planned
+Gera um QR Code a partir de texto ou URL. A ferramenta usa o codificador `qrcode` instalado localmente e retorna um único documento SVG, compatível com a pré-visualização compartilhada e o download em `.svg`. Não gera PNG nem outros formatos.
 
-Generate QR codes from text, URLs, or any data. Download in multiple formats.
+## Opções
 
-## Availability
+Informe as opções como um objeto JSON:
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+- `errorCorrection`: `L`, `M`, `Q` ou `H`; padrão `M`.
+- `margin`: largura da zona livre em módulos, número inteiro de 0 a 16; padrão `4`.
+- `scale`: escala SVG em pixels por módulo, número inteiro de 1 a 16; padrão `4`.
 
-## Example input
+Opções desconhecidas e valores fora desses intervalos são rejeitados. A entrada deve conter ao menos um caractere e ter no máximo 1.200 bytes UTF-8. O SVG gerado também é limitado a 512.000 caracteres. Algumas entradas próximas do limite podem exceder a capacidade do QR Code quando usado um nível mais alto de correção de erros; se isso acontecer, tente uma entrada mais curta ou um nível mais baixo.
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Privacidade e limitações
 
-~~~json
-""
-~~~
-
-## Default options
-
-The options panel starts with this JSON:
-
-~~~json
-{}
-~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
-
-## Processing and privacy
-
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/qr-generator.test.cjs](../../../tests/tools/qr-generator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+A codificação é feita localmente no navegador com a dependência `qrcode` incluída no aplicativo; a entrada não é enviada a um serviço. A saída é apenas SVG. Não se usa um serviço externo para validar ou ler QR Codes, e a ferramenta não garante que todas as URLs de destino estejam acessíveis nem que um código impresso possa ser lido em qualquer condição.
