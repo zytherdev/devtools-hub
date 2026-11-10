@@ -1,10 +1,33 @@
 'use client'
 
+import { useState } from 'react'
 import { CodeFormatter } from '@/app/components/CodeFormatter'
-import { beautifyCSS } from '@/app/tools/css-beautifier/logic'
-
-const sample = `.container{display:flex;flex-direction:column;padding:2rem;background:#f1f5f9;border-radius:.75rem;content:"keep   these spaces"}@media(max-width:768px){.container{padding:1rem}& .child{color:red}}@starting-style{opacity:0}`
+import { defaultCSSOptions, formatCSSWithPreferences } from '@/app/tools/css-beautifier/logic'
+import { tool } from '@/app/tools/css-beautifier/definition'
 
 export default function CSSBeautifier() {
-  return <CodeFormatter title="CSS Beautifier" description="Format and inspect CSS while preserving quoted content, modern at-rules, and nested rules." language="CSS" sample={sample} format={(source, prefs) => beautifyCSS(source, { indentSize: prefs.indentSize, indentChar: prefs.indentChar })} />
+  const [endWithNewline, setEndWithNewline] = useState(defaultCSSOptions.endWithNewline)
+
+  return <>
+    <section className="tool-panel mb-4 flex flex-wrap items-center gap-3 p-4">
+      <label htmlFor="css-end-with-newline" className="flex items-center gap-2 text-sm font-medium text-primary">
+        <input
+          id="css-end-with-newline"
+          type="checkbox"
+          checked={endWithNewline}
+          onChange={event => setEndWithNewline(event.target.checked)}
+          className="h-4 w-4 rounded border-border accent-[#347a58]"
+        />
+        End output with a newline
+      </label>
+      <p className="text-xs text-secondary">Applied to the formatted CSS output.</p>
+    </section>
+    <CodeFormatter
+      title={tool.name}
+      description={tool.description}
+      language="CSS"
+      sample={tool.exampleInput}
+      format={(source, preferences) => formatCSSWithPreferences(source, preferences, endWithNewline)}
+    />
+  </>
 }
