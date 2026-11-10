@@ -88,7 +88,6 @@ export default function RegexTester() {
   }, [result, testText])
 
   return <div>
-    <div className="mb-8"><div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600"><i className="fa-solid fa-code" aria-hidden="true" /></div><h1 className="text-3xl font-semibold tracking-tight text-primary sm:text-4xl">Regex Tester</h1><p className="mt-2 max-w-2xl text-secondary">Test, debug, and visualize regular expressions. Runs in an isolated worker with a time limit.</p></div>
     <div className="grid gap-5 lg:grid-cols-2">
       <ToolPanel>
         <div className="space-y-5">

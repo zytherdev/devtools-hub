@@ -191,16 +191,6 @@ export default function JSONFormatter() {
 
     return (
         <div>
-            <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-                    <i className="fas fa-brackets-curly text-purple-500"></i>
-                    JSON Formatter
-                </h1>
-                <p className="text-secondary mt-2 max-w-2xl">
-                    Format, validate, minify, and convert your JSON data. 
-                    Process JSON with powerful tools and utilities.
-                </p>
-            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <ToolPanel>

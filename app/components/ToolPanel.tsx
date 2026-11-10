@@ -11,7 +11,7 @@ interface ToolPanelProps {
 export function ToolPanel({ children, className }: ToolPanelProps) {
   return (
     <div className={clsx(
-      'bg-card border border-border rounded-xl p-5',
+      'tool-panel',
       className
     )}>
       {children}

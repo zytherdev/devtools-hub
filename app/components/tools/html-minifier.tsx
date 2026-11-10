@@ -179,16 +179,6 @@ export default function HTMLMinifier() {
 
     return (
         <div>
-            <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-                    <i className="fa-brands fa-html5 text-orange-500"></i>
-                    HTML Minifier
-                </h1>
-                <p className="text-secondary mt-2 max-w-2xl">
-                    Clean and compress your HTML markup. Remove comments, whitespace, and unnecessary characters
-                    to reduce file size and improve loading performance.
-                </p>
-            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <ToolPanel>

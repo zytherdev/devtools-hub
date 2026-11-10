@@ -88,15 +88,6 @@ export default function BoxShadowGenerator() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-          <i className="fa-solid fa-cube text-yellow-500"></i>
-          Box Shadow Generator
-        </h1>
-        <p className="text-secondary mt-2 max-w-2xl">
-          Design and preview CSS box shadows with real-time controls for offset, blur, and color.
-        </p>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ToolPanel>

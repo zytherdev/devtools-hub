@@ -92,15 +92,6 @@ export default function JSMinifier() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-          <i className="fa-brands fa-js text-yellow-500"></i>
-          JavaScript Minifier
-        </h1>
-        <p className="text-secondary mt-2 max-w-2xl">
-          Compress and optimize your JavaScript code. Remove comments, whitespace, and unnecessary characters.
-        </p>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="tool-panel bg-card border border-border rounded-xl p-5">

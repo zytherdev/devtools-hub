@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 type FormatPreferences = { indentSize: number; indentChar: ' ' | '\t'; wrapLineLength: number }
 type Props = { title: string; description: string; language: string; sample: string; format: (source: string, preferences: FormatPreferences) => Promise<string> }
 
-export function CodeFormatter({ title, description, language, sample, format }: Props) {
+export function CodeFormatter({ language, sample, format }: Props) {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [indentSize, setIndentSize] = useState(2)
@@ -37,13 +37,12 @@ export function CodeFormatter({ title, description, language, sample, format }: 
     catch { setError('Clipboard access was denied by this browser.') }
   }
 
-  return <div className="mx-auto max-w-6xl">
-    <header className="mb-8"><span className="mb-3 inline-flex rounded-xl bg-[#347a58]/10 px-3 py-2 text-sm font-semibold uppercase tracking-wide text-[#347a58]">{language}</span><h1 className="text-3xl font-semibold tracking-tight text-primary sm:text-4xl">{title}</h1><p className="mt-2 max-w-2xl text-secondary">{description}</p></header>
+  return <div>
     <div className="grid gap-4 lg:grid-cols-2">
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5"><div className="mb-3 flex items-center justify-between"><label htmlFor="formatter-input" className="text-sm font-semibold text-primary">Input</label><button type="button" onClick={() => { setInput(sample); setOutput(''); setError(''); setStatus('Example loaded.') }} className="text-xs font-medium text-secondary hover:text-primary">Load sample</button></div><textarea id="formatter-input" value={input} onChange={event => { setInput(event.target.value); setOutput(''); setStatus('') }} spellCheck={false} placeholder={`Paste ${language} code…`} className="min-h-80 w-full resize-y rounded-xl border border-border bg-input p-4 font-mono text-sm leading-6 text-primary focus:outline-none focus:ring-2 focus:ring-[#347a58]" /><p className="mt-2 text-right text-xs text-secondary">{input.length.toLocaleString()} characters</p></section>
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5"><div className="mb-3 flex items-center justify-between"><label htmlFor="formatter-output" className="text-sm font-semibold text-primary">Formatted output</label><span className="text-xs text-secondary">{output.length.toLocaleString()} chars</span></div><textarea id="formatter-output" value={output} readOnly spellCheck={false} placeholder="Formatted code appears here…" className="min-h-80 w-full resize-y rounded-xl border border-border bg-input-readonly p-4 font-mono text-sm leading-6 text-primary focus:outline-none" /><button type="button" onClick={copy} disabled={!output} className="btn btn-outline mt-3 text-sm disabled:opacity-50"><i className="fa-solid fa-copy" aria-hidden="true" />Copy</button></section>
+      <section className="tool-panel p-4 sm:p-5"><div className="mb-3 flex items-center justify-between"><label htmlFor="formatter-input" className="text-sm font-semibold text-primary">Input</label><button type="button" onClick={() => { setInput(sample); setOutput(''); setError(''); setStatus('Example loaded.') }} className="text-xs font-medium text-secondary hover:text-primary">Load sample</button></div><textarea id="formatter-input" value={input} onChange={event => { setInput(event.target.value); setOutput(''); setStatus('') }} spellCheck={false} placeholder={`Paste ${language} code…`} className="min-h-80 w-full resize-y rounded-xl border border-border bg-input p-4 font-mono text-sm leading-6 text-primary focus:outline-none focus:ring-2 focus:ring-[#347a58]" /><p className="mt-2 text-right text-xs text-secondary">{input.length.toLocaleString()} characters</p></section>
+      <section className="tool-panel p-4 sm:p-5"><div className="mb-3 flex items-center justify-between"><label htmlFor="formatter-output" className="text-sm font-semibold text-primary">Formatted output</label><span className="text-xs text-secondary">{output.length.toLocaleString()} chars</span></div><textarea id="formatter-output" value={output} readOnly spellCheck={false} placeholder="Formatted code appears here…" className="min-h-80 w-full resize-y rounded-xl border border-border bg-input-readonly p-4 font-mono text-sm leading-6 text-primary focus:outline-none" /><button type="button" onClick={copy} disabled={!output} className="btn btn-outline mt-3 text-sm disabled:opacity-50"><i className="fa-solid fa-copy" aria-hidden="true" />Copy</button></section>
     </div>
-    <section className="mt-4 flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-card p-4">
+    <section className="tool-panel mt-4 flex flex-wrap items-end gap-4 p-4">
       <div><label htmlFor="format-indent" className="mb-1 block text-xs font-medium text-secondary">Indent</label><select id="format-indent" value={indentSize} onChange={event => { setIndentChar(' '); setIndentSize(Number(event.target.value)) }} className="rounded-lg border border-border bg-input px-3 py-2 text-sm text-primary"><option value={2}>2 spaces</option><option value={4}>4 spaces</option></select></div>
       <div><label htmlFor="format-width" className="mb-1 block text-xs font-medium text-secondary">Line width</label><input id="format-width" type="number" min={40} max={160} value={wrapLineLength} onChange={event => setWrapLineLength(Number(event.target.value))} className="w-24 rounded-lg border border-border bg-input px-3 py-2 text-sm text-primary" /></div>
       <button type="button" onClick={() => { setIndentChar(' '); setIndentSize(2) }} className="btn btn-outline text-sm">Spaces</button>
@@ -53,4 +52,3 @@ export function CodeFormatter({ title, description, language, sample, format }: 
     <p role="status" aria-live="polite" className={`mt-3 min-h-6 text-sm ${error ? 'text-red-600 dark:text-red-300' : 'text-secondary'}`}>{error || status}</p>
   </div>
 }
-

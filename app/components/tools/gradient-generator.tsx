@@ -102,15 +102,6 @@ export default function GradientGenerator() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-          <i className="fa-solid fa-fill-drip text-purple-500"></i>
-          Gradient Generator
-        </h1>
-        <p className="text-secondary mt-2 max-w-2xl">
-          Create beautiful CSS gradients with multiple stops. Preview and copy the code instantly.
-        </p>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* preview */}

@@ -102,15 +102,6 @@ export default function SVGToCSS() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-          <i className="fa-solid fa-image text-orange-500"></i>
-          SVG to CSS Converter
-        </h1>
-        <p className="text-secondary mt-2 max-w-2xl">
-          Convert SVG to CSS background-image, mask-image, or content. Perfect for icons and illustrations.
-        </p>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* input */}
