@@ -1,34 +1,34 @@
-# Conversor de timestamp
+# Timestamp Converter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Converte datas ISO-8601 em timestamps Unix e timestamps Unix em datas UTC, sem depender do fuso local da máquina.
+Converts ISO-8601 dates to Unix timestamps and Unix timestamps to UTC dates, without depending on the machine’s local time zone.
 
-## Opções
+## Options
 
-ISO para epoch:
+ISO to epoch:
 
 ~~~json
 {"mode":"iso-to-epoch"}
 ~~~
 
-A entrada deve ter fuso explícito, por exemplo `2026-01-01T12:30:00-03:00`. A fração de segundo aceita de 1 a 3 dígitos. A saída JSON inclui a data UTC normalizada, segundos Unix e milissegundos Unix.
+The input must have an explicit time zone, for example `2026-01-01T12:30:00-03:00`. The fractional second accepts 1 to 3 digits. The JSON output includes the normalized UTC date, Unix seconds, and Unix milliseconds.
 
-Epoch para ISO:
+Epoch to ISO:
 
 ~~~json
 {"mode":"epoch-to-iso","unit":"seconds"}
 ~~~
 
-`unit` pode ser `seconds` ou `milliseconds`. Essa direção aceita apenas timestamp inteiro. A saída sempre informa ISO UTC, segundos e milissegundos. O intervalo segue os limites de `Date` do JavaScript; datas inexistentes e offsets acima de ±14:00 são rejeitados.
+`unit` can be `seconds` or `milliseconds`. This direction accepts only integer timestamps. The output always provides ISO UTC, seconds, and milliseconds. The range follows JavaScript `Date` limits; nonexistent dates and offsets above ±14:00 are rejected.
 
-## Limites e privacidade
+## Limits and privacy
 
-Entrada de 1 a 100 caracteres. O conversor não consulta relógio ou serviço externo; o resultado depende apenas do valor informado.
+Input of 1 to 100 characters. The converter does not query a clock or external service; the result depends only on the provided value.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados, exemplo e modo padrão.
-- [logic.ts](logic.ts): parser ISO estrito, validação de calendário e conversão Unix.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/timestamp-converter.test.cjs](../../../tests/tools/timestamp-converter.test.cjs).
+- [definition.ts](definition.ts): metadata, example, and default mode.
+- [logic.ts](logic.ts): strict ISO parser, calendar validation, and Unix conversion.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/timestamp-converter.test.cjs](../../../tests/tools/timestamp-converter.test.cjs).

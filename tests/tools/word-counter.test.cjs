@@ -26,7 +26,7 @@ test('word-counter has an implemented definition and JSON output contract', () =
     'sentences',
     'readingMinutes',
   ])
-  assert.equal(typeof run('texto'), 'string')
+  assert.equal(typeof run('text'), 'string')
 })
 
 test('counts accented Unicode words and grapheme characters including a family emoji', () => {
@@ -77,12 +77,12 @@ test('counts whitespace-only content as characters and lines but no words or par
 
 test('accepts the maximum input size and rejects anything larger', () => {
   assert.equal(parse('x'.repeat(MAX_INPUT_LENGTH)).characters, MAX_INPUT_LENGTH)
-  assert.throws(() => run('x'.repeat(MAX_INPUT_LENGTH + 1)), /1\.000\.000 caracteres/)
+  assert.throws(() => run('x'.repeat(MAX_INPUT_LENGTH + 1)), /1,000,000 characters/)
 })
 
 test('rejects invalid input and all supplied options', () => {
-  assert.throws(() => run(null), /entrada deve ser uma string/i)
-  assert.throws(() => run('texto', null), /opções devem ser um objeto vazio/i)
-  assert.throws(() => run('texto', { locale: 'pt-BR' }), /opção desconhecida.*locale/i)
-  assert.throws(() => run('texto', []), /opções devem ser um objeto vazio/i)
+  assert.throws(() => run(null), /input must be a string/i)
+  assert.throws(() => run('text', null), /options must be an empty object/i)
+  assert.throws(() => run('text', { locale: 'en-US' }), /unknown option.*locale/i)
+  assert.throws(() => run('text', []), /options must be an empty object/i)
 })

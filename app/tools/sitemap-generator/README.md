@@ -1,32 +1,32 @@
-# Gerador de Sitemap
+# Sitemap Generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Gera um sitemap XML a partir de URLs do site, uma por linha. O resultado segue o namespace padrão de sitemap e pode ser baixado como arquivo `.xml`.
+Generates an XML sitemap from website URLs, one per line. The result follows the standard sitemap namespace and can be downloaded as an `.xml` file.
 
-## Uso e opções
+## Usage and options
 
-Cada URL precisa ser absoluta e usar `http` ou `https`. URLs com credenciais ou fragmentos são rejeitadas. Entradas duplicadas são normalizadas e removidas.
+Each URL must be absolute and use `http` or `https`. URLs with credentials or fragments are rejected. Duplicate entries are normalized and removed.
 
-Opções padrão:
+Default options:
 
 ~~~json
 {"changeFrequency":"weekly","priority":"0.5","lastModified":""}
 ~~~
 
-- `changeFrequency`: `always`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`, `never` ou vazio para omitir a etiqueta.
-- `priority`: número decimal de `0.0` a `1.0` (até duas casas decimais) ou vazio para omitir a etiqueta.
-- `lastModified`: data real no formato `YYYY-MM-DD` ou vazio para omitir a etiqueta.
+- `changeFrequency`: `always`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`, `never`, or empty to omit the tag.
+- `priority`: decimal number from `0.0` to `1.0` (up to two decimal places), or empty to omit the tag.
+- `lastModified`: valid date in `YYYY-MM-DD` format, or empty to omit the tag.
 
-Os valores opcionais são aplicados a cada URL. Caracteres especiais em localizações são escapados em XML. Verifique se todas as URLs representam páginas canônicas que você deseja disponibilizar aos mecanismos de busca.
+Optional values are applied to each URL. Special characters in locations are escaped in XML. Make sure all URLs represent canonical pages that you want to make available to search engines.
 
-## Limites e privacidade
+## Limits and privacy
 
-São aceitas até 50.000 URLs e 5.000.000 caracteres de entrada; a saída é limitada a 10.000.000 de caracteres. O processamento é local, sem consultar nem enviar URLs a serviços externos.
+Up to 50,000 URLs and 5,000,000 input characters are accepted; output is limited to 10,000,000 characters. Processing is local, without querying or sending URLs to external services.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados, opções e exemplo de entrada.
-- [logic.ts](logic.ts): validação, normalização e serialização XML.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/sitemap-generator.test.cjs](../../../tests/tools/sitemap-generator.test.cjs).
+- [definition.ts](definition.ts): metadata, options, and input example.
+- [logic.ts](logic.ts): validation, normalization, and XML serialization.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/sitemap-generator.test.cjs](../../../tests/tools/sitemap-generator.test.cjs).

@@ -1,28 +1,28 @@
-# Remover linhas duplicadas
+# Remove Duplicate Lines
 
-**Status:** Implementado
+**Status:** Implemented
 
-Remove ocorrências repetidas de linhas, preservando a ordem da primeira ocorrência. Quebras CRLF e LF são normalizadas para LF.
+Removes repeated line occurrences while preserving the order of the first occurrence. CRLF and LF line endings are normalized to LF.
 
-## Opções
+## Options
 
 ~~~json
 {"caseSensitive":"true","trimWhitespace":"false","keepEmpty":"false"}
 ~~~
 
-- `caseSensitive`: `true` diferencia maiúsculas/minúsculas; `false` compara em minúsculas, preservando a primeira forma encontrada na saída.
-- `trimWhitespace`: `true` remove espaços no início/fim antes da comparação e também na saída.
-- `keepEmpty`: `true` preserva uma ocorrência de linha vazia; por padrão linhas vazias são descartadas.
+- `caseSensitive`: `true` distinguishes uppercase and lowercase; `false` compares in lowercase, preserving the first form found in the output.
+- `trimWhitespace`: `true` removes leading/trailing whitespace before comparison and also in the output.
+- `keepEmpty`: `true` preserves one occurrence of an empty line; by default, empty lines are discarded.
 
-Uma quebra de linha final é tratada como terminador do arquivo, não como um item vazio adicional. A saída é composta por linhas únicas separadas por LF.
+A final line break is treated as a file terminator, not as an additional empty item. The output consists of unique lines separated by LF.
 
-## Limites e privacidade
+## Limits and privacy
 
-A entrada é limitada a 1.000.000 de caracteres e 100.000 linhas. Nenhum conteúdo é enviado pela rede.
+Input is limited to 1,000,000 characters and 100,000 lines. No content is sent over the network.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e opções padrão.
-- [logic.ts](logic.ts): normalização, deduplicação e validação.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/remove-duplicate-lines.test.cjs](../../../tests/tools/remove-duplicate-lines.test.cjs).
+- [definition.ts](definition.ts): metadata and default options.
+- [logic.ts](logic.ts): normalization, deduplication, and validation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/remove-duplicate-lines.test.cjs](../../../tests/tools/remove-duplicate-lines.test.cjs).

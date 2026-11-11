@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 require('./register-ts.cjs')
 const assert = require('node:assert/strict')
+const { parse: parseYaml } = require('yaml')
 const fs = require('node:fs')
 const path = require('node:path')
 const test = require('node:test')
@@ -14,8 +15,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 58)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 28)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 63)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 23)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -34,7 +35,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 45)
+  assert.equal(genericToolSlugs.length, 50)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -65,13 +66,18 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
     runTool('json-diff', '{"before":{"x":1},"after":{"x":2}}'),
     runTool('lorem-ipsum', '', { paragraphs: '1', sentencesPerParagraph: '1', wordsPerSentence: '5', format: 'paragraphs' }),
     runTool('remove-duplicate-lines', 'a\na', { caseSensitive: 'true', trimWhitespace: 'false', keepEmpty: 'false' }),
-    runTool('slug-generator', 'Olá Mundo', { separator: '-', maxLength: '80', lowercase: 'true' }),
+    runTool('slug-generator', 'Hello World', { separator: '-', maxLength: '80', lowercase: 'true' }),
     runTool('line-sorter', '10\n2', { order: 'numeric-asc', unique: 'false', trimWhitespace: 'false', ignoreEmpty: 'false' }),
     runTool('unit-converter', '0', { from: 'C', to: 'F', precision: '2' }),
     runTool('timestamp-converter', '1970-01-01T00:00:00Z', { mode: 'iso-to-epoch' }),
     runTool('number-base-converter', '255', { fromBase: '10', toBase: '16' }),
     runTool('file-size-converter', '1536', { from: 'B', to: 'KiB', precision: '3' }),
     runTool('roman-numeral', '2024', { mode: 'arabic-to-roman' }),
+    runTool('currency-converter', '100', { from: 'USD', to: 'EUR', rate: '0.92', precision: '2' }),
+    runTool('sql-formatter', 'select id,name from users'),
+    runTool('docker-compose-converter', 'docker run --name app -p 8080:80 nginx:alpine'),
+    runTool('kubernetes-decoder', 'apiVersion: v1\nkind: Secret\nmetadata:\n  name: demo\ndata:\n  token: YWRtaW4=\n'),
+    runTool('chmod-calculator', '755'),
   ])
   assert.deepEqual(JSON.parse(outputs[0]), [{ name: 'Ada' }])
   assert.deepEqual(JSON.parse(outputs[1]), { x: 1 })
@@ -96,13 +102,18 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
   assert.equal(JSON.parse(outputs[20]).changed[0].path, '/x')
   assert.equal((outputs[21].match(/\./g) ?? []).length, 1)
   assert.equal(outputs[22], 'a')
-  assert.equal(outputs[23], 'ola-mundo')
+  assert.equal(outputs[23], 'hello-world')
   assert.equal(outputs[24], '2\n10')
   assert.equal(JSON.parse(outputs[25]).result, 32)
   assert.equal(JSON.parse(outputs[26]).unixMilliseconds, 0)
   assert.equal(outputs[27], 'ff')
   assert.equal(JSON.parse(outputs[28]).result, 1.5)
   assert.equal(outputs[29], 'MMXXIV')
+  assert.equal(JSON.parse(outputs[30]).result, 92)
+  assert.match(outputs[31], /^SELECT id,\n  name\nFROM users/)
+  assert.equal(parseYaml(outputs[32]).services.converted.image, 'nginx:alpine')
+  assert.equal(parseYaml(outputs[33]).stringData.token, 'admin')
+  assert.equal(JSON.parse(outputs[34]).symbolic, 'rwxr-xr-x')
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
 })
 

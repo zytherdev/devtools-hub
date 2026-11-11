@@ -1,26 +1,26 @@
-# Conversor de bases numéricas
+# Number base converter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Converte inteiros com sinal entre qualquer base de 2 a 36, usando aritmética BigInt para não perder precisão.
+Converts signed integers between any base from 2 to 36, using BigInt arithmetic to avoid losing precision.
 
-## Opções
+## Options
 
 ~~~json
 {"fromBase":"10","toBase":"16"}
 ~~~
 
-`fromBase` e `toBase` são inteiros de 2 a 36. Os dígitos aceitos são `0–9` e `a–z` (sem distinção de caixa na entrada); a saída usa letras minúsculas. O sinal `+` ou `-` é permitido. Prefixos como `0x` não são interpretados: configure explicitamente a base. Frações não são suportadas.
+`fromBase` and `toBase` are integers from 2 to 36. Accepted digits are `0–9` and `a–z` (case-insensitive on input); output uses lowercase letters. The `+` or `-` sign is allowed. Prefixes such as `0x` are not interpreted: explicitly set the base. Fractions are not supported.
 
-Exemplo: entrada `255` em base 10 produz `ff` em base 16.
+Example: input `255` in base 10 produces `ff` in base 16.
 
-## Limites e privacidade
+## Limits and privacy
 
-Até 1.000 caracteres de entrada. O cálculo é local, exato e sem rede.
+Up to 1,000 input characters. The calculation is local, exact, and network-free.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e bases padrão.
-- [logic.ts](logic.ts): parser de dígitos e conversão BigInt.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/number-base-converter.test.cjs](../../../tests/tools/number-base-converter.test.cjs).
+- [definition.ts](definition.ts): metadata and default bases.
+- [logic.ts](logic.ts): digit parser and BigInt conversion.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/number-base-converter.test.cjs](../../../tests/tools/number-base-converter.test.cjs).

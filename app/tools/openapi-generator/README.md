@@ -1,10 +1,10 @@
-# Gerador OpenAPI
+# OpenAPI Generator
 
-**Status:** implementado.
+**Status:** implemented.
 
-Gera localmente uma especificação **OpenAPI 3.1.0 em JSON** a partir de um objeto JSON com título, versão, servidores, endpoints e schemas de resposta. A saída pode ser copiada ou baixada como `.json` na interface padrão do projeto.
+Generates an **OpenAPI 3.1.0 JSON** specification locally from a JSON object containing a title, version, servers, endpoints, and response schemas. The output can be copied or downloaded as a `.json` file in the project’s standard interface.
 
-## Exemplo de entrada
+## Input example
 
 ```json
 {
@@ -33,25 +33,25 @@ Gera localmente uma especificação **OpenAPI 3.1.0 em JSON** a partir de um obj
 }
 ```
 
-Cada endpoint gera uma operação com resposta `200` e conteúdo `application/json`, usando o `responseSchema` informado. Os schemas são transportados para a saída; a ferramenta não infere schemas nem valida completamente a semântica do vocabulário JSON Schema.
+Each endpoint generates an operation with a `200` response and `application/json` content, using the provided `responseSchema`. Schemas are carried through to the output; the tool does not infer schemas or fully validate the semantics of the JSON Schema vocabulary.
 
-## Campos e validação
+## Fields and validation
 
-- `title` e `version` são textos obrigatórios, limitados a 128 e 64 caracteres.
-- `description` é opcional (até 2.000 caracteres); se vazio, não aparece em `info`.
-- `servers` deve conter de 1 a 20 URLs absolutas `http://` ou `https://`, cada uma com até 2.048 caracteres. Credenciais e fragmentos `#` são proibidos.
-- `endpoints` deve conter de 1 a 100 itens. O método deve ser `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` ou `OPTIONS`; método e caminho não podem se repetir.
-- O `path` tem até 512 caracteres, deve começar com `/` e não pode incluir query (`?`) ou fragmento (`#`). `summary` e `responseDescription` têm até 256 caracteres.
-- `responseSchema` deve ser um objeto JSON com no máximo 16 níveis de profundidade e 20.000 valores. `$ref`, `$dynamicRef` e `$recursiveRef` são rejeitados.
-- A entrada inteira está limitada a 100.000 caracteres; a saída, a 1 MB. Campos fora do formato documentado e opções não vazias são rejeitados.
+- `title` and `version` are required text fields, limited to 128 and 64 characters.
+- `description` is optional (up to 2,000 characters); if empty, it is omitted from `info`.
+- `servers` must contain 1 to 20 absolute `http://` or `https://` URLs, each up to 2,048 characters. Credentials and `#` fragments are prohibited.
+- `endpoints` must contain 1 to 100 items. The method must be `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, or `OPTIONS`; methods and paths must not be duplicated.
+- `path` can be up to 512 characters, must start with `/`, and cannot include a query (`?`) or fragment (`#`). `summary` and `responseDescription` can be up to 256 characters.
+- `responseSchema` must be a JSON object with a maximum depth of 16 levels and 20,000 values. `$ref`, `$dynamicRef`, and `$recursiveRef` are rejected.
+- The entire input is limited to 100,000 characters; the output to 1 MB. Fields outside the documented format and non-empty options are rejected.
 
-## Limitações e privacidade
+## Limitations and privacy
 
-O processamento ocorre no navegador e não faz requisições de rede; URLs de servidor são apenas incluídas na especificação gerada, nunca acessadas. Esta ferramenta não lê código-fonte, não importa documentos, não consulta servidores e não verifica se os endpoints existem. Cada operação recebe somente uma resposta `200` JSON; não há configuração de parâmetros, autenticação, segurança, erros adicionais, cabeçalhos ou conteúdo alternativo. Referências a schemas não são aceitas. A saída é uma especificação inicial que deve ser revisada antes de uso em produção.
+Processing takes place in the browser and makes no network requests; server URLs are only included in the generated specification and are never accessed. This tool does not read source code, import documents, query servers, or verify that endpoints exist. Each operation receives only a `200` JSON response; there is no configuration for parameters, authentication, security, additional errors, headers, or alternative content. Schema references are not accepted. The output is an initial specification that should be reviewed before production use.
 
-## Arquivos
+## Files
 
-- `definition.ts`: metadados, exemplo, opções vazias e extensão JSON.
-- `logic.ts`: validação limitada e geração local.
-- `Tool.tsx`: composição com `UniversalTool` e slug `openapi-generator`.
-- Testes focados: `tests/tools/openapi-generator.test.cjs`.
+- `definition.ts`: metadata, example, empty options, and JSON extension.
+- `logic.ts`: limited validation and local generation.
+- `Tool.tsx`: composition with `UniversalTool` and slug `openapi-generator`.
+- Focused tests: `tests/tools/openapi-generator.test.cjs`.

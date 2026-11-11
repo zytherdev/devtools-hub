@@ -1,29 +1,29 @@
-# Gerador Lorem Ipsum
+# Lorem Ipsum Generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Gera texto de preenchimento determinístico, sem entrada, adequado a protótipos, layouts e mockups.
+Generates deterministic filler text, with no input, suitable for prototypes, layouts, and mockups.
 
-## Opções
+## Options
 
 ~~~json
 {"paragraphs":"3","sentencesPerParagraph":"3","wordsPerSentence":"12","format":"paragraphs"}
 ~~~
 
-- `paragraphs`: de 1 a 50.
-- `sentencesPerParagraph`: de 1 a 20.
-- `wordsPerSentence`: de 3 a 50.
-- `format`: `paragraphs` (separa blocos com linha em branco) ou `single` (um bloco contínuo).
+- `paragraphs`: from 1 to 50.
+- `sentencesPerParagraph`: from 1 to 20.
+- `wordsPerSentence`: from 3 to 50.
+- `format`: `paragraphs` (separates blocks with a blank line) or `single` (one continuous block).
 
-Cada frase termina com ponto. A lista de palavras se repete de forma previsível, portanto não use o texto gerado como conteúdo editorial real.
+Each sentence ends with a period. The word list repeats predictably, so do not use the generated text as real editorial content.
 
-## Limites e privacidade
+## Limits and privacy
 
-O texto de entrada deve ficar vazio. O resultado é limitado a 500.000 caracteres. Todo o processamento é local e determinístico, sem chamadas de rede.
+The input text must be empty. The result is limited to 500.000 characters. All processing is local and deterministic, with no network calls.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e opções padrão.
-- [logic.ts](logic.ts): geração e validação dos limites.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/lorem-ipsum.test.cjs](../../../tests/tools/lorem-ipsum.test.cjs).
+- [definition.ts](definition.ts): metadata and default options.
+- [logic.ts](logic.ts): generation and limit validation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/lorem-ipsum.test.cjs](../../../tests/tools/lorem-ipsum.test.cjs).

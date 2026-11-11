@@ -2,8 +2,8 @@ import type { ToolDefinition } from '@/app/tools/types'
 
 export const tool: ToolDefinition = {
   id: 'roman-numeral',
-  name: 'Conversor de algarismos romanos',
-  description: 'Converta números inteiros de 1 a 3999 entre algarismos arábicos e romanos canônicos.',
+  name: 'Roman Numeral Converter',
+  description: 'Convert integers from 1 to 3999 between Arabic numbers and canonical Roman numerals.',
   icon: 'fa-solid fa-roman-numeral',
   color: '#8b5cf6',
   badge: '',

@@ -10,34 +10,34 @@ test('text-case-converter exposes an implemented tool with a loadable example', 
   assert.equal(tool.href, '/text-case-converter')
   assert.equal(tool.status, 'implemented')
   assert.equal(tool.outputExtension, 'txt')
-  assert.equal(tool.exampleInput, 'Olá, Mundo! revisão 2:Texto')
+  assert.equal(tool.exampleInput, 'Hello, World! review 2:Text')
   assert.deepEqual(tool.defaultOptions, { mode: 'camel' })
   assert.equal(CASE_MODES.length, 9)
 })
 
 test('camel mode normalizes words and existing camel-case boundaries', () => {
-  assert.equal(run('Olá, Mundo! revisão 2:Texto', { mode: 'camel' }), 'oláMundoRevisão2Texto')
+  assert.equal(run('Hello, World! review 2:Text', { mode: 'camel' }), 'helloWorldReview2Text')
   assert.equal(run('alreadyCamelCase', { mode: 'camel' }), 'alreadyCamelCase')
 })
 
 test('pascal mode capitalizes every token', () => {
-  assert.equal(run('olá mundo', { mode: 'pascal' }), 'OláMundo')
+  assert.equal(run('hello world', { mode: 'pascal' }), 'HelloWorld')
 })
 
 test('snake mode joins lowercase Unicode words with underscores', () => {
-  assert.equal(run('Crème brûlée déjà', { mode: 'snake' }), 'crème_brûlée_déjà')
+  assert.equal(run('naïve café résumé', { mode: 'snake' }), 'naïve_café_résumé')
 })
 
 test('kebab mode joins lowercase words with hyphens', () => {
-  assert.equal(run('Bom dia, mundo!', { mode: 'kebab' }), 'bom-dia-mundo')
+  assert.equal(run('Good morning, world!', { mode: 'kebab' }), 'good-morning-world')
 })
 
 test('constant mode joins uppercase words with underscores', () => {
-  assert.equal(run('ação rápida', { mode: 'constant' }), 'AÇÃO_RÁPIDA')
+  assert.equal(run('quick action', { mode: 'constant' }), 'QUICK_ACTION')
 })
 
 test('title mode capitalizes every word and uses spaces', () => {
-  assert.equal(run('mistura de palavras', { mode: 'title' }), 'Mistura De Palavras')
+  assert.equal(run('mixed words here', { mode: 'title' }), 'Mixed Words Here')
 })
 
 test('sentence mode uppercases the first letter and lowercases the rest, preserving separators', () => {
@@ -46,13 +46,13 @@ test('sentence mode uppercases the first letter and lowercases the rest, preserv
 })
 
 test('lower and upper modes convert the full string while preserving punctuation', () => {
-  assert.equal(run('Já É! 42?', { mode: 'lower' }), 'já é! 42?')
-  assert.equal(run('Já É! 42?', { mode: 'upper' }), 'JÁ É! 42?')
+  assert.equal(run('Café Is! 42?', { mode: 'lower' }), 'café is! 42?')
+  assert.equal(run('Café Is! 42?', { mode: 'upper' }), 'CAFÉ IS! 42?')
 })
 
 test('Unicode words include accented letters, acronym boundaries, and numeric tokens', () => {
-  assert.equal(run('ÉcoleHTTPServer42Name', { mode: 'snake' }), 'école_http_server_42_name')
-  assert.equal(run('cafe\u0301 noir', { mode: 'title' }), 'Café Noir')
+  assert.equal(run('CaféHTTPServer42Name', { mode: 'snake' }), 'café_http_server_42_name')
+  assert.equal(run('cafe\u0301 blue', { mode: 'title' }), 'Café Blue')
 })
 
 test('punctuation and whitespace delimit words in word-based modes', () => {

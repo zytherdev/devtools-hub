@@ -57,21 +57,21 @@ test('accepts the exact 100,000-character input boundary', () => {
 })
 
 test('rejects malformed JSON, empty input, and input above 100,000 characters', () => {
-  assert.throws(() => run(''), /objeto JSON/i)
-  assert.throws(() => run('{oops'), /JSON inválido/i)
-  assert.throws(() => run(`${' '.repeat(100_001)}${input()}`), /100\.000 caracteres/i)
+  assert.throws(() => run(''), /JSON object/i)
+  assert.throws(() => run('{oops'), /Invalid JSON/i)
+  assert.throws(() => run(`${' '.repeat(100_001)}${input()}`), /100,000-character limit/i)
 })
 
 test('enforces endpoint count, text limits, and the documented HTTP methods', () => {
   const emptyEndpoints = clone(sample)
   emptyEndpoints.endpoints = []
-  assert.throws(() => run(input(emptyEndpoints)), /1 a 100/i)
+  assert.throws(() => run(input(emptyEndpoints)), /between 1 and 100/i)
 
   const manyEndpoints = clone(sample)
   manyEndpoints.endpoints = Array.from({ length: 101 }, (_, index) => ({
     ...sample.endpoints[0], path: `/users/${index}`,
   }))
-  assert.throws(() => run(input(manyEndpoints)), /1 a 100/i)
+  assert.throws(() => run(input(manyEndpoints)), /between 1 and 100/i)
 
   const longTitle = clone(sample)
   longTitle.title = 'x'.repeat(129)
@@ -79,19 +79,19 @@ test('enforces endpoint count, text limits, and the documented HTTP methods', ()
 
   const invalidMethod = clone(sample)
   invalidMethod.endpoints[0].method = 'CONNECT'
-  assert.throws(() => run(input(invalidMethod)), /Método HTTP inválido/i)
+  assert.throws(() => run(input(invalidMethod)), /Invalid HTTP method/i)
 })
 
 test('rejects paths with query/hash and duplicate method-path pairs', () => {
   for (const path of ['/users?active=true', '/users#top', 'users']) {
     const invalid = clone(sample)
     invalid.endpoints[0].path = path
-    assert.throws(() => run(input(invalid)), /path deve começar com \/|query ou fragmento/i)
+    assert.throws(() => run(input(invalid)), /path must start with \/|query or fragment/i)
   }
 
   const duplicate = clone(sample)
   duplicate.endpoints.push({ ...duplicate.endpoints[0], method: 'GET' })
-  assert.throws(() => run(input(duplicate)), /Operação duplicada/i)
+  assert.throws(() => run(input(duplicate)), /Duplicate operation/i)
 })
 
 test('requires absolute HTTP(S) servers without credentials or fragments', () => {
@@ -107,23 +107,23 @@ test('validates response schema depth, JSON numbers, and references recursively'
   let schema = {}
   for (let index = 0; index < 17; index++) schema = { nested: schema }
   tooDeep.endpoints[0].responseSchema = schema
-  assert.throws(() => run(input(tooDeep)), /profundidade máxima de 16/i)
+  assert.throws(() => run(input(tooDeep)), /maximum depth of 16/i)
 
   const nonJsonNumber = clone(sample)
   nonJsonNumber.endpoints[0].responseSchema = { enum: [1e400] }
   const nonJsonNumberInput = input(nonJsonNumber).replace('[null]', '[1e400]')
-  assert.throws(() => run(nonJsonNumberInput), /número não JSON/i)
+  assert.throws(() => run(nonJsonNumberInput), /non-JSON number/i)
 
   for (const referenceKey of ['$ref', '$dynamicRef', '$recursiveRef']) {
     const referenced = clone(sample)
     referenced.endpoints[0].responseSchema = { properties: { user: { [referenceKey]: 'https://example.com/schema.json' } } }
-    assert.throws(() => run(input(referenced)), /não aceita referências/i)
+    assert.throws(() => run(input(referenced)), /does not allow .*references/i)
   }
 })
 
 test('rejects unsupported fields and non-empty options', () => {
   const extra = clone(sample)
   extra.unexpected = true
-  assert.throws(() => run(input(extra)), /Campo não reconhecido/i)
-  assert.throws(() => run(input(), { indent: '4' }), /não aceita opções/i)
+  assert.throws(() => run(input(extra)), /Unrecognized field/i)
+  assert.throws(() => run(input(), { indent: '4' }), /does not accept options/i)
 })

@@ -1,33 +1,33 @@
-# Gerador de Robots.txt
+# Robots.txt Generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Gera um arquivo `robots.txt` local com diretivas de agente, caminhos permitidos e bloqueados, referências de sitemap e atraso de rastreamento.
+Generates a local `robots.txt` file with agent directives, allowed and blocked paths, sitemap references, and crawl delay.
 
-## Uso e opções
+## Usage and options
 
-Informe um caminho por linha na entrada para criar diretivas `Disallow`. Os caminhos devem começar com `/`; espaços, fragmentos e caracteres de controle não são aceitos. Caminhos repetidos são removidos.
+Enter one path per line in the input to create `Disallow` directives. Paths must start with `/`; spaces, fragments, and control characters are not accepted. Duplicate paths are removed.
 
-Opções padrão:
+Default options:
 
 ~~~json
 {"userAgent":"*","allow":"/","crawlDelay":"","sitemap":""}
 ~~~
 
-- `userAgent`: `*` ou token de produto com letras, números, ponto, sublinhado e hífen (até 80 caracteres).
-- `allow`: caminhos permitidos separados por linhas, seguindo as mesmas regras da entrada.
-- `crawlDelay`: vazio para omitir a diretiva, ou um número inteiro de segundos entre 0 e 86.400.
-- `sitemap`: URLs absolutas HTTP(S), uma por linha. Credenciais e fragmentos não são permitidos.
+- `userAgent`: `*` or a product token containing letters, numbers, periods, underscores, and hyphens (up to 80 characters).
+- `allow`: allowed paths separated by lines, following the same input rules.
+- `crawlDelay`: empty to omit the directive, or an integer number of seconds between 0 and 86,400.
+- `sitemap`: absolute HTTP(S) URLs, one per line. Credentials and fragments are not allowed.
 
-A saída contém as diretivas `User-agent`, `Allow`, `Disallow`, `Crawl-delay` e `Sitemap` apenas quando aplicáveis. O arquivo é texto simples e pode ser baixado como `robots-txt-generator.txt`.
+The output contains the `User-agent`, `Allow`, `Disallow`, `Crawl-delay`, and `Sitemap` directives only when applicable. The file is plain text and can be downloaded as `robots-txt-generator.txt`.
 
-## Limites e privacidade
+## Limits and privacy
 
-A entrada é limitada a 100.000 caracteres, com até 1.000 caminhos por campo e até 50 sitemaps. Nenhuma solicitação de rede é feita; a ferramenta apenas valida e monta texto localmente. Revise as regras antes de publicar, pois políticas incorretas podem afetar a indexação do site.
+Input is limited to 100,000 characters, with up to 1,000 paths per field and up to 50 sitemaps. No network requests are made; the tool only validates and assembles text locally. Review the rules before publishing, as incorrect policies can affect site indexing.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e opções padrão.
-- [logic.ts](logic.ts): validação e montagem do arquivo.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/robots-txt-generator.test.cjs](../../../tests/tools/robots-txt-generator.test.cjs).
+- [definition.ts](definition.ts): metadata and default options.
+- [logic.ts](logic.ts): file validation and assembly.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/robots-txt-generator.test.cjs](../../../tests/tools/robots-txt-generator.test.cjs).

@@ -1,26 +1,26 @@
-# Conversor de tamanho de arquivo
+# File Size Converter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Converte valores entre bytes, unidades decimais e unidades binárias.
+Converts values between bytes, decimal units, and binary units.
 
-## Opções
+## Options
 
 ~~~json
 {"from":"B","to":"KiB","precision":"3"}
 ~~~
 
-Unidades decimais usam potências de 1.000: `B`, `KB`, `MB`, `GB`, `TB`, `PB`. Unidades binárias usam potências de 1.024: `KiB`, `MiB`, `GiB`, `TiB`, `PiB`, `EiB`. `precision` define o arredondamento entre 0 e 12 casas decimais (padrão 3). A saída JSON apresenta o valor de entrada, as unidades e o resultado.
+Decimal units use powers of 1,000: `B`, `KB`, `MB`, `GB`, `TB`, `PB`. Binary units use powers of 1,024: `KiB`, `MiB`, `GiB`, `TiB`, `PiB`, `EiB`. `precision` sets rounding to between 0 and 12 decimal places (default 3). The JSON output shows the input value, units, and result.
 
-Este cálculo converte unidades matemáticas; não inspeciona arquivos nem estima espaço efetivamente ocupado por sistemas de arquivos.
+This calculation converts mathematical units; it does not inspect files or estimate the space actually occupied by file systems.
 
-## Limites e privacidade
+## Limits and privacy
 
-Aceita número finito não negativo com até 100 caracteres. Não há leitura de arquivos ou tráfego de rede.
+Accepts a finite, non-negative number of up to 100 characters. No files are read and no network traffic occurs.
 
-## Arquivos de contribuição
+## Implementation files
 
-- [definition.ts](definition.ts): metadados e opções padrão.
-- [logic.ts](logic.ts): fatores decimais/binários e validação.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/file-size-converter.test.cjs](../../../tests/tools/file-size-converter.test.cjs).
+- [definition.ts](definition.ts): metadata and default options.
+- [logic.ts](logic.ts): decimal/binary factors and validation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/file-size-converter.test.cjs](../../../tests/tools/file-size-converter.test.cjs).

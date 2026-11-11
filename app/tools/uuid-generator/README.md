@@ -1,31 +1,31 @@
-# Gerador de UUID
+# UUID Generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Gera um ou mais identificadores UUID v4 com segurança criptográfica. A ferramenta emite um UUID em letras minúsculas por linha e realiza a geração localmente no navegador ou em um ambiente compatível.
+Generates one or more cryptographically secure UUID v4 identifiers. The tool outputs one lowercase UUID per line and performs the generation locally in the browser or in a compatible environment.
 
-## Opções
+## Options
 
-A ferramenta aceita um objeto JSON de opções:
+The tool accepts a JSON options object:
 
 ~~~json
 { "version": "4", "count": "1" }
 ~~~
 
-- `version`: deve ser a string `"4"` (padrão: `"4"`).
-- `count`: string de número inteiro entre `"1"` e `"1000"` (padrão: `"1"`).
+- `version`: must be the string `"4"` (default: `"4"`).
+- `count`: integer string between `"1"` and `"1000"` (default: `"1"`).
 
-O texto de entrada não é usado; deixe a área de entrada vazia. UUID v5 e outras versões não são compatíveis. As opções `namespace` e `name` são rejeitadas, pois se aplicam à versão v5, e não são ignoradas silenciosamente. Quantidades acima de 1000, chaves de opção inválidas e opções malformadas geram erro.
+The input text is not used; leave the input area empty. UUID v5 and other versions are not supported. The `namespace` and `name` options are rejected because they apply to version v5; they are not silently ignored. Counts above 1000, invalid option keys, and malformed options produce an error.
 
-## Segurança e privacidade
+## Security and privacy
 
-Os bytes do UUID v4 são obtidos exclusivamente pela API `Web Crypto getRandomValues` do ambiente; em seguida, os bits de versão e variante padronizados são definidos. Se o Web Crypto não estiver disponível ou falhar, a geração é interrompida com um erro; não há alternativa baseada em `Math.random`. Nenhuma entrada ou dado gerado é enviado pela rede. A ferramenta não faz solicitações externas.
+The UUID v4 bytes are obtained exclusively through the environment’s `Web Crypto getRandomValues` API; the standardized version and variant bits are then set. If Web Crypto is unavailable or fails, generation stops with an error; there is no `Math.random`-based fallback. No input or generated data is sent over the network. The tool makes no external requests.
 
-UUIDs foram projetados para oferecer alta resistência a colisões, não para funcionar como segredos de autenticação ou substituir tokens de controle de acesso.
+UUIDs are designed to provide high collision resistance, not to serve as authentication secrets or replace access-control tokens.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados do catálogo e opções padrão.
-- [logic.ts](logic.ts): geração limitada de UUID v4 e validação das opções.
-- [Tool.tsx](Tool.tsx): entrada de interface compartilhada `UniversalTool`.
-- Testes específicos: [tests/tools/uuid-generator.test.cjs](../../../tests/tools/uuid-generator.test.cjs).
+- [definition.ts](definition.ts): catalog metadata and default options.
+- [logic.ts](logic.ts): bounded UUID v4 generation and options validation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface input.
+- Specific tests: [tests/tools/uuid-generator.test.cjs](../../../tests/tools/uuid-generator.test.cjs).

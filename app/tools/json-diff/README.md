@@ -1,12 +1,12 @@
-# Comparador de JSON
+# JSON Comparator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Compara duas estruturas JSON localmente e retorna listas de valores adicionados, removidos e alterados.
+Compares two JSON structures locally and returns lists of added, removed, and changed values.
 
-## Uso
+## Usage
 
-A entrada deve ser um objeto JSON com exatamente as propriedades `before` e `after`:
+The input must be a JSON object with exactly the properties `before` and `after`:
 
 ~~~json
 {
@@ -15,15 +15,15 @@ A entrada deve ser um objeto JSON com exatamente as propriedades `before` e `aft
 }
 ~~~
 
-A saída é um JSON com arrays `added`, `removed` e `changed`. Cada diferença inclui um caminho JSON Pointer; caracteres `/` e `~` nos nomes de propriedade são escapados conforme a convenção. Arrays do mesmo tamanho são comparados por índice; arrays de tamanhos diferentes aparecem como uma única alteração no caminho do array.
+The output is JSON with `added`, `removed`, and `changed` arrays. Each difference includes a JSON Pointer path; `/` and `~` characters in property names are escaped according to the convention. Arrays of the same size are compared by index; arrays of different sizes appear as a single change at the array path.
 
-## Limites e privacidade
+## Limits and privacy
 
-A entrada é limitada a 1.000.000 de caracteres, a comparação percorre no máximo 100.000 nós e 50 níveis de profundidade, e a saída não pode exceder 4.000.000 de caracteres. Opções não são aceitas. Nenhum dado é enviado pela rede.
+The input is limited to 1,000,000 characters, the comparison traverses at most 100,000 nodes and 50 levels of depth, and the output cannot exceed 4,000,000 characters. Options are not accepted. No data is sent over the network.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e exemplo de comparação.
-- [logic.ts](logic.ts): parser, comparação estrutural e validações.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/json-diff.test.cjs](../../../tests/tools/json-diff.test.cjs).
+- [definition.ts](definition.ts): metadata and comparison example.
+- [logic.ts](logic.ts): parser, structural comparison, and validations.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/json-diff.test.cjs](../../../tests/tools/json-diff.test.cjs).

@@ -1,12 +1,12 @@
-# Contador de palavras
+# Word Counter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Analise um texto localmente e obtenha contagens de palavras, caracteres Unicode, caracteres sem espaços, linhas, parágrafos e frases, além de uma estimativa de tempo de leitura.
+Analyze text locally and get counts for words, Unicode characters, characters without whitespace, lines, paragraphs, and sentences, along with an estimated reading time.
 
-## Como usar
+## How to use
 
-Cole o texto no campo de entrada da ferramenta. O resultado é JSON, com os campos nesta ordem estável:
+Paste the text into the tool’s input field. The result is JSON, with fields in this stable order:
 
 ~~~json
 {
@@ -20,19 +20,19 @@ Cole o texto no campo de entrada da ferramenta. O resultado é JSON, com os camp
 }
 ~~~
 
-Os números do exemplo são ilustrativos. A contagem de palavras usa `Intl.Segmenter` com granularidade de palavra e considera somente segmentos `isWordLike`. Os caracteres são agrupamentos de grafemas Unicode (com fallback para pontos de código em ambientes sem suporte). Linhas são separadas por LF, CRLF ou CR; parágrafos são blocos não vazios separados por uma ou mais linhas em branco. Frases são segmentadas por `Intl.Segmenter` quando disponível. O tempo aproximado é calculado a 200 palavras por minuto, em minutos decimais (`words / 200`). Uma entrada vazia resulta em zero em todas as contagens.
+The numbers in the example are illustrative. Word counting uses `Intl.Segmenter` with word granularity and considers only `isWordLike` segments. Characters are Unicode grapheme clusters (with a fallback to code points in environments without support). Lines are separated by LF, CRLF, or CR; paragraphs are non-empty blocks separated by one or more blank lines. Sentences are segmented by `Intl.Segmenter` when available. The approximate time is calculated at 200 words per minute, in decimal minutes (`words / 200`). Empty input results in zero for all counts.
 
-## Opções e limites
+## Options and limits
 
-Não há opções aceitas; qualquer chave fornecida é rejeitada. A entrada deve ser uma string com até 1.000.000 de unidades de código UTF-16. Entradas maiores são rejeitadas.
+No options are accepted; any supplied key is rejected. The input must be a string of up to 1,000,000 UTF-16 code units. Larger inputs are rejected.
 
-## Privacidade
+## Privacy
 
-Todo o processamento ocorre no navegador, sem solicitações de rede e sem envio do texto para serviços externos.
+All processing takes place in the browser, with no network requests and no text sent to external services.
 
-## Arquivos
+## Files
 
-- [definition.ts](definition.ts): metadados, estado e extensão JSON.
-- [logic.ts](logic.ts): validação e análise local.
-- [Tool.tsx](Tool.tsx): interface baseada em `UniversalTool`.
-- Testes focados: [word-counter.test.cjs](../../../tests/tools/word-counter.test.cjs).
+- [definition.ts](definition.ts): metadata, state, and JSON extension.
+- [logic.ts](logic.ts): validation and local analysis.
+- [Tool.tsx](Tool.tsx): interface based on `UniversalTool`.
+- Focused tests: [word-counter.test.cjs](../../../tests/tools/word-counter.test.cjs).

@@ -2,8 +2,8 @@ import type { ToolDefinition } from '@/app/tools/types'
 
 export const tool: ToolDefinition = {
   id: 'timestamp-converter',
-  name: 'Conversor de timestamp',
-  description: 'Converta datas ISO-8601 com fuso explícito e timestamps Unix em segundos ou milissegundos.',
+  name: 'Timestamp Converter',
+  description: 'Convert ISO-8601 dates with explicit time zones and Unix timestamps in seconds or milliseconds.',
   icon: 'fa-solid fa-clock',
   color: '#f59e0b',
   badge: '',

@@ -1,17 +1,17 @@
-# Gerador de QR Code
+# QR Code Generator
 
-Gera um QR Code a partir de texto ou URL. A ferramenta usa o codificador `qrcode` instalado localmente e retorna um único documento SVG, compatível com a pré-visualização compartilhada e o download em `.svg`. Não gera PNG nem outros formatos.
+Generates a QR Code from text or a URL. The tool uses the locally installed `qrcode` encoder and returns a single SVG document, compatible with the shared preview and `.svg` download. It does not generate PNG or other formats.
 
-## Opções
+## Options
 
-Informe as opções como um objeto JSON:
+Provide the options as a JSON object:
 
-- `errorCorrection`: `L`, `M`, `Q` ou `H`; padrão `M`.
-- `margin`: largura da zona livre em módulos, número inteiro de 0 a 16; padrão `4`.
-- `scale`: escala SVG em pixels por módulo, número inteiro de 1 a 16; padrão `4`.
+- `errorCorrection`: `L`, `M`, `Q` or `H`; default `M`.
+- `margin`: width of the quiet zone in modules, an integer from 0 to 16; default `4`.
+- `scale`: SVG scale in pixels per module, an integer from 1 to 16; default `4`.
 
-Opções desconhecidas e valores fora desses intervalos são rejeitados. A entrada deve conter ao menos um caractere e ter no máximo 1.200 bytes UTF-8. O SVG gerado também é limitado a 512.000 caracteres. Algumas entradas próximas do limite podem exceder a capacidade do QR Code quando usado um nível mais alto de correção de erros; se isso acontecer, tente uma entrada mais curta ou um nível mais baixo.
+Unknown options and values outside these ranges are rejected. The input must contain at least one character and be no more than 1,200 UTF-8 bytes. The generated SVG is also limited to 512,000 characters. Some inputs near the limit may exceed the QR Code capacity when using a higher error correction level; if this happens, try a shorter input or a lower level.
 
-## Privacidade e limitações
+## Privacy and limitations
 
-A codificação é feita localmente no navegador com a dependência `qrcode` incluída no aplicativo; a entrada não é enviada a um serviço. A saída é apenas SVG. Não se usa um serviço externo para validar ou ler QR Codes, e a ferramenta não garante que todas as URLs de destino estejam acessíveis nem que um código impresso possa ser lido em qualquer condição.
+Encoding is performed locally in the browser using the `qrcode` dependency included in the application; the input is not sent to a service. The output is SVG only. No external service is used to validate or read QR Codes, and the tool does not guarantee that all destination URLs are accessible or that a printed code can be read under every condition.

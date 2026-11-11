@@ -1,28 +1,28 @@
-# Gerador de slug
+# Slug Generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Transforma texto em um slug compacto para URLs. A normalização remove marcas diacríticas combinantes, mantém letras e números Unicode e troca sequências de outros caracteres por um separador.
+Transforms text into a compact URL slug. Normalization removes combining diacritical marks, preserves Unicode letters and numbers, and replaces sequences of other characters with a separator.
 
-## Opções
+## Options
 
 ~~~json
 {"separator":"-","maxLength":"80","lowercase":"true"}
 ~~~
 
-- `separator`: hífen (`-`) ou sublinhado (`_`).
-- `maxLength`: tamanho máximo de 1 a 200 caracteres; o corte remove eventual separador final.
-- `lowercase`: `true` converte para minúsculas; `false` preserva a caixa original.
+- `separator`: hyphen (`-`) or underscore (`_`).
+- `maxLength`: maximum length of 1 to 200 characters; truncation removes any trailing separator.
+- `lowercase`: `true` converts to lowercase; `false` preserves the original case.
 
-Exemplo: `Olá, Mundo! Página número 2` resulta em `ola-mundo-pagina-numero-2`. Não é feita transliteração de scripts não latinos; letras Unicode são mantidas.
+Example: `Hello, World! Page number 2` results in `hello-world-page-number-2`. No transliteration of non-Latin scripts is performed; Unicode letters are preserved.
 
-## Limites e privacidade
+## Limits and privacy
 
-A entrada é limitada a 100.000 caracteres. O processamento é local e não envia texto para serviços externos.
+Input is limited to 100,000 characters. Processing is local and does not send text to external services.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e opções padrão.
-- [logic.ts](logic.ts): normalização Unicode e validação.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/slug-generator.test.cjs](../../../tests/tools/slug-generator.test.cjs).
+- [definition.ts](definition.ts): metadata and default options.
+- [logic.ts](logic.ts): Unicode normalization and validation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/slug-generator.test.cjs](../../../tests/tools/slug-generator.test.cjs).

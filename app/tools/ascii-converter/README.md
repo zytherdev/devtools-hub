@@ -1,32 +1,32 @@
-# Conversor ASCII
+# ASCII Converter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Converte caracteres ASCII em códigos numéricos separados por espaços e faz o caminho inverso. Escolha a direção e a representação decimal, hexadecimal ou binária nas opções da ferramenta.
+Converts ASCII characters to space-separated numeric codes and back. Choose the direction and the decimal, hexadecimal, or binary representation in the tool options.
 
-## Uso e opções
+## Usage and options
 
-O objeto de opções aceita exatamente os seguintes valores em texto:
+The options object accepts exactly the following text values:
 
-- `mode`: `text-to-codes` ou `codes-to-text` (padrão: `text-to-codes`).
-- `base`: `decimal`, `hex` ou `binary` (padrão: `decimal`). Define a representação numérica tanto na codificação quanto na decodificação.
+- `mode`: `text-to-codes` or `codes-to-text` (default: `text-to-codes`).
+- `base`: `decimal`, `hex`, or `binary` (default: `decimal`). Defines the numeric representation for both encoding and decoding.
 
-Por exemplo, a entrada `ASCII` com as opções padrão produz `65 83 67 73 73`. Para decodificar, use `mode: "codes-to-text"`; a entrada hexadecimal `41 53 43 49 49` requer `base: "hex"`, e a entrada binária requer `base: "binary"`.
+For example, the input `ASCII` with the default options produces `65 83 67 73 73`. To decode, use `mode: "codes-to-text"`; the hexadecimal input `41 53 43 49 49` requires `base: "hex"`, and binary input requires `base: "binary"`.
 
-A entrada numérica deve conter uma sequência de dígitos separada por um ou mais espaços em branco. Cada item deve usar apenas dígitos válidos para a base escolhida, sem prefixos `0x`/`0b`, pontuação ou separadores como vírgulas. Cada valor deve estar no intervalo inclusivo de 0 a 127. Zeros à esquerda são aceitos; dígitos hexadecimais não diferenciam maiúsculas de minúsculas. Entrada vazia ou composta apenas por espaços produz saída vazia.
+Numeric input must contain a sequence of digits separated by one or more whitespace characters. Each item must use only digits valid for the chosen base, with no `0x`/`0b` prefixes, punctuation, or separators such as commas. Each value must be in the inclusive range 0 to 127. Leading zeros are accepted; hexadecimal digits are case-insensitive. Empty input or input consisting only of whitespace produces empty output.
 
-## ASCII e caracteres de controle
+## ASCII and control characters
 
-O conversor aceita toda a faixa ASCII de 7 bits. No modo de conversão de texto para códigos, cada caractere precisa ter um ponto de código Unicode entre 0 e 127. Os controles C0 (0–31), os caracteres imprimíveis (32–126) e DEL (127) são preservados e codificados. Qualquer ponto de código acima de 127 — incluindo caracteres acentuados, pontuação tipográfica e emojis — é rejeitado, com a posição e o valor Unicode informados; nada é transliterado nem substituído silenciosamente.
+The converter supports the full 7-bit ASCII range. In text-to-codes mode, each character must have a Unicode code point between 0 and 127. C0 controls (0–31), printable characters (32–126), and DEL (127) are preserved and encoded. Any code point above 127—including accented characters, typographic punctuation, and emojis—is rejected, with its position and Unicode value reported; nothing is transliterated or silently replaced.
 
-No modo de códigos para texto, todos os valores entre 0 e 127 são convertidos no caractere correspondente. O ASCII imprimível (32–126) aparece normalmente; os controles (0–31 e 127) são incluídos literalmente e podem parecer invisíveis ou produzir efeitos especiais em alguns editores e terminais. Tenha cuidado ao copiar esses controles. Esta ferramenta trata apenas ASCII de 7 bits; não é um decodificador de arquivos binários ou de bytes arbitrários.
+In codes-to-text mode, all values between 0 and 127 are converted to the corresponding character. Printable ASCII (32–126) appears normally; controls (0–31 and 127) are included literally and may appear invisible or produce special effects in some editors and terminals. Take care when copying these controls. This tool handles only 7-bit ASCII; it is not a decoder for binary files or arbitrary bytes.
 
-## Limites e privacidade
+## Limits and privacy
 
-A entrada é limitada a 100.000 unidades de código UTF-16 e a saída gerada a 800.000 caracteres. Opções inválidas, itens malformados e números fora do intervalo retornam um erro explicativo. O processamento é determinístico e inteiramente local no navegador: nenhum dado é enviado a serviços externos nem armazenado pela ferramenta.
+Input is limited to 100,000 UTF-16 code units, and generated output to 800,000 characters. Invalid options, malformed items, and out-of-range numbers return an explanatory error. Processing is deterministic and entirely local in the browser: no data is sent to external services or stored by the tool.
 
-## Exemplo
+## Example
 
-Entrada: `ASCII`<br>
-Opções: `{"mode":"text-to-codes","base":"decimal"}`<br>
-Saída: `65 83 67 73 73`
+Input: `ASCII`<br>
+Options: `{"mode":"text-to-codes","base":"decimal"}`<br>
+Output: `65 83 67 73 73`

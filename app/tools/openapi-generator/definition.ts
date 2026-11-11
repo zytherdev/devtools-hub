@@ -3,7 +3,7 @@ import type { ToolDefinition } from '@/app/tools/types'
 export const tool: ToolDefinition = {
   id: 'openapi-generator',
   name: 'OpenAPI Generator',
-  description: 'Gere uma especificação OpenAPI 3.1 em JSON a partir de endpoints e schemas de resposta.',
+  description: 'Generate an OpenAPI 3.1 JSON specification from endpoints and response schemas.',
   icon: 'fa-solid fa-file-code',
   color: '#10b981',
   badge: '',

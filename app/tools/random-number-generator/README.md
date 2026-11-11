@@ -1,32 +1,32 @@
-# Gerador de números aleatórios
+# Random number generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Gera inteiros criptograficamente seguros dentro de uma faixa configurável, com opção para impedir repetições. Cada resultado aparece em uma linha.
+Generates cryptographically secure integers within a configurable range, with an option to prevent repeats. Each result appears on a separate line.
 
-## Opções
+## Options
 
-A área de entrada deve permanecer vazia. Configure a ferramenta pelo objeto JSON:
+The input area must remain empty. Configure the tool using the JSON object:
 
 ~~~json
 {"min":"1","max":"100","count":"10","unique":"false"}
 ~~~
 
-- `min` e `max`: limites inclusivos, que devem ser inteiros seguros do JavaScript; `min` não pode ser maior que `max`.
-- `count`: quantidade de resultados entre 1 e 1.000.
-- `unique`: `true` para amostragem sem repetição, ou `false` (padrão) para permitir repetições. A quantidade solicitada não pode exceder os valores disponíveis quando `unique` é `true`.
+- `min` and `max`: inclusive limits, which must be JavaScript safe integers; `min` cannot be greater than `max`.
+- `count`: number of results, from 1 to 1,000.
+- `unique`: `true` for sampling without repeats, or `false` (default) to allow repeats. The requested count cannot exceed the number of available values when `unique` is `true`.
 
-## Segurança e privacidade
+## Security and privacy
 
-Os valores são produzidos com `Web Crypto getRandomValues` e amostragem por rejeição para evitar viés de módulo. Se Web Crypto estiver indisponível ou falhar, a geração é interrompida; não há fallback para `Math.random`. O processamento ocorre localmente, sem rede ou armazenamento pelo aplicativo.
+Values are generated using `Web Crypto getRandomValues` and rejection sampling to avoid modulo bias. If Web Crypto is unavailable or fails, generation stops; there is no fallback to `Math.random`. Processing happens locally, with no network access or storage by the application.
 
-## Limites
+## Limits
 
-A faixa aceita qualquer limite inteiro seguro do JavaScript, e uma execução gera até 1.000 valores. A ferramenta não recebe uma seed nem texto de entrada. Não use números gerados como substitutos para chaves criptográficas ou segredos específicos de protocolo.
+The range accepts any JavaScript safe integer as a limit, and a single run generates up to 1,000 values. The tool does not accept a seed or input text. Do not use generated numbers as substitutes for cryptographic keys or protocol-specific secrets.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e valores padrão.
-- [logic.ts](logic.ts): validação da faixa e amostragem segura.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/random-number-generator.test.cjs](../../../tests/tools/random-number-generator.test.cjs).
+- [definition.ts](definition.ts): metadata and default values.
+- [logic.ts](logic.ts): range validation and secure sampling.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/random-number-generator.test.cjs](../../../tests/tools/random-number-generator.test.cjs).

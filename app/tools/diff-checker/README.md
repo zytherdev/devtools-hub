@@ -1,12 +1,12 @@
-# Verificador de diferenças
+# Difference Checker
 
-**Status:** Implementado
+**Status:** Implemented
 
-Compare dois textos por linha. O resultado é um diff textual determinístico: linhas comuns recebem o prefixo de espaço, removidas recebem `-` e adicionadas recebem `+`. As duas primeiras linhas identificam os lados como `--- Original` e `+++ Atualizado`.
+Compare two texts line by line. The result is a deterministic text diff: common lines receive the space prefix, removed lines receive `-`, and added lines receive `+`. The first two lines identify the sides as `--- Original` and `+++ Updated`.
 
-## Entrada de exemplo
+## Example input
 
-Os textos devem ser separados por exatamente uma linha contendo o separador padrão `---8<---`:
+The texts must be separated by exactly one line containing the default separator `---8<---`:
 
 ~~~text
 constante=1
@@ -14,39 +14,39 @@ constante=1
 constante=2
 ~~~
 
-O resultado para o exemplo é:
+The result for the example is:
 
 ~~~diff
 --- Original
-+++ Atualizado
--constante=1
-+constante=2
++++ Updated
+-constant=1
++constant=2
 ~~~
 
-A linha separadora precisa conter somente o marcador. Ausência ou repetição do marcador é inválida. Quebras de linha LF e CRLF são aceitas; uma quebra final não é tratada como uma linha vazia adicional.
+The separator line must contain only the marker. Missing or repeated markers are invalid. LF and CRLF line breaks are accepted; a trailing line break is not treated as an additional empty line.
 
-## Opções
+## Options
 
-Por padrão, `defaultOptions` é `{}` e o separador é `---8<---`. Para usar outro marcador, informe a única opção aceita, por exemplo:
+By default, `defaultOptions` is `{}` and the separator is `---8<---`. To use another marker, provide the only accepted option, for example:
 
 ~~~json
 {"separator":"=== COMPARAR ==="}
 ~~~
 
-O separador personalizado deve ser uma string não vazia, com até 80 caracteres e sem caracteres de controle. Qualquer outra opção é rejeitada.
+The custom separator must be a non-empty string, up to 80 characters long, with no control characters. Any other option is rejected.
 
-## Limites e validação
+## Limits and validation
 
-- Entrada completa, incluindo marcador e quebras de linha: até 200.000 caracteres.
-- Cada texto: até 2.000 linhas.
-- Saída: até 500.000 caracteres.
-- A entrada deve conter exatamente uma linha separadora reconhecida.
+- Complete input, including the marker and line breaks: up to 200,000 characters.
+- Each text: up to 2,000 lines.
+- Output: up to 500,000 characters.
+- The input must contain exactly one recognized separator line.
 
-A comparação usa subsequência comum mais longa (LCS) por linhas. Em casos de empate, as remoções são emitidas antes das adições, garantindo resultado estável. Todo processamento é local; a ferramenta não precisa de rede nem de dependências adicionais.
+The comparison uses the longest common subsequence (LCS) by lines. In tie cases, removals are emitted before additions, ensuring a stable result. All processing is local; the tool does not need a network connection or additional dependencies.
 
-## Arquivos
+## Files
 
-- [definition.ts](definition.ts): metadados, estado implementado e entrada de exemplo.
-- [logic.ts](logic.ts): validação, limites e geração do diff.
-- [Tool.tsx](Tool.tsx): interface conectada ao `UniversalTool`.
-- [Teste focado](../../../tests/tools/diff-checker.test.cjs): cobertura de comportamento, limites e entradas inválidas.
+- [definition.ts](definition.ts): metadata, implemented status, and example input.
+- [logic.ts](logic.ts): validation, limits, and diff generation.
+- [Tool.tsx](Tool.tsx): interface connected to `UniversalTool`.
+- [Focused test](../../../tests/tools/diff-checker.test.cjs): coverage of behavior, limits, and invalid inputs.

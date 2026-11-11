@@ -1,43 +1,43 @@
-# Validador de MIME Type
+# MIME Type Validator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Valida a sintaxe de um tipo MIME ou consulta tipos MIME comuns a partir de um nome de arquivo ou extensão. O processamento usa uma tabela local incluída no aplicativo e não faz solicitações de rede.
+Validates the syntax of a MIME type or looks up common MIME types from a file name or extension. Processing uses a local table included with the application and makes no network requests.
 
-## Uso
+## Usage
 
-Informe um valor MIME, como `Application/JSON; Charset=utf-8`, uma extensão, como `.jpg`, ou um nome de arquivo, como `archive.tar.gz`. A saída é formatada como JSON. Tipo/subtipo e nomes de parâmetros não diferenciam maiúsculas de minúsculas; valores de parâmetros válidos e strings entre aspas são verificados e preservados. Sufixos compostos incluídos na tabela são verificados antes dos sufixos mais curtos (por exemplo, `archive.tar.gz` corresponde a `application/gzip`).
+Enter a MIME value, such as `Application/JSON; Charset=utf-8`, an extension, such as `.jpg`, or a file name, such as `archive.tar.gz`. The output is formatted as JSON. Type/subtype and parameter names are case-insensitive; valid parameter values and quoted strings are checked and preserved. Compound suffixes included in the table are checked before shorter suffixes (for example, `archive.tar.gz` matches `application/gzip`).
 
-A opção `mode` aceita:
+The `mode` option accepts:
 
-- `lookup` (padrão): retorna o resultado da tabela local, quando houver correspondência.
-- `validate`: informa separadamente se a sintaxe é válida e se o valor consta na tabela local.
+- `lookup` (default): returns the local table result, when there is a match.
+- `validate`: reports separately whether the syntax is valid and whether the value is listed in the local table.
 
-A opção `target` aceita:
+The `target` option accepts:
 
-- `auto` (padrão): identifica a entrada como MIME quando começa com `tipo/subtipo`; caso contrário, interpreta como extensão ou nome de arquivo.
-- `mime`: interpreta explicitamente um tipo MIME, com parâmetros opcionais.
-- `extension`: interpreta explicitamente uma extensão ou um nome de arquivo.
+- `auto` (default): identifies the input as MIME when it begins with `type/subtype`; otherwise, interprets it as an extension or file name.
+- `mime`: explicitly interprets a MIME type, with optional parameters.
+- `extension`: explicitly interprets an extension or file name.
 
-Exemplo de opções em JSON:
+Example of JSON options:
 
 ~~~json
 {"mode":"validate","target":"mime"}
 ~~~
 
-Um tipo MIME ou extensão com sintaxe válida, mas ausente da tabela, retorna `valid: true` e `known: false`; uma sintaxe malformada gera um erro. Os parâmetros MIME têm a sintaxe verificada, mas não são usados para selecionar uma entrada da tabela. A consulta de extensão usa o sufixo final do nome do arquivo, dando precedência aos sufixos compostos conhecidos.
+A MIME type or extension with valid syntax but absent from the table returns `valid: true` and `known: false`; malformed syntax produces an error. MIME parameters are checked for syntax but are not used to select a table entry. Extension lookup uses the final suffix of the file name, giving precedence to known compound suffixes.
 
-## Tabela local de referência
+## Local Reference Table
 
-A tabela incorporada abrange formatos comuns de JSON/XML/PDF/arquivos compactados/documentos, web/código-fonte, imagem, áudio, vídeo e fontes. Ela é intencionalmente limitada, não é uma lista completa nem um registro IANA oficial. Algumas extensões têm várias convenções; esta tabela escolhe uma associação (por exemplo, `.xml` corresponde a `application/xml`). Os resultados refletem apenas esta lista local, não as associações do sistema operacional ou o comportamento de um servidor. Valores desconhecidos não são consultados externamente.
+The embedded table covers common JSON/XML/PDF/archive/document, web/source code, image, audio, video, and font formats. It is intentionally limited, is not a complete list or an official IANA registry. Some extensions have multiple conventions; this table chooses one association (for example, `.xml` matches `application/xml`). Results reflect only this local list, not operating system associations or server behavior. Unknown values are not looked up externally.
 
-## Limites e privacidade
+## Limits and Privacy
 
-A entrada é limitada a 512 caracteres e a saída serializada a 8 KiB. A ferramenta faz apenas análise local de strings e consulta à tabela. Nenhuma entrada é enviada e não há consulta de rede ou dependência de registros remotos.
+Input is limited to 512 characters and serialized output to 8 KiB. The tool only performs local string parsing and table lookup. No input is sent, and there is no network lookup or dependency on remote registries.
 
-## Arquivos de contribuição
+## Contribution Files
 
-- [definition.ts](definition.ts): metadados do catálogo, opções e exemplo de entrada.
-- [logic.ts](logic.ts): analisador limitado e tabela de MIME/extensões.
-- [Tool.tsx](Tool.tsx): entrada compartilhada de `UniversalTool`.
-- Testes específicos: [tests/tools/mime-type-validator.test.cjs](../../../tests/tools/mime-type-validator.test.cjs).
+- [definition.ts](definition.ts): catalog metadata, options, and input example.
+- [logic.ts](logic.ts): limited parser and MIME/extension table.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` input.
+- Specific tests: [tests/tools/mime-type-validator.test.cjs](../../../tests/tools/mime-type-validator.test.cjs).

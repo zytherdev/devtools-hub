@@ -1,41 +1,44 @@
-# Currency Converter
+# Currency converter
 
-**Status:** Planned
+**Status:** Implemented
 
-Convert between currencies with real-time exchange rates.
+Converts an amount from one currency to another using exclusively the conversion rate provided by the user in the options. Processing is local: there are no network calls, rate lookups, or real-time updates.
 
-## Availability
+## Input and options
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+The input must be a finite decimal number with up to 100 characters. Scientific notation, text, and non-finite values are not accepted.
 
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+The default options are:
 
 ~~~json
-""
+{"from":"USD","to":"EUR","rate":"1","precision":"2"}
 ~~~
 
-## Default options
+`from` and `to` must contain exactly three ASCII letters; lowercase letters are normalized to uppercase. `rate` is the amount of the target currency corresponding to one unit of the source currency and must be a finite decimal number greater than zero. `precision` is an integer from 0 to 6 and defines the number of decimal places in the rounded result. Unknown options, non-text option values, and option text longer than 100 characters are rejected.
 
-The options panel starts with this JSON:
+**Important:** the default rate `1` is only an example/placeholder value, not a real exchange rate. Replace it with a known rate appropriate for the desired conversion before using the result. The tool does not verify, update, or recommend rates.
+
+## Example
+
+To convert 100 USD to EUR at a declared rate of 0.92 EUR per USD, use the input `100` and these options:
 
 ~~~json
-{}
+{"from":"USD","to":"EUR","rate":"0.92","precision":"2"}
 ~~~
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+The output is JSON containing the source and target currencies, the declared rate, the input amount, and the rounded result. For the example above:
 
-## Processing and privacy
+~~~json
+{"from":"USD","to":"EUR","rate":0.92,"amount":100,"result":92}
+~~~
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Privacy and limitations
 
-## Contribution files
+All conversion takes place locally, with no network calls. The result reflects only the rate provided by the user and the chosen precision; it does not constitute an up-to-date quote or financial advice.
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/currency-converter.test.cjs](../../../tests/tools/currency-converter.test.cjs).
+## Files
 
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): tool metadata and default options.
+- [logic.ts](logic.ts): validation and local conversion.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Dedicated test: [tests/tools/currency-converter.test.cjs](../../../tests/tools/currency-converter.test.cjs).

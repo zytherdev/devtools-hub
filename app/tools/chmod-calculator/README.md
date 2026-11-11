@@ -1,41 +1,85 @@
 # Chmod Calculator
 
-**Status:** Planned
+**Status:** Implemented
 
-Calculate Unix/Linux file permission modes (755, 644, etc.) with visual feedback.
+Convert a Unix/Linux permission mode in octal to its symbolic mode and the numeric values for owner, group, and others.
 
-## Availability
+## Input
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Enter exactly three or four octal digits, from `0` to `7`, with no spaces, prefixes, or options. Valid examples: `755`, `0644`, and `4755`. Three-digit modes receive a leading zero in the output; the output always uses four digits (for example, `0755`). The input limit is four characters.
 
-## Example input
+## Output
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+The tool returns JSON with `octal` (canonical four-digit mode), `symbolic` (permissions in the `rwxr-xr-x` format), and the numeric values `owner`, `group`, and `others`.
 
-~~~json
-""
-~~~
+### Examples
 
-## Default options
-
-The options panel starts with this JSON:
+Input `755`:
 
 ~~~json
-{}
+{
+  "octal": "0755",
+  "symbolic": "rwxr-xr-x",
+  "owner": 7,
+  "group": 5,
+  "others": 5
+}
 ~~~
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+Input `644`:
+
+~~~json
+{
+  "octal": "0644",
+  "symbolic": "rw-r--r--",
+  "owner": 6,
+  "group": 4,
+  "others": 4
+}
+~~~
+
+Input `4755` enables setuid. Because the owner also has execute permission, it appears as `s`:
+
+~~~json
+{
+  "octal": "4755",
+  "symbolic": "rwsr-xr-x",
+  "owner": 7,
+  "group": 5,
+  "others": 5
+}
+~~~
+
+Input `2755` enables setgid:
+
+~~~json
+{
+  "octal": "2755",
+  "symbolic": "rwxr-sr-x",
+  "owner": 7,
+  "group": 5,
+  "others": 5
+}
+~~~
+
+Input `1777` enables sticky:
+
+~~~json
+{
+  "octal": "1777",
+  "symbolic": "rwxrwxrwt",
+  "owner": 7,
+  "group": 7,
+  "others": 7
+}
+~~~
+
+When setuid or setgid is enabled without execute permission for the corresponding group, the output uses uppercase `S`; sticky without execute permission for others uses uppercase `T`. For example, mode `4644` produces `rwSr--r--`.
+
+## Options and validation
+
+There are no options: the options object must remain empty (`{}`). Empty inputs, inputs with a length other than three or four digits, digits outside `0`–`7`, spaces, or prefixes are rejected with an error.
 
 ## Processing and privacy
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/chmod-calculator.test.cjs](../../../tests/tools/chmod-calculator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+The conversion is entirely local and deterministic. The tool only calculates and formats the specified mode: it does not execute the `chmod` command, access files, or send data over the network.

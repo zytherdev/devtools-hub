@@ -23,7 +23,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
         <i className="fa-solid fa-chevron-right text-[9px]" aria-hidden="true" />
         <span className="text-primary">{tool.name}</span>
       </div>
-      <PageIntro title={tool.name} description={tool.description} icon={tool.icon} color={tool.color} />
+      <PageIntro title={tool.name} description={tool.description} icon={tool.icon} color={tool.color} status={tool.status} />
       <ToolComponent />
     </main>
   )

@@ -1,12 +1,12 @@
-# Gerador de API Mock
+# Mock API Generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Gera fixtures JSON de forma local a partir de um objeto-template JSON. Cada registro recebe uma cópia independente dos dados de entrada e, opcionalmente, um campo raiz com identificador incremental. A ferramenta não cria nem hospeda endpoints HTTP.
+Generates JSON fixtures locally from a JSON template object. Each record receives an independent copy of the input data and, optionally, a root field with an incremental identifier. The tool does not create or host HTTP endpoints.
 
-## Uso
+## Usage
 
-Cole um objeto JSON simples na entrada. Com o template `{"name":"Ada","role":"engineer"}` e as opções abaixo:
+Paste a simple JSON object into the input. With the template `{"name":"Ada","role":"engineer"}` and the options below:
 
 ```json
 {
@@ -16,7 +16,7 @@ Cole um objeto JSON simples na entrada. Com o template `{"name":"Ada","role":"en
 }
 ```
 
-a saída é:
+the output is:
 
 ```json
 {
@@ -29,27 +29,27 @@ a saída é:
 }
 ```
 
-A saída é formatada com indentação de dois espaços. Se `wrapper` for a string vazia, o resultado será somente um array de registros, sem objeto wrapper nem metadados. O nome `meta` é reservado para os metadados e não pode ser usado como wrapper.
+The output is formatted with two-space indentation. If `wrapper` is the empty string, the result will be only an array of records, without a wrapper object or metadata. The name `meta` is reserved for metadata and cannot be used as a wrapper.
 
-## Opções
+## Options
 
-Todas as opções são strings e são opcionais:
+All options are strings and are optional:
 
-- `count` (padrão `"3"`): quantidade de registros; deve ser um inteiro de `1` a `100`.
-- `wrapper` (padrão `"data"`): propriedade que contém o array; pode ser vazia para retornar o array cru.
-- `idField` (padrão `"id"`): propriedade raiz que recebe os números incrementais de `1` até `count`. Se vazia, nenhum identificador é adicionado. Quando essa propriedade já existe no template, o valor do template é substituído nos registros, sem alterar propriedades aninhadas homônimas.
+- `count` (default `"3"`): number of records; must be an integer from `1` to `100`.
+- `wrapper` (default `"data"`): property that contains the array; can be empty to return the raw array.
+- `idField` (default `"id"`): root property that receives incremental numbers from `1` to `count`. If empty, no identifier is added. If this property already exists in the template, its value is replaced in the records, without changing identically named nested properties.
 
-Opções desconhecidas são rejeitadas. `wrapper` e `idField` aceitam até 64 caracteres e não podem conter caracteres de controle.
+Unknown options are rejected. `wrapper` and `idField` accept up to 64 characters and cannot contain control characters.
 
-## Validação e segurança
+## Validation and security
 
-A entrada precisa ser JSON válido cuja raiz seja um objeto simples; arrays, valores primitivos e `null` não são aceitos como template. O limite de entrada é 100.000 caracteres. O template permite profundidade máxima de 20 níveis, até 10.000 itens por array, até 10.000 propriedades por objeto e 20.000 valores JSON no total. A saída é limitada a 1.000.000 de bytes. Números não finitos e entradas que excedem os limites geram erro.
+The input must be valid JSON whose root is a plain object; arrays, primitive values, and `null` are not accepted as a template. The input limit is 100,000 characters. The template allows a maximum depth of 20 levels, up to 10,000 items per array, up to 10,000 properties per object, and 20,000 JSON values in total. The output is limited to 1,000,000 bytes. Non-finite numbers and inputs that exceed the limits result in an error.
 
-A implementação usa somente o parser e serializador JSON nativos, não usa `eval` nem faz solicitações de rede. O processamento é local ao ambiente da ferramenta.
+The implementation uses only the native JSON parser and serializer; it does not use `eval` or make network requests. Processing is local to the tool environment.
 
-## Arquivos
+## Files
 
-- [definition.ts](definition.ts): metadados, exemplo, opções padrão e extensão de saída.
-- [logic.ts](logic.ts): processamento, validação e limites.
-- [Tool.tsx](Tool.tsx): integração com `UniversalTool` pelo slug `mock-api-generator`.
-- Testes focados: [tests/tools/mock-api-generator.test.cjs](../../../tests/tools/mock-api-generator.test.cjs).
+- [definition.ts](definition.ts): metadata, example, default options, and output extension.
+- [logic.ts](logic.ts): processing, validation, and limits.
+- [Tool.tsx](Tool.tsx): integration with `UniversalTool` via the slug `mock-api-generator`.
+- Focused tests: [tests/tools/mock-api-generator.test.cjs](../../../tests/tools/mock-api-generator.test.cjs).

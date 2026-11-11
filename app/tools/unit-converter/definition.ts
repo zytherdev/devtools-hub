@@ -2,8 +2,8 @@ import type { ToolDefinition } from '@/app/tools/types'
 
 export const tool: ToolDefinition = {
   id: 'unit-converter',
-  name: 'Conversor de unidades',
-  description: 'Converta medidas de comprimento, massa, temperatura, área, volume e tempo.',
+  name: 'Unit Converter',
+  description: 'Convert length, mass, temperature, area, volume, and time measurements.',
   icon: 'fa-solid fa-arrows-alt-h',
   color: '#10b981',
   badge: '',

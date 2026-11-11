@@ -8,7 +8,7 @@ const { run } = require('../../app/tools/mock-api-generator/logic.ts')
 const template = { name: 'Ada', role: 'engineer', profile: { active: true, tags: ['api'] } }
 const input = value => JSON.stringify(value)
 
-test('mock-api-generator está implementado e conectado ao UniversalTool com saída JSON', () => {
+test('mock-api-generator is implemented and connected to UniversalTool with JSON output', () => {
   assert.equal(tool.id, 'mock-api-generator')
   assert.equal(tool.href, '/mock-api-generator')
   assert.equal(tool.status, 'implemented')
@@ -18,7 +18,7 @@ test('mock-api-generator está implementado e conectado ao UniversalTool com sa�
   assert.match(component, /<UniversalTool\s+tool=\{tool\}\s+slug="mock-api-generator"\s*\/>/)
 })
 
-test('gera o exemplo solicitado com wrapper, contagem e IDs incrementais', () => {
+test('generates the requested example with a wrapper, count, and incremental IDs', () => {
   const actual = JSON.parse(run('{"name":"Ada","role":"engineer"}', { count: '3', wrapper: 'data', idField: 'id' }))
   assert.deepEqual(actual, {
     data: [
@@ -30,7 +30,7 @@ test('gera o exemplo solicitado com wrapper, contagem e IDs incrementais', () =>
   })
 })
 
-test('cria cópias independentes dos objetos e valores aninhados', () => {
+test('creates independent copies of objects and nested values', () => {
   const result = JSON.parse(run(input(template), { count: '2', wrapper: 'items', idField: '' }))
   assert.notStrictEqual(result.items[0], result.items[1])
   assert.notStrictEqual(result.items[0].profile, result.items[1].profile)
@@ -39,7 +39,7 @@ test('cria cópias independentes dos objetos e valores aninhados', () => {
   assert.deepEqual(result.items[1].profile.tags, ['api'])
 })
 
-test('adiciona ID somente à raiz e substitui eventual propriedade raiz homônima', () => {
+test('adds IDs only at the root and replaces any root property with the same name', () => {
   const source = { id: 'template', nested: { id: 'nested' } }
   const result = JSON.parse(run(input(source), { count: '2', wrapper: 'data', idField: 'id' }))
   assert.deepEqual(result.data.map(row => row.id), [1, 2])
@@ -47,14 +47,14 @@ test('adiciona ID somente à raiz e substitui eventual propriedade raiz homônim
   assert.equal(source.id, 'template')
 })
 
-test('wrapper vazio retorna um array cru e idField vazio omite os IDs', () => {
+test('an empty wrapper returns a raw array and an empty idField omits IDs', () => {
   const result = JSON.parse(run(input(template), { count: '2', wrapper: '', idField: '' }))
   assert.ok(Array.isArray(result))
   assert.equal(result.length, 2)
   assert.equal(Object.hasOwn(result[0], 'id'), false)
 })
 
-test('aceita limites válidos de count, wrapper e idField', () => {
+test('accepts valid count, wrapper, and idField boundaries', () => {
   assert.equal(JSON.parse(run('{}', { count: '1', wrapper: 'w'.repeat(64), idField: 'i'.repeat(64) }))[`w${'w'.repeat(63)}`][0][`i${'i'.repeat(63)}`], 1)
   assert.equal(JSON.parse(run('{}', { count: '100', wrapper: '', idField: '' })).length, 100)
   const padded = `${' '.repeat(100_000 - 2)}{}`
@@ -62,45 +62,45 @@ test('aceita limites válidos de count, wrapper e idField', () => {
   assert.equal(JSON.parse(run(padded, { count: '1', wrapper: '', idField: '' })).length, 1)
 })
 
-test('rejeita JSON inválido, raiz que não seja objeto e entradas acima de 100.000 caracteres', () => {
-  assert.throws(() => run(''), /objeto-template/i)
-  assert.throws(() => run('{quebrado'), /JSON inválido/i)
+test('rejects invalid JSON, non-object roots, and inputs over 100,000 characters', () => {
+  assert.throws(() => run(''), /JSON template object/i)
+  assert.throws(() => run('{quebrado'), /Invalid JSON/i)
   for (const invalidRoot of ['null', '[]', '"texto"', '42', 'true']) {
-    assert.throws(() => run(invalidRoot), /objeto JSON simples/i)
+    assert.throws(() => run(invalidRoot), /plain JSON object/i)
   }
-  assert.throws(() => run(`${' '.repeat(100_001)}{}`), /100\.000 caracteres/i)
+  assert.throws(() => run(`${' '.repeat(100_001)}{}`), /100,000-character limit/i)
 })
 
-test('rejeita profundidade excessiva, números não finitos e coleções excessivas', () => {
+test('rejects excessive depth, non-finite numbers, and oversized collections', () => {
   let nested = '{}'
   for (let index = 0; index < 21; index++) nested = `{"child":${nested}}`
-  assert.throws(() => run(nested), /profundidade máxima de 20/i)
-  assert.throws(() => run('{"value":1e400}'), /número fora dos limites/i)
+  assert.throws(() => run(nested), /maximum depth of 20/i)
+  assert.throws(() => run('{"value":1e400}'), /number outside the JSON numeric range/i)
   const tooManyArrayItems = `[${Array(10_001).fill('null').join(',')}]`
-  assert.throws(() => run(`{"items":${tooManyArrayItems}}`), /Arrays podem conter no máximo 10\.000 itens/i)
+  assert.throws(() => run(`{"items":${tooManyArrayItems}}`), /Arrays may contain no more than 10,000 items/i)
   const entries = Array.from({ length: 10_001 }, (_, index) => `"k${index}":0`).join(',')
   assert.ok(entries.length < 100_000)
-  assert.throws(() => run(`{${entries}}`), /Objetos podem conter no máximo 10\.000 propriedades/i)
+  assert.throws(() => run(`{${entries}}`), /Objects may contain no more than 10,000 properties/i)
 })
 
-test('valida opções, contagem, nomes e caracteres de controle', () => {
-  assert.throws(() => run('{}', { unexpected: 'yes' }), /Opção não reconhecida/i)
-  assert.throws(() => run('{}', { count: '0' }), /count deve ser um número inteiro/i)
-  assert.throws(() => run('{}', { count: '101' }), /count deve ser um número inteiro/i)
-  assert.throws(() => run('{}', { count: '1.5' }), /count deve ser um número inteiro/i)
-  assert.throws(() => run('{}', { wrapper: 'w'.repeat(65) }), /wrapper deve ter no máximo 64/i)
-  assert.throws(() => run('{}', { idField: 'i'.repeat(65) }), /idField deve ter no máximo 64/i)
-  assert.throws(() => run('{}', { wrapper: 'bad\nname' }), /wrapper não pode conter caracteres de controle/i)
-  assert.throws(() => run('{}', { idField: 'bad\u0085name' }), /idField não pode conter caracteres de controle/i)
-  assert.throws(() => run('{}', { wrapper: 'meta' }), /reservado/i)
+test('validates options, counts, names, and control characters', () => {
+  assert.throws(() => run('{}', { unexpected: 'yes' }), /Unknown option/i)
+  assert.throws(() => run('{}', { count: '0' }), /count must be an integer/i)
+  assert.throws(() => run('{}', { count: '101' }), /count must be an integer/i)
+  assert.throws(() => run('{}', { count: '1.5' }), /count must be an integer/i)
+  assert.throws(() => run('{}', { wrapper: 'w'.repeat(65) }), /wrapper must be no more than 64/i)
+  assert.throws(() => run('{}', { idField: 'i'.repeat(65) }), /idField must be no more than 64/i)
+  assert.throws(() => run('{}', { wrapper: 'bad\nname' }), /wrapper cannot contain control characters/i)
+  assert.throws(() => run('{}', { idField: 'bad\u0085name' }), /idField cannot contain control characters/i)
+  assert.throws(() => run('{}', { wrapper: 'meta' }), /reserved/i)
 })
 
-test('rejeita saída que ultrapasse 1 MB', () => {
+test('rejects output exceeding 1 MB', () => {
   const largeTemplate = { payload: 'x'.repeat(12_000) }
-  assert.throws(() => run(input(largeTemplate), { count: '100', wrapper: '', idField: '' }), /saída excede o limite de 1\.000\.000 bytes/i)
+  assert.throws(() => run(input(largeTemplate), { count: '100', wrapper: '', idField: '' }), /Output exceeds the 1,000,000-byte limit/i)
 })
 
-test('trata com segurança nomes de propriedade especiais', () => {
+test('safely handles special property names', () => {
   const source = JSON.parse('{"__proto__":{"safe":true}}')
   const result = JSON.parse(run(input(source), { count: '1', wrapper: '__proto__', idField: '__proto__' }))
   assert.deepEqual(result.__proto__[0].__proto__, 1)

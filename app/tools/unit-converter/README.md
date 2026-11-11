@@ -1,35 +1,35 @@
-# Conversor de unidades
+# Unit Converter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Conversor local para comprimento, massa, volume, área, tempo e temperatura.
+Local converter for length, mass, volume, area, time, and temperature.
 
-## Opções
+## Options
 
-Exemplo: para converter `1500` metros em quilômetros, use:
+Example: to convert `1500` meters to kilometers, use:
 
 ~~~json
 {"from":"m","to":"km","precision":"4"}
 ~~~
 
-Unidades suportadas:
+Supported units:
 
-- Comprimento: `mm`, `cm`, `m`, `km`, `in`, `ft`, `yd`, `mi`.
-- Massa: `mg`, `g`, `kg`, `oz`, `lb`.
-- Volume: `ml`, `l`, `m3`, `gal` (galão líquido dos EUA).
-- Área: `mm2`, `cm2`, `m2`, `km2`, `ft2`, `acre`.
-- Tempo: `ms`, `s`, `min`, `h`, `day`.
-- Temperatura: `C`, `F`, `K`.
+- Length: `mm`, `cm`, `m`, `km`, `in`, `ft`, `yd`, `mi`.
+- Mass: `mg`, `g`, `kg`, `oz`, `lb`.
+- Volume: `ml`, `l`, `m3`, `gal` (US liquid gallon).
+- Area: `mm2`, `cm2`, `m2`, `km2`, `ft2`, `acre`.
+- Time: `ms`, `s`, `min`, `h`, `day`.
+- Temperature: `C`, `F`, `K`.
 
-`from` e `to` precisam pertencer à mesma dimensão. `precision` controla o arredondamento de 0 a 12 casas decimais (padrão 4). Temperaturas abaixo do zero absoluto são rejeitadas. A saída JSON contém o valor de entrada, unidades, dimensão e resultado arredondado.
+`from` and `to` must belong to the same dimension. `precision` controls rounding to 0–12 decimal places (default 4). Temperatures below absolute zero are rejected. The JSON output contains the input value, units, dimension, and rounded result.
 
-## Limites e privacidade
+## Limits and privacy
 
-Aceita um número decimal finito de até 100 caracteres. O processamento usa fatores de conversão fixos, sem rede ou cotação externa.
+Accepts a finite decimal number up to 100 characters. Processing uses fixed conversion factors, with no network or external rates.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados, exemplo e opções padrão.
-- [logic.ts](logic.ts): tabela de conversão, validação e arredondamento.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/unit-converter.test.cjs](../../../tests/tools/unit-converter.test.cjs).
+- [definition.ts](definition.ts): metadata, example, and default options.
+- [logic.ts](logic.ts): conversion table, validation, and rounding.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/unit-converter.test.cjs](../../../tests/tools/unit-converter.test.cjs).

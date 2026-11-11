@@ -1,41 +1,35 @@
 # SQL Formatter
 
-**Status:** Planned
+**Status:** Implemented
 
-Format and beautify SQL queries. Make your database code readable and consistent.
+A local, lightweight formatter for common SQL statements. It adjusts whitespace and keyword casing without sending SQL to a server or executing it.
 
-## Availability
+## Important limitation
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+This is a **lexical formatter, not a SQL parser or SQL validator**. It recognizes common clause words and token boundaries; it does not understand every dialect, query structure, or semantic context. Formatting is not proof that a statement is valid. Review the output before using it, especially for dialect-specific SQL.
+
+Quoted strings, quoted identifiers, `--` line comments, and `/* ... */` block comments are treated as protected tokens and their contents are preserved. Unterminated quoted tokens or comments are rejected. Input is limited to 100,000 characters.
 
 ## Example input
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
-
-~~~json
-""
+~~~sql
+select id,name from users where active=true order by name;
 ~~~
 
-## Default options
+## Options
 
-The options panel starts with this JSON:
+- `keywordCase`: `upper` (default), `lower`, or `preserve`.
+- `indent`: `2` (default) or `4` spaces for continuation lines.
 
-~~~json
-{}
-~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+Unknown options and unsupported option values are rejected.
 
 ## Processing and privacy
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+Formatting runs locally in the tool; SQL is not executed. No database connection is used. The formatter normalizes whitespace around common clauses and punctuation, separates statements, and preserves the original spelling and contents of quoted tokens and comments.
 
 ## Contribution files
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
+- [definition.ts](definition.ts): metadata, sample input, and default options.
+- [logic.ts](logic.ts): bounded tokenizer and formatter.
+- [Tool.tsx](Tool.tsx): UI entry connected through `UniversalTool`.
 - Focused tests: [tests/tools/sql-formatter.test.cjs](../../../tests/tools/sql-formatter.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).

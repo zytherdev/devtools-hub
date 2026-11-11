@@ -2,11 +2,11 @@ import type { ToolDefinition } from '@/app/tools/types'
 
 export const tool: ToolDefinition = {
   id: 'diff-checker',
-  name: 'Verificador de diferenças',
-  description: 'Compare dois textos linha a linha e veja inserções, remoções e linhas comuns.',
+  name: 'Diff Checker',
+  description: 'Compare two texts line by line and review inserted, removed, and unchanged lines.',
   icon: 'fa-solid fa-code-branch',
   color: '#f59e0b',
-  badge: 'Implemented',
+  badge: '',
   href: '/diff-checker',
   categoryId: 'text',
   status: 'implemented',

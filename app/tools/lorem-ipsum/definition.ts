@@ -2,8 +2,8 @@ import type { ToolDefinition } from '@/app/tools/types'
 
 export const tool: ToolDefinition = {
   id: 'lorem-ipsum',
-  name: 'Gerador Lorem Ipsum',
-  description: 'Gere texto de preenchimento com quantidade configurável de parágrafos, frases e palavras.',
+  name: 'Lorem Ipsum Generator',
+  description: 'Generate placeholder text with configurable paragraph, sentence, and word counts.',
   icon: 'fa-solid fa-paragraph',
   color: '#6366f1',
   badge: '',

@@ -1,28 +1,28 @@
-# Gerador de expressões cron
+# Cron expression generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Monta uma expressão cron padrão de cinco campos e apresenta uma explicação campo a campo. O gerador produz a expressão; não executa nem agenda tarefas.
+Builds a standard five-field cron expression and presents a field-by-field explanation. The generator produces the expression; it does not execute or schedule tasks.
 
-## Campos e opções
+## Fields and options
 
-A entrada deve ficar vazia. Defina os campos no objeto JSON:
+The input must be left empty. Define the fields in the JSON object:
 
 ~~~json
 {"minute":"0","hour":"9","dayOfMonth":"*","month":"*","dayOfWeek":"1-5"}
 ~~~
 
-Os campos seguem a ordem cron tradicional: minuto (0–59), hora (0–23), dia do mês (1–31), mês (1–12) e dia da semana (0–7; 0 e 7 representam domingo). Cada campo aceita curingas (`*`), valores numéricos, listas separadas por vírgula, intervalos (`1-5`) e passos (`*/15`, `1-10/2`). Nomes de mês/dia, macros especiais como `@daily` e extensões específicas de provedores não são aceitos.
+The fields follow the traditional cron order: minute (0–59), hour (0–23), day of the month (1–31), month (1–12), and day of the week (0–7; 0 and 7 represent Sunday). Each field accepts wildcards (`*`), numeric values, comma-separated lists, ranges (`1-5`), and steps (`*/15`, `1-10/2`). Month/day names, special macros such as `@daily`, and provider-specific extensions are not accepted.
 
-Quando dia do mês e dia da semana estão ambos restritos, a semântica cron tradicional combina os campos com OR; a explicação da saída destaca esse comportamento.
+When both the day of the month and day of the week are restricted, traditional cron semantics combine the fields with OR; the output explanation highlights this behavior.
 
-## Privacidade e limites
+## Privacy and limits
 
-O processamento é local e determinístico: nenhuma chamada de rede é feita. Cada campo é limitado a 128 caracteres e os valores são validados contra seus intervalos.
+Processing is local and deterministic: no network calls are made. Each field is limited to 128 characters, and values are validated against their ranges.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e campos padrão.
-- [logic.ts](logic.ts): validação sintática e explicação do cron.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/cron-generator.test.cjs](../../../tests/tools/cron-generator.test.cjs).
+- [definition.ts](definition.ts): metadata and default fields.
+- [logic.ts](logic.ts): cron syntax validation and explanation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/cron-generator.test.cjs](../../../tests/tools/cron-generator.test.cjs).

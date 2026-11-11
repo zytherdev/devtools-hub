@@ -9,13 +9,13 @@ const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F-\u009F]/u
 
 function getSeparator(options: ToolOptions): string {
   if (options === null || typeof options !== 'object' || Array.isArray(options)) {
-    throw new Error('As opções devem ser um objeto.')
+    throw new Error('Options must be an object.')
   }
 
   const keys = Reflect.ownKeys(options)
   for (const key of keys) {
     if (key !== 'separator') {
-      throw new Error(`Opção desconhecida: ${String(key)}.`)
+      throw new Error(`Unknown option: ${String(key)}.`)
     }
   }
 
@@ -24,16 +24,16 @@ function getSeparator(options: ToolOptions): string {
     : DEFAULT_SEPARATOR
 
   if (typeof separator !== 'string') {
-    throw new Error('A opção separator deve ser uma string.')
+    throw new Error('The separator option must be a string.')
   }
   if (separator.length === 0) {
-    throw new Error('A opção separator não pode ser vazia.')
+    throw new Error('The separator option cannot be empty.')
   }
   if (separator.length > 80) {
-    throw new Error('A opção separator deve ter no máximo 80 caracteres.')
+    throw new Error('The separator option must be no more than 80 characters.')
   }
   if (CONTROL_CHARACTERS.test(separator)) {
-    throw new Error('A opção separator não pode conter caracteres de controle.')
+    throw new Error('The separator option cannot contain control characters.')
   }
 
   return separator
@@ -46,7 +46,7 @@ function linesFromRecords(records: string[]): string[] {
   if (text.length === 0) return []
 
   const lines = text.split('\n')
-  // A quebra final termina a última linha, não cria outra linha vazia.
+  // A final line break terminates the last line; it does not create another empty line.
   if (lines[lines.length - 1] === '') lines.pop()
   return lines
 }
@@ -79,7 +79,7 @@ function buildDiff(original: string[], updated: string[]): string[] {
       i++
       j++
     } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
-      // Em empates, emitir remoções antes das adições torna o resultado estável.
+      // On ties, emitting removals before additions keeps the result stable.
       diff.push(`-${original[i]}`)
       i++
     } else {
@@ -102,10 +102,10 @@ function buildDiff(original: string[], updated: string[]): string[] {
 
 export function run(input: string, options: ToolOptions = {}): string {
   if (typeof input !== 'string') {
-    throw new Error('A entrada deve ser uma string.')
+    throw new Error('Input must be a string.')
   }
   if (input.length > MAX_INPUT_LENGTH) {
-    throw new Error('A entrada deve ter no máximo 200.000 caracteres.')
+    throw new Error('Input must be no more than 200,000 characters.')
   }
 
   const separator = getSeparator(options)
@@ -117,10 +117,10 @@ export function run(input: string, options: ToolOptions = {}): string {
   }
 
   if (separatorIndexes.length === 0) {
-    throw new Error(`A entrada deve conter exatamente uma linha ${JSON.stringify(separator)} como separador.`)
+    throw new Error(`Input must contain exactly one line ${JSON.stringify(separator)} as a separator.`)
   }
   if (separatorIndexes.length > 1) {
-    throw new Error(`A entrada contém mais de uma linha ${JSON.stringify(separator)} como separador.`)
+    throw new Error(`Input contains more than one line ${JSON.stringify(separator)} as a separator.`)
   }
 
   const separatorIndex = separatorIndexes[0]
@@ -128,15 +128,15 @@ export function run(input: string, options: ToolOptions = {}): string {
   const updated = linesFromRecords(records.slice(separatorIndex + 1))
 
   if (original.length > MAX_LINES_PER_SIDE) {
-    throw new Error('O texto Original pode ter no máximo 2.000 linhas.')
+    throw new Error('Original text must contain no more than 2,000 lines.')
   }
   if (updated.length > MAX_LINES_PER_SIDE) {
-    throw new Error('O texto Atualizado pode ter no máximo 2.000 linhas.')
+    throw new Error('Updated text must contain no more than 2,000 lines.')
   }
 
-  const output = ['--- Original', '+++ Atualizado', ...buildDiff(original, updated)].join('\n')
+  const output = ['--- Original', '+++ Updated', ...buildDiff(original, updated)].join('\n')
   if (output.length > MAX_OUTPUT_LENGTH) {
-    throw new Error('A saída excede o limite de 500.000 caracteres.')
+    throw new Error('Output exceeds the 500,000-character limit.')
   }
   return output
 }

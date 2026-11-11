@@ -1,29 +1,29 @@
-# Ordenador de linhas
+# Line Sorter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Ordena texto linha por linha ou inverte a sequência, com opções para remover duplicatas, aparar espaços ou ignorar linhas vazias.
+Sorts text line by line or reverses the sequence, with options to remove duplicates, trim whitespace, or ignore empty lines.
 
-## Opções
+## Options
 
 ~~~json
 {"order":"alphabetical-asc","unique":"false","trimWhitespace":"false","ignoreEmpty":"false"}
 ~~~
 
-- `order`: `alphabetical-asc`, `alphabetical-desc`, `numeric-asc`, `numeric-desc` ou `reverse`.
-- `unique`: mantém apenas a primeira ocorrência exata de cada linha.
-- `trimWhitespace`: remove espaços no início e fim antes de ordenar.
-- `ignoreEmpty`: descarta linhas vazias.
+- `order`: `alphabetical-asc`, `alphabetical-desc`, `numeric-asc`, `numeric-desc`, or `reverse`.
+- `unique`: keeps only the first exact occurrence of each line.
+- `trimWhitespace`: removes leading and trailing whitespace before sorting.
+- `ignoreEmpty`: discards empty lines.
 
-A ordenação alfabética não diferencia caixa para comparação e preserva a ordem original em empates. A numérica compara valores numéricos quando ambos os itens são números válidos e usa comparação textual nos demais casos. Quebras CRLF são normalizadas para LF; uma quebra final não é considerada uma linha extra.
+Alphabetical sorting is case-insensitive for comparisons and preserves the original order in ties. Numeric sorting compares numeric values when both items are valid numbers and uses textual comparison in other cases. CRLF line breaks are normalized to LF; a final line break is not considered an extra line.
 
-## Limites e privacidade
+## Limits and privacy
 
-A entrada é limitada a 1.000.000 de caracteres e 100.000 linhas. Nenhuma chamada de rede é feita.
+Input is limited to 1,000,000 characters and 100,000 lines. No network calls are made.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados e opções padrão.
-- [logic.ts](logic.ts): ordenação e validação de linhas/opções.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/line-sorter.test.cjs](../../../tests/tools/line-sorter.test.cjs).
+- [definition.ts](definition.ts): metadata and default options.
+- [logic.ts](logic.ts): sorting and validation of lines/options.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/line-sorter.test.cjs](../../../tests/tools/line-sorter.test.cjs).

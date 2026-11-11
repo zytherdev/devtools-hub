@@ -1,26 +1,26 @@
-# Gerador de senhas
+# Password generator
 
-**Status:** Implementado
+**Status:** Implemented
 
-Gera uma ou mais senhas com segurança criptográfica, inteiramente no navegador. Cada senha é exibida em uma linha.
+Generates one or more cryptographically secure passwords entirely in the browser. Each password is displayed on a separate line.
 
-## Opções
+## Options
 
-As opções são informadas como strings JSON no painel compartilhado de opções:
+Options are provided as JSON strings in the shared options panel:
 
-- `length`: comprimento da senha, de 8 a 256 caracteres (padrão `"20"`).
-- `count`: quantidade de senhas, de 1 a 100 (padrão `"1"`).
-- `uppercase`, `lowercase`, `numbers`, `symbols`: habilitam ou desabilitam cada classe de caracteres (todas são `"true"` por padrão). Cada classe habilitada estará representada em todos os resultados.
-- `excludeAmbiguous`: quando `"true"`, remove `I`, `l`, `1`, `O`, `0` e `|` (padrão `"false"`).
+- `length`: password length, from 8 to 256 characters (default `"20"`).
+- `count`: number of passwords, from 1 to 100 (default `"1"`).
+- `uppercase`, `lowercase`, `numbers`, `symbols`: enable or disable each character class (all are `"true"` by default). Each enabled class will be represented in every result.
+- `excludeAmbiguous`: when `"true"`, removes `I`, `l`, `1`, `O`, `0`, and `|` (default `"false"`).
 
-É necessário habilitar pelo menos uma classe. Se todas as opções forem desativadas, a geração falha com uma mensagem de erro na interface. A ferramenta não utiliza texto de entrada.
+At least one class must be enabled. If all options are disabled, generation fails with an error message in the interface. The tool does not use input text.
 
-## Segurança e privacidade
+## Security and privacy
 
-As escolhas aleatórias usam `Web Crypto getRandomValues` do navegador e amostragem por rejeição; `Math.random` nunca é usado. O amostrador escolhe uniformemente entre todas as strings possíveis com o comprimento solicitado que atendem às classes habilitadas, evitando substituir caracteres forçadamente. Se o Web Crypto não estiver disponível ou falhar, a geração é interrompida, sem recorrer a uma fonte de aleatoriedade mais fraca.
+Random choices use the browser's `Web Crypto getRandomValues` and rejection sampling; `Math.random` is never used. The sampler chooses uniformly among all possible strings of the requested length that satisfy the enabled classes, avoiding forced character replacement. If Web Crypto is unavailable or fails, generation stops without falling back to a weaker source of randomness.
 
-A geração é local: não há solicitações de rede e esta ferramenta não salva nem envia os segredos. Os resultados permanecem visíveis na página atual até serem apagados ou até a navegação para outra página. A interface compartilhada oferece ações manuais de cópia e download; essas ações do usuário podem transferir ou persistir um segredo, conforme o navegador e o destino escolhido. Para contas críticas, use um gerenciador de senhas confiável e revise a senha gerada antes de armazená-la.
+Generation is local: there are no network requests, and this tool does not save or send secrets. Results remain visible on the current page until they are cleared or you navigate to another page. The shared interface provides manual copy and download actions; these user actions may transfer or persist a secret, depending on the browser and the chosen destination. For critical accounts, use a trusted password manager and review the generated password before storing it.
 
-## Limites
+## Limits
 
-A ferramenta permite até 256 caracteres por senha e até 100 senhas por execução. É necessário que o navegador/ambiente ofereça Web Crypto; não há alternativa por serviços externos.
+The tool allows up to 256 characters per password and up to 100 passwords per run. The browser/environment must provide Web Crypto; there is no alternative using external services.

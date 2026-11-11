@@ -2,10 +2,13 @@ import type { ToolOptions, ToolRunner } from '@/app/tools/types'
 import { run as runAsciiConverter } from '@/app/tools/ascii-converter/logic'
 import { run as runBase64Encoder } from '@/app/tools/base64-encoder/logic'
 import { run as runBarcodeGenerator } from '@/app/tools/barcode-generator/logic'
+import { run as runChmodCalculator } from '@/app/tools/chmod-calculator/logic'
 import { run as runCsvFormatter } from '@/app/tools/csv-formatter/logic'
 import { run as runCsvToJson } from '@/app/tools/csv-to-json/logic'
 import { run as runCronGenerator } from '@/app/tools/cron-generator/logic'
+import { run as runCurrencyConverter } from '@/app/tools/currency-converter/logic'
 import { run as runDiffChecker } from '@/app/tools/diff-checker/logic'
+import { run as runDockerComposeConverter } from '@/app/tools/docker-compose-converter/logic'
 import { run as runFileSizeConverter } from '@/app/tools/file-size-converter/logic'
 import { run as runFaviconGenerator } from '@/app/tools/favicon-generator/logic'
 import { run as runHtmlBeautifier } from '@/app/tools/html-beautifier/logic'
@@ -15,6 +18,7 @@ import { run as runJsonSchemaGenerator } from '@/app/tools/json-schema-generator
 import { run as runJsonToXml } from '@/app/tools/json-to-xml/logic'
 import { run as runJwtDecoder } from '@/app/tools/jwt-decoder/logic'
 import { run as runJwtGenerator } from '@/app/tools/jwt-generator/logic'
+import { run as runKubernetesDecoder } from '@/app/tools/kubernetes-decoder/logic'
 import { run as runLineSorter } from '@/app/tools/line-sorter/logic'
 import { run as runLoremIpsum } from '@/app/tools/lorem-ipsum/logic'
 import { run as runMarkdownToHtml } from '@/app/tools/markdown-to-html/logic'
@@ -31,6 +35,7 @@ import { run as runRobotsTxtGenerator } from '@/app/tools/robots-txt-generator/l
 import { run as runRomanNumeral } from '@/app/tools/roman-numeral/logic'
 import { run as runSitemapGenerator } from '@/app/tools/sitemap-generator/logic'
 import { run as runSlugGenerator } from '@/app/tools/slug-generator/logic'
+import { run as runSqlFormatter } from '@/app/tools/sql-formatter/logic'
 import { run as runTimestampConverter } from '@/app/tools/timestamp-converter/logic'
 import { run as runTomlFormatter } from '@/app/tools/toml-formatter/logic'
 import { run as runTomlJsonConverter } from '@/app/tools/toml-json-converter/logic'
@@ -49,10 +54,13 @@ const handlers: Record<string, ToolRunner> = {
   'ascii-converter': runAsciiConverter,
   'base64-encoder': runBase64Encoder,
   'barcode-generator': runBarcodeGenerator,
+  'chmod-calculator': runChmodCalculator,
   'csv-formatter': runCsvFormatter,
   'csv-to-json': runCsvToJson,
   'cron-generator': runCronGenerator,
+  'currency-converter': runCurrencyConverter,
   'diff-checker': runDiffChecker,
+  'docker-compose-converter': runDockerComposeConverter,
   'file-size-converter': runFileSizeConverter,
   'favicon-generator': runFaviconGenerator,
   'html-beautifier': runHtmlBeautifier,
@@ -62,6 +70,7 @@ const handlers: Record<string, ToolRunner> = {
   'json-to-xml': runJsonToXml,
   'jwt-decoder': runJwtDecoder,
   'jwt-generator': runJwtGenerator,
+  'kubernetes-decoder': runKubernetesDecoder,
   'line-sorter': runLineSorter,
   'lorem-ipsum': runLoremIpsum,
   'markdown-to-html': runMarkdownToHtml,
@@ -78,6 +87,7 @@ const handlers: Record<string, ToolRunner> = {
   'roman-numeral': runRomanNumeral,
   'sitemap-generator': runSitemapGenerator,
   'slug-generator': runSlugGenerator,
+  'sql-formatter': runSqlFormatter,
   'text-case-converter': runTextCaseConverter,
   'timestamp-converter': runTimestampConverter,
   'toml-formatter': runTomlFormatter,

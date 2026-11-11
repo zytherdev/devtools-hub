@@ -17,18 +17,18 @@ export type WordCountResult = {
 
 function validateOptions(options: unknown): void {
   if (options === null || typeof options !== 'object' || Array.isArray(options)) {
-    throw new Error('As opções devem ser um objeto vazio; esta ferramenta não aceita opções.')
+    throw new Error('Options must be an empty object; this tool does not accept options.')
   }
 
   const keys = Reflect.ownKeys(options)
   if (keys.length > 0) {
     const name = String(keys[0])
-    throw new Error(`Opção desconhecida: "${name}". Esta ferramenta não aceita opções.`)
+    throw new Error(`Unknown option: "${name}". This tool does not accept options.`)
   }
 
   const prototype = Object.getPrototypeOf(options)
   if (prototype !== Object.prototype && prototype !== null) {
-    throw new Error('As opções devem ser um objeto vazio; esta ferramenta não aceita opções.')
+    throw new Error('Options must be an empty object; this tool does not accept options.')
   }
 }
 
@@ -42,7 +42,7 @@ function countWords(input: string): number {
     return count
   }
 
-  // Fallback para ambientes sem Intl.Segmenter: letras, marcas combinantes e números.
+  // Fallback for environments without Intl.Segmenter: letters, combining marks, and numbers.
   const words = input.match(/[\p{L}\p{N}\p{M}]+(?:['’][\p{L}\p{N}\p{M}]+)*/gu)
   return words?.length ?? 0
 }
@@ -97,7 +97,7 @@ function countSentences(input: string): number {
     return count
   }
 
-  // Fallback simples: separa nas sequências de pontuação final de frase.
+  // Simple fallback: split on sequences of sentence-ending punctuation.
   return input
     .split(SENTENCE_ENDING)
     .filter(part => part.trim().length > 0)
@@ -106,10 +106,10 @@ function countSentences(input: string): number {
 
 export function run(input: string, options: ToolOptions = {}): string {
   if (typeof input !== 'string') {
-    throw new Error('A entrada deve ser uma string.')
+    throw new Error('Input must be a string.')
   }
   if (input.length > MAX_INPUT_LENGTH) {
-    throw new Error(`A entrada deve ter no máximo ${MAX_INPUT_LENGTH.toLocaleString('pt-BR')} caracteres.`)
+    throw new Error(`Input must be no more than ${MAX_INPUT_LENGTH.toLocaleString('en-US')} characters.`)
   }
 
   validateOptions(options)

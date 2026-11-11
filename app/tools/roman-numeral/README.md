@@ -1,32 +1,32 @@
-# Conversor de algarismos romanos
+# Roman numeral converter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Converte números inteiros de 1 a 3999 entre algarismos arábicos e romanos.
+Converts integers from 1 to 3999 between Arabic and Roman numerals.
 
-## Modos
+## Modes
 
-De número arábico para romano (modo padrão):
+From Arabic to Roman numerals (default mode):
 
 ~~~json
 {"mode":"arabic-to-roman"}
 ~~~
 
-De romano para arábico:
+From Roman to Arabic numerals:
 
 ~~~json
 {"mode":"roman-to-arabic"}
 ~~~
 
-A entrada romana aceita `I`, `V`, `X`, `L`, `C`, `D`, `M` em maiúsculas ou minúsculas, mas exige notação canônica (por exemplo, `IV`, não `IIII`). Zero, números negativos, frações e valores acima de 3999 não são representáveis neste conversor.
+Roman numeral input accepts `I`, `V`, `X`, `L`, `C`, `D`, `M` in uppercase or lowercase, but requires canonical notation (for example, `IV`, not `IIII`). Zero, negative numbers, fractions, and values above 3999 are not representable by this converter.
 
-## Limites e privacidade
+## Limits and privacy
 
-Entrada de até 100 caracteres. A conversão é determinística e totalmente local.
+Input of up to 100 characters. Conversion is deterministic and entirely local.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados, exemplo e modo padrão.
-- [logic.ts](logic.ts): codificação e validação da forma canônica.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/roman-numeral.test.cjs](../../../tests/tools/roman-numeral.test.cjs).
+- [definition.ts](definition.ts): metadata, example, and default mode.
+- [logic.ts](logic.ts): encoding and canonical form validation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/roman-numeral.test.cjs](../../../tests/tools/roman-numeral.test.cjs).

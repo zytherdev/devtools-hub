@@ -14,7 +14,7 @@ test('slug-generator follows the per-tool contract and is connected to Universal
 })
 
 test('normalizes accented text and punctuation into a lowercase URL slug', () => {
-  assert.equal(implementation.run('Olá, Mundo! Página número 2', {}), 'ola-mundo-pagina-numero-2')
+  assert.equal(implementation.run('Café, World! Page number 2', {}), 'cafe-world-page-number-2')
 })
 
 test('supports Unicode letters, custom separator, and preserved casing', () => {

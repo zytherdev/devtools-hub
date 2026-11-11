@@ -1,44 +1,44 @@
-# Conversor de caixa de texto
+# Text Case Converter
 
-**Status:** Implementado
+**Status:** Implemented
 
-Converta texto localmente entre nove formatos: `camel`, `pascal`, `snake`, `kebab`, `constant`, `title`, `sentence`, `lower` e `upper`. O resultado é texto simples (`.txt`).
+Convert text locally between nine formats: `camel`, `pascal`, `snake`, `kebab`, `constant`, `title`, `sentence`, `lower` and `upper`. The result is plain text (`.txt`).
 
-## Entrada e opções
+## Input and options
 
-A entrada pode ter até 100.000 caracteres. O exemplo carregável é:
+The input can contain up to 100,000 characters. The loadable example is:
 
 ~~~text
-Olá, Mundo! revisão 2:Texto
+Hello, World! review 2:Text
 ~~~
 
-A única opção aceita é `mode`; o padrão é `camel`.
+The only accepted option is `mode`; the default is `camel`.
 
 ~~~json
 {"mode":"camel"}
 ~~~
 
-| Modo | Resultado de `Olá, Mundo! revisão 2:Texto` | Comportamento |
+| Mode | Result for `Hello, World! review 2:Text` | Behavior |
 | --- | --- | --- |
-| `camel` | `oláMundoRevisão2Texto` | Primeira palavra em minúsculas; seguintes com inicial maiúscula, sem separador. |
-| `pascal` | `OláMundoRevisão2Texto` | Inicial maiúscula em todas as palavras, sem separador. |
-| `snake` | `olá_mundo_revisão_2_texto` | Minúsculas separadas por `_`. |
-| `kebab` | `olá-mundo-revisão-2-texto` | Minúsculas separadas por `-`. |
-| `constant` | `OLÁ_MUNDO_REVISÃO_2_TEXTO` | Maiúsculas separadas por `_`. |
-| `title` | `Olá Mundo Revisão 2 Texto` | Inicial maiúscula em cada palavra, separadas por espaço. |
-| `sentence` | `Olá, mundo! revisão 2:texto` | Texto completo em minúsculas, exceto a primeira letra em maiúscula; pontuação e espaçamento são preservados. |
-| `lower` | `olá, mundo! revisão 2:texto` | Converte a string inteira para minúsculas; preserva pontuação e espaçamento. |
-| `upper` | `OLÁ, MUNDO! REVISÃO 2:TEXTO` | Converte a string inteira para maiúsculas; preserva pontuação e espaçamento. |
+| `camel` | `helloWorldReview2Text` | First word in lowercase; subsequent words capitalized, with no separator. |
+| `pascal` | `HelloWorldReview2Text` | Initial capital on every word, with no separator. |
+| `snake` | `hello_world_review_2_text` | Lowercase, separated by `_`. |
+| `kebab` | `hello-world-review-2-text` | Lowercase, separated by `-`. |
+| `constant` | `HELLO_WORLD_REVIEW_2_TEXT` | Uppercase, separated by `_`. |
+| `title` | `Hello World Review 2 Text` | Initial capital on each word, separated by spaces. |
+| `sentence` | `Hello, world! review 2:text` | Entire text in lowercase, except for the first letter, which is uppercase; punctuation and spacing are preserved. |
+| `lower` | `hello, world! review 2:text` | Converts the entire string to lowercase; preserves punctuation and spacing. |
+| `upper` | `HELLO, WORLD! REVIEW 2:TEXT` | Converts the entire string to uppercase; preserves punctuation and spacing. |
 
-Nos modos que formam palavras, letras e números Unicode são reconhecidos, inclusive letras acentuadas. Pontuação e espaços separam palavras; também são reconhecidos limites de maiúsculas/minúsculas (por exemplo, `meuTexto` e `HTTPServidor`) e mudanças entre letras e números. A separação por palavras normaliza os delimitadores para o separador do modo escolhido. Entradas sem tokens, como uma string vazia ou só com pontuação, são válidas e não causam erro.
+In word-forming modes, Unicode letters and numbers are recognized, including accented letters. Punctuation and spaces separate words; uppercase/lowercase boundaries (for example, `meuTexto` and `HTTPServidor`) and changes between letters and numbers are also recognized. Word separation normalizes delimiters to the separator for the selected mode. Inputs with no tokens, such as an empty string or a string containing only punctuation, are valid and do not cause an error.
 
-## Validação e privacidade
+## Validation and privacy
 
-Entradas acima de 100.000 caracteres, modos inválidos e opções diferentes de `mode` retornam erro de validação. Nenhuma solicitação de rede é feita: o processamento ocorre localmente no navegador.
+Inputs longer than 100,000 characters, invalid modes, and options other than `mode` return a validation error. No network requests are made: processing occurs locally in the browser.
 
-## Arquivos de contribuição
+## Contribution files
 
-- [definition.ts](definition.ts): metadados, amostra, modo padrão e extensão de saída.
-- [logic.ts](logic.ts): tokenização Unicode, conversões e validação.
-- [Tool.tsx](Tool.tsx): interface compartilhada `UniversalTool`.
-- Testes: [tests/tools/text-case-converter.test.cjs](../../../tests/tools/text-case-converter.test.cjs).
+- [definition.ts](definition.ts): metadata, sample, default mode, and output extension.
+- [logic.ts](logic.ts): Unicode tokenization, conversions, and validation.
+- [Tool.tsx](Tool.tsx): shared `UniversalTool` interface.
+- Tests: [tests/tools/text-case-converter.test.cjs](../../../tests/tools/text-case-converter.test.cjs).

@@ -13,63 +13,63 @@ const REFERENCE_KEYS = new Set(['$ref', '$dynamicRef', '$recursiveRef'])
 /** Generate an OpenAPI 3.1 JSON document from a bounded, local JSON description. */
 export function generateOpenApi(input: string, options: ToolOptions = {}): string {
   if (typeof input !== 'string' || input.trim().length === 0) {
-    throw new Error('Informe um objeto JSON com os dados da API.')
+    throw new Error('Provide a JSON object containing the API data.')
   }
   if (input.length > MAX_INPUT_LENGTH) {
-    throw new Error(`A entrada excede o limite de ${MAX_INPUT_LENGTH.toLocaleString('pt-BR')} caracteres.`)
+    throw new Error(`Input exceeds the ${MAX_INPUT_LENGTH.toLocaleString('en-US')}-character limit.`)
   }
   if (!options || typeof options !== 'object' || Array.isArray(options) || Object.keys(options).length > 0) {
-    throw new Error('Este gerador não aceita opções; use um objeto vazio: {}.')
+    throw new Error('This generator does not accept options; use an empty object: {}.')
   }
 
   let parsed: unknown
   try {
     parsed = JSON.parse(input)
   } catch (error) {
-    const detail = error instanceof Error ? error.message : 'erro de sintaxe desconhecido'
-    throw new Error(`JSON inválido: ${detail}`)
+    const detail = error instanceof Error ? error.message : 'unknown syntax error'
+    throw new Error(`Invalid JSON: ${detail}`)
   }
 
-  const source = requireObject(parsed, 'A raiz da entrada deve ser um objeto JSON.')
-  assertOnlyKeys(source, ['title', 'version', 'description', 'servers', 'endpoints'], 'entrada')
+  const source = requireObject(parsed, 'The input root must be a JSON object.')
+  assertOnlyKeys(source, ['title', 'version', 'description', 'servers', 'endpoints'], 'input')
 
   const title = requireText(source.title, 'title', 128, true)
   const version = requireText(source.version, 'version', 64, true)
   const description = source.description === undefined ? '' : requireText(source.description, 'description', 2_000)
   const servers = requireArray(source.servers, 'servers')
   if (servers.length < 1 || servers.length > 20) {
-    throw new Error('servers deve conter de 1 a 20 URLs.')
+    throw new Error('servers must contain between 1 and 20 URLs.')
   }
   const validatedServers = servers.map((server, index) => validateServer(server, index))
 
   const rawEndpoints = requireArray(source.endpoints, 'endpoints')
   if (rawEndpoints.length < 1 || rawEndpoints.length > 100) {
-    throw new Error('endpoints deve conter de 1 a 100 itens.')
+    throw new Error('endpoints must contain between 1 and 100 items.')
   }
 
   const seenOperations = new Set<string>()
   const endpoints = rawEndpoints.map((rawEndpoint, index) => {
-    const endpoint = requireObject(rawEndpoint, `endpoints[${index}] deve ser um objeto.`)
+    const endpoint = requireObject(rawEndpoint, `endpoints[${index}] must be an object.`)
     assertOnlyKeys(endpoint, ['path', 'method', 'summary', 'responseDescription', 'responseSchema'], `endpoints[${index}]`)
     const path = requireText(endpoint.path, `endpoints[${index}].path`, 512, true)
     if (!path.startsWith('/') || path.includes('?') || path.includes('#')) {
-      throw new Error(`endpoints[${index}].path deve começar com / e não pode conter query ou fragmento.`)
+      throw new Error(`endpoints[${index}].path must start with / and cannot contain a query or fragment.`)
     }
 
     const methodText = requireText(endpoint.method, `endpoints[${index}].method`, 16, true)
     const method = methodText.toLowerCase()
     if (!METHODS.has(method)) {
-      throw new Error(`Método HTTP inválido em endpoints[${index}].method. Use GET, POST, PUT, PATCH, DELETE, HEAD ou OPTIONS.`)
+      throw new Error(`Invalid HTTP method in endpoints[${index}].method. Use GET, POST, PUT, PATCH, DELETE, HEAD, or OPTIONS.`)
     }
     const operationKey = `${method}\u0000${path}`
     if (seenOperations.has(operationKey)) {
-      throw new Error(`Operação duplicada: ${method.toUpperCase()} ${path}.`)
+      throw new Error(`Duplicate operation: ${method.toUpperCase()} ${path}.`)
     }
     seenOperations.add(operationKey)
 
     const summary = requireText(endpoint.summary, `endpoints[${index}].summary`, 256)
     const responseDescription = requireText(endpoint.responseDescription, `endpoints[${index}].responseDescription`, 256, true)
-    const responseSchema = requireObject(endpoint.responseSchema, `endpoints[${index}].responseSchema deve ser um objeto JSON Schema.`)
+    const responseSchema = requireObject(endpoint.responseSchema, `endpoints[${index}].responseSchema must be a JSON Schema object.`)
     validateResponseSchema(responseSchema, index)
 
     return { path, method, summary, responseDescription, responseSchema }
@@ -109,7 +109,7 @@ export function generateOpenApi(input: string, options: ToolOptions = {}): strin
   const output = JSON.stringify(document, null, 2)
   const outputBytes = new TextEncoder().encode(output).byteLength
   if (outputBytes > MAX_OUTPUT_BYTES) {
-    throw new Error(`A saída excede o limite de ${MAX_OUTPUT_BYTES.toLocaleString('pt-BR')} bytes.`)
+    throw new Error(`Output exceeds the ${MAX_OUTPUT_BYTES.toLocaleString('en-US')}-byte limit.`)
   }
   return output
 }
@@ -120,20 +120,20 @@ function requireObject(value: unknown, message: string): JsonObject {
 }
 
 function requireArray(value: unknown, field: string): unknown[] {
-  if (!Array.isArray(value)) throw new Error(`${field} deve ser um array.`)
+  if (!Array.isArray(value)) throw new Error(`${field} must be an array.`)
   return value
 }
 
 function requireText(value: unknown, field: string, maxLength: number, nonEmpty = false): string {
-  if (typeof value !== 'string') throw new Error(`${field} deve ser um texto.`)
-  if (value.length > maxLength) throw new Error(`${field} deve ter no máximo ${maxLength.toLocaleString('pt-BR')} caracteres.`)
-  if (nonEmpty && value.trim().length === 0) throw new Error(`${field} não pode ficar vazio.`)
+  if (typeof value !== 'string') throw new Error(`${field} must be text.`)
+  if (value.length > maxLength) throw new Error(`${field} must be no more than ${maxLength.toLocaleString('en-US')} characters.`)
+  if (nonEmpty && value.trim().length === 0) throw new Error(`${field} cannot be empty.`)
   return value
 }
 
 function assertOnlyKeys(value: JsonObject, allowed: string[], location: string): void {
   for (const key of Object.keys(value)) {
-    if (!allowed.includes(key)) throw new Error(`Campo não reconhecido em ${location}: ${key}.`)
+    if (!allowed.includes(key)) throw new Error(`Unrecognized field in ${location}: ${key}.`)
   }
 }
 
@@ -141,20 +141,20 @@ function validateServer(value: unknown, index: number): string {
   const field = `servers[${index}]`
   const server = requireText(value, field, 2_048, true)
   if (server !== server.trim() || !/^https?:\/\//i.test(server)) {
-    throw new Error(`${field} deve ser uma URL absoluta HTTP(S) sem espaços externos.`)
+    throw new Error(`${field} must be an absolute HTTP(S) URL with no surrounding whitespace.`)
   }
   const authority = server.match(/^https?:\/\/([^/?#]*)/i)?.[1] ?? ''
   if (authority.includes('@') || server.includes('#')) {
-    throw new Error(`${field} não pode conter credenciais nem fragmento (#).`)
+    throw new Error(`${field} cannot contain credentials or a fragment (#).`)
   }
   let parsed: URL
   try {
     parsed = new URL(server)
   } catch {
-    throw new Error(`${field} deve ser uma URL absoluta HTTP(S) válida.`)
+    throw new Error(`${field} must be a valid absolute HTTP(S) URL.`)
   }
   if (!['http:', 'https:'].includes(parsed.protocol) || !parsed.hostname || parsed.username || parsed.password || parsed.hash) {
-    throw new Error(`${field} deve ser uma URL absoluta HTTP(S) sem credenciais nem fragmento.`)
+    throw new Error(`${field} must be an absolute HTTP(S) URL without credentials or a fragment.`)
   }
   return server
 }
@@ -164,13 +164,13 @@ function validateResponseSchema(schema: JsonObject, endpointIndex: number): void
   const visit = (value: JsonValue, depth: number): void => {
     nodes++
     if (nodes > MAX_SCHEMA_NODES) {
-      throw new Error(`responseSchema em endpoints[${endpointIndex}] excede o limite de ${MAX_SCHEMA_NODES.toLocaleString('pt-BR')} valores.`)
+      throw new Error(`responseSchema in endpoints[${endpointIndex}] exceeds the ${MAX_SCHEMA_NODES.toLocaleString('en-US')}-value limit.`)
     }
     if (depth > MAX_SCHEMA_DEPTH) {
-      throw new Error(`responseSchema em endpoints[${endpointIndex}] excede a profundidade máxima de ${MAX_SCHEMA_DEPTH}.`)
+      throw new Error(`responseSchema in endpoints[${endpointIndex}] exceeds the maximum depth of ${MAX_SCHEMA_DEPTH}.`)
     }
     if (typeof value === 'number' && !Number.isFinite(value)) {
-      throw new Error(`responseSchema em endpoints[${endpointIndex}] contém um número não JSON.`)
+      throw new Error(`responseSchema in endpoints[${endpointIndex}] contains a non-JSON number.`)
     }
     if (Array.isArray(value)) {
       for (const item of value) visit(item, depth + 1)
@@ -179,7 +179,7 @@ function validateResponseSchema(schema: JsonObject, endpointIndex: number): void
     if (value !== null && typeof value === 'object') {
       for (const [key, item] of Object.entries(value)) {
         if (REFERENCE_KEYS.has(key)) {
-          throw new Error(`responseSchema em endpoints[${endpointIndex}] não aceita referências ${key}.`)
+          throw new Error(`responseSchema in endpoints[${endpointIndex}] does not allow ${key} references.`)
         }
         visit(item, depth + 1)
       }
