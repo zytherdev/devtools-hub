@@ -9,10 +9,14 @@ import { run as runCronGenerator } from '@/app/tools/cron-generator/logic'
 import { run as runCurrencyConverter } from '@/app/tools/currency-converter/logic'
 import { run as runDiffChecker } from '@/app/tools/diff-checker/logic'
 import { run as runDockerComposeConverter } from '@/app/tools/docker-compose-converter/logic'
+import { run as runEmailValidator } from '@/app/tools/email-validator/logic'
 import { run as runFileSizeConverter } from '@/app/tools/file-size-converter/logic'
 import { run as runFaviconGenerator } from '@/app/tools/favicon-generator/logic'
 import { run as runHtmlBeautifier } from '@/app/tools/html-beautifier/logic'
 import { run as runHtmlEncoder } from '@/app/tools/html-encoder/logic'
+import { run as runHashGenerator } from '@/app/tools/hash-generator/logic'
+import { run as runHashVerifier } from '@/app/tools/hash-verifier/logic'
+import { run as runHmacGenerator } from '@/app/tools/hmac-generator/logic'
 import { run as runJsonDiff } from '@/app/tools/json-diff/logic'
 import { run as runJsonSchemaGenerator } from '@/app/tools/json-schema-generator/logic'
 import { run as runJsonToXml } from '@/app/tools/json-to-xml/logic'
@@ -27,6 +31,7 @@ import { run as runMockApiGenerator } from '@/app/tools/mock-api-generator/logic
 import { run as runNumberBaseConverter } from '@/app/tools/number-base-converter/logic'
 import { run as runOpenApiGenerator } from '@/app/tools/openapi-generator/logic'
 import { run as runPasswordGenerator } from '@/app/tools/password-generator/logic'
+import { run as runPasswordStrength } from '@/app/tools/password-strength/logic'
 import { run as runPhpJsonConverter } from '@/app/tools/php-json-converter/logic'
 import { run as runQrGenerator } from '@/app/tools/qr-generator/logic'
 import { run as runRandomNumberGenerator } from '@/app/tools/random-number-generator/logic'
@@ -61,8 +66,12 @@ const handlers: Record<string, ToolRunner> = {
   'currency-converter': runCurrencyConverter,
   'diff-checker': runDiffChecker,
   'docker-compose-converter': runDockerComposeConverter,
+  'email-validator': runEmailValidator,
   'file-size-converter': runFileSizeConverter,
   'favicon-generator': runFaviconGenerator,
+  'hash-generator': runHashGenerator,
+  'hash-verifier': runHashVerifier,
+  'hmac-generator': runHmacGenerator,
   'html-beautifier': runHtmlBeautifier,
   'html-encoder': runHtmlEncoder,
   'json-diff': runJsonDiff,
@@ -79,6 +88,7 @@ const handlers: Record<string, ToolRunner> = {
   'number-base-converter': runNumberBaseConverter,
   'openapi-generator': runOpenApiGenerator,
   'password-generator': runPasswordGenerator,
+  'password-strength': runPasswordStrength,
   'php-json-converter': runPhpJsonConverter,
   'qr-generator': runQrGenerator,
   'random-number-generator': runRandomNumberGenerator,

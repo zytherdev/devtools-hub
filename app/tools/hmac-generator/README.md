@@ -1,41 +1,25 @@
 # HMAC Generator
-
-**Status:** Planned
-
-Generate HMAC hashes for API authentication and message verification.
+**Status:** Implemented
+Generate SHA-256, SHA-384, or SHA-512 HMACs from text locally with browser Web Crypto and a user-provided secret key.
 
 ## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Available at /hmac-generator. The connected processor downloads results as .txt.
 
 ## Example input
-
 The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
-
 ~~~json
-""
+"The quick brown fox jumps over the lazy dog"
 ~~~
 
-## Default options
-
-The options panel starts with this JSON:
-
-~~~json
-{}
-~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+## Options
+Enter a non-empty secret key, select `SHA-256`, `SHA-384`, or `SHA-512`, and choose `hex`, `base64`, or `base64url` output. Hex output uses lowercase letters. Text and the key are encoded as UTF-8. Empty message text is valid. Input is limited to 1 MiB and the key to 64 KiB, measured after UTF-8 encoding.
 
 ## Processing and privacy
-
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+HMAC generation uses the browser's Web Crypto `SubtleCrypto.importKey` and `SubtleCrypto.sign` APIs. The key and message are processed locally in the browser and are not transmitted or logged by this tool. Use a secure browser context with Web Crypto support. The key field is masked by default and can be revealed with its Show control. Clear the key when you are finished. HMAC is not encryption or a password hash.
 
 ## Contribution files
-
 - [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
+- [logic.ts](logic.ts): typed asynchronous `run(input, options)` entry point, validation, and local HMAC generation.
 - [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
 - Focused tests: [tests/tools/hmac-generator.test.cjs](../../../tests/tools/hmac-generator.test.cjs).
-
 Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).

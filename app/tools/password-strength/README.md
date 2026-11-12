@@ -1,41 +1,22 @@
 # Password Strength Checker
 
-**Status:** Planned
+**Status:** Implemented
 
-Test password strength. Get feedback on security and suggestions for improvement.
+Get a bounded, local estimate of password strength and practical suggestions for improvement. The result reports a score from 0 to 4, a descriptive level, the character count, and feedback. The entered password is never included in the result.
 
-## Availability
+## Limits and behavior
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+The checker accepts passwords of up to 256 Unicode characters. Its small, deterministic heuristic considers length, character variety, a short list of common passwords, repeated characters, and a few obvious sequences. It does not estimate real-world cracking time, check breached-password databases, recognize personal context, or model every attack technique. The estimate is not a guarantee of security; do not use it as the only basis for choosing or approving a password.
 
-## Example input
-
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
-
-~~~json
-""
-~~~
-
-## Default options
-
-The options panel starts with this JSON:
-
-~~~json
-{}
-~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+The `run(password, options)` entry point accepts only an empty options object. Unknown options, non-string passwords, and inputs beyond the character limit are rejected. An empty password is accepted and receives a very weak result with guidance.
 
 ## Processing and privacy
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+All strength evaluation runs locally in the browser. The checker does not save or transmit the entered password, and the password is not copied into the result. Avoid entering passwords into shared or untrusted devices; normal site hosting and asset requests are covered by the project privacy page.
 
 ## Contribution files
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
+- [definition.ts](definition.ts): tool metadata and defaults.
+- [logic.ts](logic.ts): bounded local heuristic and strict option validation.
+- [Tool.tsx](Tool.tsx): password-masked, length-bounded interface.
 - Focused tests: [tests/tools/password-strength.test.cjs](../../../tests/tools/password-strength.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).

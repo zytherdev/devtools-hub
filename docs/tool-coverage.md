@@ -1,6 +1,6 @@
 # Tool Implementation Coverage
 
-**Reference: November 11, 2026.** The catalog contains 86 tools: 63 have connected implementations and 23 are explicitly marked as planned. Each tool has a canonical folder at `app/tools/<slug>/`; appearing in the catalog alone does not mean that it processes inputs. Update this page whenever an implementation’s status changes.
+**Reference: November 12, 2026.** The catalog contains 86 tools: 68 have connected implementations and 18 are explicitly marked as planned. Each tool has a canonical folder at `app/tools/<slug>/`; appearing in the catalog alone does not mean that it processes inputs. Update this page whenever an implementation’s status changes.
 
 ## Implemented
 
@@ -15,6 +15,7 @@
 | Text | `regex-tester`, `text-case-converter`, `word-counter`, `diff-checker`, `json-diff`, `lorem-ipsum`, `remove-duplicate-lines`, `slug-generator`, `line-sorter` |
 | Converters | `color-converter`, `unit-converter`, `timestamp-converter`, `number-base-converter`, `currency-converter`, `file-size-converter`, `roman-numeral` |
 | Database and DevOps | `sql-formatter`, `docker-compose-converter`, `kubernetes-decoder`, `chmod-calculator` |
+| Security and cryptography | `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `hmac-generator` |
 
 Each implemented tool contains metadata and example/default options in `definition.ts`, processing logic in `logic.ts`, and a UI entry in `Tool.tsx`. `app/tools/registry.ts` registers the metadata; `app/tools/componentRegistry.ts` statically registers the UI entries used by the shared dynamic route. Simple interfaces reuse `UniversalTool`; richer controls follow the same shared visual system.
 
@@ -29,7 +30,7 @@ All planned tools follow the same folder contract and explicitly display their p
 | Text and strings | — |
 | Converters | — |
 | Database and DevOps | `subnet-calculator` |
-| Security and cryptography | `ssl-checker`, `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `rsa-key-generator`, `bcrypt-generator`, `hmac-generator`, `aes-encryptor`, `certificate-decoder` |
+| Security and cryptography | `ssl-checker`, `rsa-key-generator`, `bcrypt-generator`, `aes-encryptor`, `certificate-decoder` |
 | Date and time | `cron-validator`, `eta-calculator`, `date-difference`, `timezone-converter`, `text-statistics` |
 | Network and lookup | `ip-lookup`, `user-agent-parser`, `mac-lookup` |
 | Miscellaneous | `http-status-codes`, `emoji-picker`, `bip39-generator`, `benchmark-tool` |

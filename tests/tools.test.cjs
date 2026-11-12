@@ -15,8 +15,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 63)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 23)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 68)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 18)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -35,7 +35,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 50)
+  assert.equal(genericToolSlugs.length, 55)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -78,6 +78,11 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
     runTool('docker-compose-converter', 'docker run --name app -p 8080:80 nginx:alpine'),
     runTool('kubernetes-decoder', 'apiVersion: v1\nkind: Secret\nmetadata:\n  name: demo\ndata:\n  token: YWRtaW4=\n'),
     runTool('chmod-calculator', '755'),
+    runTool('password-strength', 'Longer stable phrase!'),
+    runTool('email-validator', 'alex.lee+updates@example.co.uk'),
+    runTool('hash-generator', 'abc', { algorithm: 'SHA-256' }),
+    runTool('hash-verifier', 'abc', { algorithm: 'SHA-256', expectedDigest: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad' }),
+    runTool('hmac-generator', 'message', { secretKey: 'secret', algorithm: 'SHA-256', encoding: 'hex' }),
   ])
   assert.deepEqual(JSON.parse(outputs[0]), [{ name: 'Ada' }])
   assert.deepEqual(JSON.parse(outputs[1]), { x: 1 })
@@ -114,6 +119,11 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
   assert.equal(parseYaml(outputs[32]).services.converted.image, 'nginx:alpine')
   assert.equal(parseYaml(outputs[33]).stringData.token, 'admin')
   assert.equal(JSON.parse(outputs[34]).symbolic, 'rwxr-xr-x')
+  assert.equal(JSON.parse(outputs[35]).characterCount, 'Longer stable phrase!'.length)
+  assert.equal(JSON.parse(outputs[36]).valid, true)
+  assert.equal(outputs[37], 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')
+  assert.match(outputs[38], /^MATCH\nAlgorithm: SHA-256/)
+  assert.match(outputs[39], /^[0-9a-f]{64}$/)
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
 })
 

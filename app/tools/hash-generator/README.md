@@ -1,41 +1,27 @@
 # Hash Generator
-
-**Status:** Planned
-
-Generate MD5, SHA-1, SHA-256, SHA-384, and SHA-512 hashes from your text.
-
+**Status:** Implemented
+Generate SHA-256, SHA-384, or SHA-512 hashes from text locally with browser Web Crypto.
 ## Availability
-
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
-
+Available at /hash-generator. The connected processor downloads results as .txt.
 ## Example input
-
 The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
-
 ~~~json
-""
+"The quick brown fox jumps over the lazy dog"
 ~~~
-
 ## Default options
-
 The options panel starts with this JSON:
-
 ~~~json
-{}
+{
+  "algorithm": "SHA-256"
+}
 ~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
-
+The only accepted option is `algorithm`, which must be `SHA-256`, `SHA-384`, or `SHA-512`. Results are lowercase hexadecimal digests. The UTF-8 encoded input limit is 1 MiB; empty text is valid.
 ## Processing and privacy
-
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
+Hashing uses the browser's Web Crypto `SubtleCrypto.digest` API. Text is encoded as UTF-8 and processed locally; input is not intentionally uploaded. The tool requires browser Web Crypto, which is available in secure browser contexts. MD5 is not offered. These hashes are not keyed message authentication codes and do not make weak passwords safe to store.
 ## Contribution files
-
 - [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
+- [logic.ts](logic.ts): typed asynchronous `run(input, options)` entry point and input validation.
 - [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
 - lib/: helpers private to this tool, when needed.
 - Focused tests: [tests/tools/hash-generator.test.cjs](../../../tests/tools/hash-generator.test.cjs).
-
 Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
