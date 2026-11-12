@@ -6,10 +6,13 @@ import { run as runChmodCalculator } from '@/app/tools/chmod-calculator/logic'
 import { run as runCsvFormatter } from '@/app/tools/csv-formatter/logic'
 import { run as runCsvToJson } from '@/app/tools/csv-to-json/logic'
 import { run as runCronGenerator } from '@/app/tools/cron-generator/logic'
+import { run as runCronValidator } from '@/app/tools/cron-validator/logic'
 import { run as runCurrencyConverter } from '@/app/tools/currency-converter/logic'
+import { run as runDateDifference } from '@/app/tools/date-difference/logic'
 import { run as runDiffChecker } from '@/app/tools/diff-checker/logic'
 import { run as runDockerComposeConverter } from '@/app/tools/docker-compose-converter/logic'
 import { run as runEmailValidator } from '@/app/tools/email-validator/logic'
+import { run as runEtaCalculator } from '@/app/tools/eta-calculator/logic'
 import { run as runFileSizeConverter } from '@/app/tools/file-size-converter/logic'
 import { run as runFaviconGenerator } from '@/app/tools/favicon-generator/logic'
 import { run as runHtmlBeautifier } from '@/app/tools/html-beautifier/logic'
@@ -45,6 +48,8 @@ import { run as runTimestampConverter } from '@/app/tools/timestamp-converter/lo
 import { run as runTomlFormatter } from '@/app/tools/toml-formatter/logic'
 import { run as runTomlJsonConverter } from '@/app/tools/toml-json-converter/logic'
 import { run as runTextCaseConverter } from '@/app/tools/text-case-converter/logic'
+import { run as runTextStatistics } from '@/app/tools/text-statistics/logic'
+import { run as runTimezoneConverter } from '@/app/tools/timezone-converter/logic'
 import { run as runUnicodeConverter } from '@/app/tools/unicode-converter/logic'
 import { run as runUnitConverter } from '@/app/tools/unit-converter/logic'
 import { run as runUrlEncoder } from '@/app/tools/url-encoder/logic'
@@ -63,10 +68,13 @@ const handlers: Record<string, ToolRunner> = {
   'csv-formatter': runCsvFormatter,
   'csv-to-json': runCsvToJson,
   'cron-generator': runCronGenerator,
+  'cron-validator': runCronValidator,
   'currency-converter': runCurrencyConverter,
+  'date-difference': runDateDifference,
   'diff-checker': runDiffChecker,
   'docker-compose-converter': runDockerComposeConverter,
   'email-validator': runEmailValidator,
+  'eta-calculator': runEtaCalculator,
   'file-size-converter': runFileSizeConverter,
   'favicon-generator': runFaviconGenerator,
   'hash-generator': runHashGenerator,
@@ -99,7 +107,9 @@ const handlers: Record<string, ToolRunner> = {
   'slug-generator': runSlugGenerator,
   'sql-formatter': runSqlFormatter,
   'text-case-converter': runTextCaseConverter,
+  'text-statistics': runTextStatistics,
   'timestamp-converter': runTimestampConverter,
+  'timezone-converter': runTimezoneConverter,
   'toml-formatter': runTomlFormatter,
   'toml-json-converter': runTomlJsonConverter,
   'unicode-converter': runUnicodeConverter,

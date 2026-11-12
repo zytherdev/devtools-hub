@@ -15,8 +15,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 68)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 18)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 73)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 13)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -35,7 +35,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 55)
+  assert.equal(genericToolSlugs.length, 60)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -83,6 +83,11 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
     runTool('hash-generator', 'abc', { algorithm: 'SHA-256' }),
     runTool('hash-verifier', 'abc', { algorithm: 'SHA-256', expectedDigest: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad' }),
     runTool('hmac-generator', 'message', { secretKey: 'secret', algorithm: 'SHA-256', encoding: 'hex' }),
+    runTool('cron-validator', '0 9 * * 1-5'),
+    runTool('eta-calculator', JSON.stringify({ progress: 40, elapsedMinutes: 120, asOf: '2026-01-01T12:00:00Z' })),
+    runTool('date-difference', JSON.stringify({ start: '2024-01-31', end: '2024-03-01' })),
+    runTool('timezone-converter', JSON.stringify({ instant: '2024-06-15T12:00:00Z', fromTimeZone: 'UTC', toTimeZone: 'America/New_York' })),
+    runTool('text-statistics', 'one two\nthree', { includeReadingTime: 'true', wordsPerMinute: '60' }),
   ])
   assert.deepEqual(JSON.parse(outputs[0]), [{ name: 'Ada' }])
   assert.deepEqual(JSON.parse(outputs[1]), { x: 1 })
@@ -124,6 +129,12 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
   assert.equal(outputs[37], 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')
   assert.match(outputs[38], /^MATCH\nAlgorithm: SHA-256/)
   assert.match(outputs[39], /^[0-9a-f]{64}$/)
+  assert.match(outputs[40], /Valid five-field cron expression/)
+  assert.equal(JSON.parse(outputs[41]).estimatedCompletion, '2026-01-01T15:00:00.000Z')
+  assert.deepEqual(JSON.parse(outputs[42]).calendarDifference, { years: 0, months: 1, days: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+  assert.equal(JSON.parse(outputs[43]).target.utcOffset, 'UTC-04:00')
+  assert.match(outputs[44], /^Words: 3$/m)
+  assert.match(outputs[44], /^Lines: 2$/m)
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
 })
 

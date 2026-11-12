@@ -1,41 +1,46 @@
 # Cron Validator
 
-**Status:** Planned
+**Status:** Implemented
 
-Validate cron expressions and see next execution times.
+Validate a five-field numeric cron expression for syntax and field bounds. This is a local, offline validator; it does not calculate a timezone-specific next run or determine whether a calendar date matches.
 
-## Availability
+## Grammar
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+The expression has exactly five fields separated by whitespace, in this order:
+
+1. Minute: `0–59`
+2. Hour: `0–23`
+3. Day of month: `1–31`
+4. Month: `1–12`
+5. Day of week: `0–7` (`0` and `7` both denote Sunday)
+
+A field is a comma-separated list of terms. A term is `*`, a number, an ascending `number-number` range, or any of those followed by `/step`. Steps must be positive integers no greater than the number of allowed values in that field. With a single-number stepped term such as `5/10`, iteration starts at that number and proceeds through the field maximum. Names (`JAN`, `MON`, etc.), macros (`@daily`), seconds, year fields, and special day operators are not supported. Leading/trailing whitespace is ignored; lists may contain at most 64 terms per field.
+
+Examples:
+
+- `*/15 9-17 * * 1-5`
+- `0 0 1,15 * 0`
+- `5/10 8-18/2 * 1-12 1-5`
 
 ## Example input
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+The catalog sample is stored in [definition.ts](definition.ts):
 
-~~~json
-""
+~~~text
+*/15 9-17 * * 1-5
 ~~~
 
-## Default options
+## Options and limits
 
-The options panel starts with this JSON:
-
-~~~json
-{}
-~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+`run(input, options)` accepts a string no longer than 256 characters and an empty plain options object. Any option key, non-object options value, malformed field, unsupported token, or out-of-range value is rejected with an error. `validateCronExpression(input)` returns a `{ valid, message }` result for UI feedback, including non-string values without throwing.
 
 ## Processing and privacy
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+Validation uses local logic only; the expression is not sent to a server. A valid result means only that the documented syntax and numeric field bounds pass. It does not calculate the next execution time for any timezone and does not resolve calendar-dependent schedules.
 
 ## Contribution files
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
+- [definition.ts](definition.ts): tool metadata, status, sample input, and defaults.
+- [logic.ts](logic.ts): bounded parser, validation result, and `run` entry point.
+- [Tool.tsx](Tool.tsx): interactive UI using the shared `ToolPanel` component.
 - Focused tests: [tests/tools/cron-validator.test.cjs](../../../tests/tools/cron-validator.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
