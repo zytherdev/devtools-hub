@@ -1,9 +1,12 @@
 import type { ToolOptions, ToolRunner } from '@/app/tools/types'
+import { run as runAesEncryptor } from '@/app/tools/aes-encryptor/logic'
 import { run as runAsciiConverter } from '@/app/tools/ascii-converter/logic'
 import { run as runBase64Encoder } from '@/app/tools/base64-encoder/logic'
 import { run as runBarcodeGenerator } from '@/app/tools/barcode-generator/logic'
 import { run as runBenchmarkTool } from '@/app/tools/benchmark-tool/logic'
+import { run as runBcryptGenerator } from '@/app/tools/bcrypt-generator/logic'
 import { run as runChmodCalculator } from '@/app/tools/chmod-calculator/logic'
+import { run as runCertificateDecoder } from '@/app/tools/certificate-decoder/logic'
 import { run as runCsvFormatter } from '@/app/tools/csv-formatter/logic'
 import { run as runCsvToJson } from '@/app/tools/csv-to-json/logic'
 import { run as runCronGenerator } from '@/app/tools/cron-generator/logic'
@@ -42,11 +45,13 @@ import { run as runPhpJsonConverter } from '@/app/tools/php-json-converter/logic
 import { run as runQrGenerator } from '@/app/tools/qr-generator/logic'
 import { run as runRandomNumberGenerator } from '@/app/tools/random-number-generator/logic'
 import { run as runRemoveDuplicateLines } from '@/app/tools/remove-duplicate-lines/logic'
+import { run as runRsaKeyGenerator } from '@/app/tools/rsa-key-generator/logic'
 import { run as runRobotsTxtGenerator } from '@/app/tools/robots-txt-generator/logic'
 import { run as runRomanNumeral } from '@/app/tools/roman-numeral/logic'
 import { run as runSitemapGenerator } from '@/app/tools/sitemap-generator/logic'
 import { run as runSlugGenerator } from '@/app/tools/slug-generator/logic'
 import { run as runSqlFormatter } from '@/app/tools/sql-formatter/logic'
+import { run as runSslChecker } from '@/app/tools/ssl-checker/logic'
 import { run as runSubnetCalculator } from '@/app/tools/subnet-calculator/logic'
 import { run as runTimestampConverter } from '@/app/tools/timestamp-converter/logic'
 import { run as runTomlFormatter } from '@/app/tools/toml-formatter/logic'
@@ -66,11 +71,14 @@ import { run as runYamlToJson } from '@/app/tools/yaml-to-json/logic'
 import { run as runWordCounter } from '@/app/tools/word-counter/logic'
 
 const handlers: Record<string, ToolRunner> = {
+  'aes-encryptor': runAesEncryptor,
   'ascii-converter': runAsciiConverter,
   'base64-encoder': runBase64Encoder,
   'barcode-generator': runBarcodeGenerator,
   'benchmark-tool': runBenchmarkTool,
+  'bcrypt-generator': runBcryptGenerator,
   'chmod-calculator': runChmodCalculator,
+  'certificate-decoder': runCertificateDecoder,
   'csv-formatter': runCsvFormatter,
   'csv-to-json': runCsvToJson,
   'cron-generator': runCronGenerator,
@@ -109,11 +117,13 @@ const handlers: Record<string, ToolRunner> = {
   'qr-generator': runQrGenerator,
   'random-number-generator': runRandomNumberGenerator,
   'remove-duplicate-lines': runRemoveDuplicateLines,
+  'rsa-key-generator': runRsaKeyGenerator,
   'robots-txt-generator': runRobotsTxtGenerator,
   'roman-numeral': runRomanNumeral,
   'sitemap-generator': runSitemapGenerator,
   'slug-generator': runSlugGenerator,
   'sql-formatter': runSqlFormatter,
+  'ssl-checker': runSslChecker,
   'subnet-calculator': runSubnetCalculator,
   'text-case-converter': runTextCaseConverter,
   'text-statistics': runTextStatistics,

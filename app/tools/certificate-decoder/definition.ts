@@ -3,13 +3,13 @@ import type { ToolDefinition } from '@/app/tools/types'
 export const tool: ToolDefinition = {
   "id": "certificate-decoder",
   "name": "Certificate Decoder",
-  "description": "Decode and inspect SSL/TLS certificates. View expiration, issuer, and details.",
+  "description": "Decode bounded PEM or DER X.509 certificates locally and inspect identity, validity, SAN, and public-key metadata.",
   "icon": "fa-solid fa-certificate",
   "color": "#f59e0b",
-  "badge": "Planned",
+  "badge": "",
   "href": "/certificate-decoder",
   "categoryId": "security",
-  "status": "planned",
+  "status": "implemented",
   "exampleInput": "",
   "defaultOptions": {},
   "outputExtension": "txt"

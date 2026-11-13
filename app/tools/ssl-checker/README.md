@@ -1,41 +1,42 @@
 # SSL Checker
 
-**Status:** Planned
+**Status:** Implemented
 
-Check SSL/TLS certificate details. Verify expiration, issuer, and security protocols.
+Decode one supplied PEM X.509 certificate locally, report its validity dates and whether those dates include the current device clock, and optionally compare a DNS hostname or IP address with the certificate's subject alternative names (SANs). This is a check of provided certificate text, not a live inspection of a remote server.
 
 ## Availability
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Available at `/ssl-checker` through the shared dynamic tool route. The page starts with empty certificate and hostname fields. No sample certificate, hostname, or certificate contents are prefilled.
 
-## Example input
+## Input and limits
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+- Required: exactly one PEM `CERTIFICATE` block. The existing certificate decoder rejects malformed PEM, multiple blocks, other PEM labels, and extra content.
+- Optional: one DNS hostname, IPv4 address, or IPv6 address, without a scheme, path, port, or whitespace. The maximum length is 253 characters.
+- PEM text is limited to 256 KiB; decoded certificate data is limited to 128 KiB. Certificate decoding also has DER-node, depth, and SAN-entry bounds documented by the [Certificate Decoder](../certificate-decoder/README.md).
+- The shared `run(input, options)` API accepts only the optional string option `hostname`; unknown options are rejected.
 
-~~~json
-""
-~~~
+## Checks and output
 
-## Default options
+The tool first decodes the PEM certificate. Only after successful decoding does it report:
 
-The options panel starts with this JSON:
+- `validityCheck`: `valid`, `not-yet-valid`, or `expired`, based solely on the decoded `notBefore`/`notAfter` timestamps compared with the local device clock at check time. Boundary times are inclusive.
+- `hostnameCheck`: `not-requested`, `matched`, `mismatched`, or `unavailable`. Matching uses DNS or IP SAN entries only. DNS matching is case-insensitive, allows a single wildcard label (for example, `*.example.test` matches `www.example.test`, not `a.www.example.test`), and does not fall back to the subject common name. An absent SAN list is unavailable; a present SAN list with no match is a mismatch.
+- `subjectAlternativeNames`: the decoded SAN entries.
+- `cryptographicValidation`: explicit `false` values for signature verification, trust-chain validation, and revocation checking.
 
-~~~json
-{}
-~~~
+`run()` returns a formatted JSON string containing these results. The UI presents the date result, hostname comparison, and SAN list separately from the decoding-success notice.
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+## Privacy and limitations
 
-## Processing and privacy
+Certificate text and the optional hostname are processed in the browser using local code. This tool does not transmit them, make a request to the supplied hostname, save them to browser storage, or log their contents. The values are held in page memory until cleared or the page is closed. As with any hosted page, normal website hosting and asset requests still occur.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+A successful decode means only that supported certificate fields could be read. A `valid` date result is not a trust decision. This tool does **not** make a live TLS connection or handshake; inspect a server's currently served certificate; cryptographically verify a certificate signature; build or validate a certificate chain or CA trust; check revocation, key usage, or policy; or determine that the certificate is trustworthy. Hostname matching is a comparison against decoded SAN data and does not establish that the certificate is trusted or is currently used by a remote server. The local system clock may be inaccurate.
+
+No additional package dependencies are required.
 
 ## Contribution files
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
+- [definition.ts](definition.ts): metadata and shared-route catalog information.
+- [logic.ts](logic.ts): bounded local decoding orchestration, date assessment, SAN matching, and `run()` API.
+- [Tool.tsx](Tool.tsx): functional browser-local UI using shared `ToolPanel` styling.
 - Focused tests: [tests/tools/ssl-checker.test.cjs](../../../tests/tools/ssl-checker.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).

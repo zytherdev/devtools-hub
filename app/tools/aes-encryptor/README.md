@@ -1,41 +1,31 @@
 # AES Encryptor/Decryptor
 
-**Status:** Planned
+**Status:** Implemented
 
-Encrypt and decrypt text using AES-256-GCM or other modes.
+Encrypt and decrypt text in your browser with password-derived AES-256-GCM and authenticated payloads.
 
-## Availability
+## Usage
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Choose **Encrypt text** or **Decrypt payload**, enter plaintext or the complete JSON payload, and provide a password. Encryption requires a passphrase of at least 12 Unicode characters. For decryption, use the exact original passphrase. Passwords are masked by default. The tool returns either a versioned JSON payload or the decrypted plaintext. It does not save the result for you; copy and safely store the payload yourself.
 
-## Example input
+The payload format is JSON with version `1`, `AES-256-GCM`, PBKDF2 with SHA-256 and 310,000 iterations, a 16-byte random salt, a 12-byte random nonce, and base64url-encoded ciphertext including the 128-bit GCM authentication tag. The password is never included. Each encryption obtains a fresh salt and cryptographically random nonce. Nonce duplicates are detected and rejected for the lifetime of the current page, and the tool refuses more than 10,000 encryption attempts in that page session. A page reload starts a new in-memory nonce history; random 96-bit nonces make cross-session collisions extraordinarily unlikely, but cannot mathematically guarantee global uniqueness.
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Limits and validation
 
-~~~json
-""
-~~~
+- Plaintext: at most 1 MiB UTF-8, including multibyte text.
+- Password: non-empty and at most 4 KiB UTF-8; encryption requires at least 12 Unicode characters.
+- Encrypted JSON payload: at most 2 MiB, with a strict versioned structure and canonical base64url fields.
+- Empty plaintext is supported. Unsupported parameters, malformed encodings, truncated ciphertext and modified ciphertext are rejected. Wrong passwords and authentication failures return a generic decryption error.
 
-## Default options
+## Privacy and limitations
 
-The options panel starts with this JSON:
+All encryption and decryption run locally with the browser's Web Crypto API. This tool's logic makes no network requests and does not log the plaintext, password, or output. The page does not persist them; they remain in the active page until cleared or the page is closed. Browser extensions, a compromised device, malicious page scripts, clipboard history, or someone with access to the screen or browser can still expose data. Use a secure browser context and a trusted device.
 
-~~~json
-{}
-~~~
+There is no password recovery, key escrow, or server-side copy. If you lose either the password or the only copy of the encrypted payload, the original plaintext cannot be recovered. Keep independent secure backups of both the payload and password, and do not store them together. Anyone who obtains both can decrypt the data. PBKDF2 raises the cost of password guessing, but does not protect weak or reused passwords. AES-GCM detects unauthorized changes but does not hide payload length or metadata, and this utility has not been independently audited for high-assurance use.
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+## Implementation files
 
-## Processing and privacy
-
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
-
-## Contribution files
-
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/aes-encryptor.test.cjs](../../../tests/tools/aes-encryptor.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): catalog metadata and dynamic route identity.
+- [logic.ts](logic.ts): Web Crypto, password derivation, payload validation and limits.
+- [Tool.tsx](Tool.tsx): interactive local encryption/decryption UI.
+- Focused native tests: [tests/tools/aes-encryptor.test.cjs](../../../tests/tools/aes-encryptor.test.cjs).

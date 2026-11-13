@@ -1,6 +1,6 @@
 # Tool Implementation Coverage
 
-**Reference: November 13, 2026.** The catalog contains 86 tools: 78 have connected implementations and 8 are explicitly marked as planned. Each tool has a canonical folder at `app/tools/<slug>/`; appearing in the catalog alone does not mean that it processes inputs. Update this page whenever an implementation’s status changes.
+**Reference: November 13, 2026.** The catalog contains 86 tools: 83 have connected implementations and 3 are explicitly marked as planned. Each tool has a canonical folder at `app/tools/<slug>/`; appearing in the catalog alone does not mean that it processes inputs. Update this page whenever an implementation’s status changes.
 
 ## Implemented
 
@@ -15,7 +15,7 @@
 | Text | `regex-tester`, `text-case-converter`, `word-counter`, `diff-checker`, `json-diff`, `lorem-ipsum`, `remove-duplicate-lines`, `slug-generator`, `line-sorter` |
 | Converters | `color-converter`, `unit-converter`, `timestamp-converter`, `number-base-converter`, `currency-converter`, `file-size-converter`, `roman-numeral` |
 | Database and DevOps | `sql-formatter`, `docker-compose-converter`, `kubernetes-decoder`, `chmod-calculator` |
-| Security and cryptography | `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `hmac-generator` |
+| Security and cryptography | `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `hmac-generator`, `rsa-key-generator`, `bcrypt-generator`, `aes-encryptor`, `certificate-decoder`, `ssl-checker` |
 | Date and time | `cron-validator`, `eta-calculator`, `date-difference`, `timezone-converter`, `text-statistics` |
 | Network and lookup | `subnet-calculator`, `user-agent-parser` |
 | Miscellaneous | `http-status-codes`, `emoji-picker`, `benchmark-tool` |
@@ -33,7 +33,7 @@ All planned tools follow the same folder contract and explicitly display their p
 | Text and strings | — |
 | Converters | — |
 | Database and DevOps | — |
-| Security and cryptography | `ssl-checker`, `rsa-key-generator`, `bcrypt-generator`, `aes-encryptor`, `certificate-decoder` |
+| Security and cryptography | — |
 | Date and time | — |
 | Network and lookup | `ip-lookup`, `mac-lookup` |
 | Miscellaneous | `bip39-generator` |

@@ -15,8 +15,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 78)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 8)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 83)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 3)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -35,7 +35,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 65)
+  assert.equal(genericToolSlugs.length, 70)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -93,6 +93,9 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
     runTool('http-status-codes', '404'),
     runTool('emoji-picker', 'coffee'),
     runTool('benchmark-tool', 'map-lookup', { iterations: '20', samples: '2' }),
+    runTool('rsa-key-generator', '', { modulusLength: '2048', algorithm: 'RSA-OAEP', format: 'pem' }),
+    runTool('bcrypt-generator', 'Integration test password', { action: 'hash', cost: '4' }),
+    runTool('aes-encryptor', 'dispatcher test', { mode: 'encrypt', password: 'a sufficiently long test passphrase' }),
   ])
   assert.deepEqual(JSON.parse(outputs[0]), [{ name: 'Ada' }])
   assert.deepEqual(JSON.parse(outputs[1]), { x: 1 })
@@ -145,6 +148,18 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
   assert.equal(JSON.parse(outputs[47]).results[0].title, 'Not Found')
   assert.equal(JSON.parse(outputs[48])[0].emoji, '☕')
   assert.equal(JSON.parse(outputs[49]).sampleCount, 2)
+  const rsa = JSON.parse(outputs[50])
+  assert.equal(rsa.algorithm, 'RSA-OAEP')
+  assert.equal(rsa.modulusLength, 2048)
+  assert.match(rsa.publicKey, /BEGIN PUBLIC KEY/)
+  assert.match(rsa.privateKey, /BEGIN PRIVATE KEY/)
+  assert.match(outputs[51], /^\$2[ab]\$04\$/)
+  const aes = JSON.parse(outputs[52])
+  assert.equal(aes.algorithm, 'AES-256-GCM')
+  assert.equal(aes.kdf, 'PBKDF2')
+  assert.ok(aes.ciphertext)
+  await assert.rejects(runTool('certificate-decoder', 'not a certificate'), /PEM CERTIFICATE block/i)
+  await assert.rejects(runTool('ssl-checker', 'not a certificate'), /PEM CERTIFICATE block/i)
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
 })
 

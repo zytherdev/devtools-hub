@@ -1,0 +1,12 @@
+{
+  "name": "bcryptjs",
+  "version": "3.0.3",
+  "description": "Vendored browser-compatible bcrypt implementation",
+  "license": "BSD-3-Clause",
+  "main": "./bcryptjs.cjs",
+  "types": "./index.d.ts",
+  "type": "commonjs",
+  "browser": {
+    "crypto": false
+  }
+}
