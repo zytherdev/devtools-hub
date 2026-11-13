@@ -2,6 +2,7 @@ import type { ToolOptions, ToolRunner } from '@/app/tools/types'
 import { run as runAsciiConverter } from '@/app/tools/ascii-converter/logic'
 import { run as runBase64Encoder } from '@/app/tools/base64-encoder/logic'
 import { run as runBarcodeGenerator } from '@/app/tools/barcode-generator/logic'
+import { run as runBenchmarkTool } from '@/app/tools/benchmark-tool/logic'
 import { run as runChmodCalculator } from '@/app/tools/chmod-calculator/logic'
 import { run as runCsvFormatter } from '@/app/tools/csv-formatter/logic'
 import { run as runCsvToJson } from '@/app/tools/csv-to-json/logic'
@@ -12,6 +13,7 @@ import { run as runDateDifference } from '@/app/tools/date-difference/logic'
 import { run as runDiffChecker } from '@/app/tools/diff-checker/logic'
 import { run as runDockerComposeConverter } from '@/app/tools/docker-compose-converter/logic'
 import { run as runEmailValidator } from '@/app/tools/email-validator/logic'
+import { run as runEmojiPicker } from '@/app/tools/emoji-picker/logic'
 import { run as runEtaCalculator } from '@/app/tools/eta-calculator/logic'
 import { run as runFileSizeConverter } from '@/app/tools/file-size-converter/logic'
 import { run as runFaviconGenerator } from '@/app/tools/favicon-generator/logic'
@@ -20,6 +22,7 @@ import { run as runHtmlEncoder } from '@/app/tools/html-encoder/logic'
 import { run as runHashGenerator } from '@/app/tools/hash-generator/logic'
 import { run as runHashVerifier } from '@/app/tools/hash-verifier/logic'
 import { run as runHmacGenerator } from '@/app/tools/hmac-generator/logic'
+import { run as runHttpStatusCodes } from '@/app/tools/http-status-codes/logic'
 import { run as runJsonDiff } from '@/app/tools/json-diff/logic'
 import { run as runJsonSchemaGenerator } from '@/app/tools/json-schema-generator/logic'
 import { run as runJsonToXml } from '@/app/tools/json-to-xml/logic'
@@ -44,6 +47,7 @@ import { run as runRomanNumeral } from '@/app/tools/roman-numeral/logic'
 import { run as runSitemapGenerator } from '@/app/tools/sitemap-generator/logic'
 import { run as runSlugGenerator } from '@/app/tools/slug-generator/logic'
 import { run as runSqlFormatter } from '@/app/tools/sql-formatter/logic'
+import { run as runSubnetCalculator } from '@/app/tools/subnet-calculator/logic'
 import { run as runTimestampConverter } from '@/app/tools/timestamp-converter/logic'
 import { run as runTomlFormatter } from '@/app/tools/toml-formatter/logic'
 import { run as runTomlJsonConverter } from '@/app/tools/toml-json-converter/logic'
@@ -53,6 +57,7 @@ import { run as runTimezoneConverter } from '@/app/tools/timezone-converter/logi
 import { run as runUnicodeConverter } from '@/app/tools/unicode-converter/logic'
 import { run as runUnitConverter } from '@/app/tools/unit-converter/logic'
 import { run as runUrlEncoder } from '@/app/tools/url-encoder/logic'
+import { run as runUserAgentParser } from '@/app/tools/user-agent-parser/logic'
 import { run as runUuidGenerator } from '@/app/tools/uuid-generator/logic'
 import { run as runXmlFormatter } from '@/app/tools/xml-formatter/logic'
 import { run as runXmlToJson } from '@/app/tools/xml-to-json/logic'
@@ -64,6 +69,7 @@ const handlers: Record<string, ToolRunner> = {
   'ascii-converter': runAsciiConverter,
   'base64-encoder': runBase64Encoder,
   'barcode-generator': runBarcodeGenerator,
+  'benchmark-tool': runBenchmarkTool,
   'chmod-calculator': runChmodCalculator,
   'csv-formatter': runCsvFormatter,
   'csv-to-json': runCsvToJson,
@@ -74,6 +80,7 @@ const handlers: Record<string, ToolRunner> = {
   'diff-checker': runDiffChecker,
   'docker-compose-converter': runDockerComposeConverter,
   'email-validator': runEmailValidator,
+  'emoji-picker': runEmojiPicker,
   'eta-calculator': runEtaCalculator,
   'file-size-converter': runFileSizeConverter,
   'favicon-generator': runFaviconGenerator,
@@ -82,6 +89,7 @@ const handlers: Record<string, ToolRunner> = {
   'hmac-generator': runHmacGenerator,
   'html-beautifier': runHtmlBeautifier,
   'html-encoder': runHtmlEncoder,
+  'http-status-codes': runHttpStatusCodes,
   'json-diff': runJsonDiff,
   'json-schema-generator': runJsonSchemaGenerator,
   'json-to-xml': runJsonToXml,
@@ -106,6 +114,7 @@ const handlers: Record<string, ToolRunner> = {
   'sitemap-generator': runSitemapGenerator,
   'slug-generator': runSlugGenerator,
   'sql-formatter': runSqlFormatter,
+  'subnet-calculator': runSubnetCalculator,
   'text-case-converter': runTextCaseConverter,
   'text-statistics': runTextStatistics,
   'timestamp-converter': runTimestampConverter,
@@ -115,6 +124,7 @@ const handlers: Record<string, ToolRunner> = {
   'unicode-converter': runUnicodeConverter,
   'unit-converter': runUnitConverter,
   'url-encoder': runUrlEncoder,
+  'user-agent-parser': runUserAgentParser,
   'uuid-generator': runUuidGenerator,
   'xml-formatter': runXmlFormatter,
   'xml-to-json': runXmlToJson,

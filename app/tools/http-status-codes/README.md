@@ -1,41 +1,46 @@
 # HTTP Status Codes
 
-**Status:** Planned
+**Status:** Implemented
 
-Reference guide for all HTTP status codes. Understand 1xx, 2xx, 3xx, 4xx, and 5xx codes.
+Search a curated local reference of standard HTTP status codes, descriptions, and response categories. Results are available directly in the tool page or as formatted JSON through the local `run(input, options)` entry point.
 
-## Availability
+## Curated coverage
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+The catalog includes 62 standardized entries grouped by their leading digit: informational (1xx), successful (2xx), redirection (3xx), client error (4xx), and server error (5xx). It covers registered codes commonly defined by HTTP semantics and related standards, including WebDAV and early hints. The list is curated rather than an exhaustive live registry: unassigned values, vendor-specific codes, and extension-only codes are excluded. Some entries are deprecated or reserved, and their descriptions identify that status where relevant.
 
-## Example input
+Descriptions are concise reference summaries, not normative protocol guidance. Category metadata follows the first digit of each status code.
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Lookup contract
 
-~~~json
-""
+- `input` must be a non-empty string of at most 100 characters and may not contain control characters.
+- A three-digit numeric query must be between 100 and 599. A valid numeric query performs an exact lookup; a code not in the curated list returns no matches.
+- Other queries search case-insensitively across code, title, description, category label, and category key.
+- The only supported option is `category`, with one of `all`, `1xx`, `2xx`, `3xx`, `4xx`, or `5xx`. It defaults to `all`; unknown options and values are rejected.
+- Results are returned as JSON containing the normalized query, selected category, total count, and matching entries. Search is bounded by the 100-character query limit and the fixed local catalog.
+
+The page supports the same code/text search and category filter. An empty search displays the selected category; invalid numeric input is explained inline.
+
+## Example input and defaults
+
+The catalog sample is stored in [definition.ts](definition.ts):
+
+~~~text
+404
 ~~~
 
-## Default options
-
-The options panel starts with this JSON:
+Default options:
 
 ~~~json
-{}
+{"category":"all"}
 ~~~
-
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
 
 ## Processing and privacy
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+All lookups use the curated data embedded in [logic.ts](logic.ts). The tool makes no network requests and does not fetch remote references. No input is transmitted or persisted by this tool.
 
 ## Contribution files
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/http-status-codes.test.cjs](../../../tests/tools/http-status-codes.test.cjs).
-
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): implemented tool metadata, sample input, and defaults.
+- [logic.ts](logic.ts): curated data, strict validation, local search, and JSON output.
+- [Tool.tsx](Tool.tsx): searchable local reference using the shared `ToolPanel` design system and the standard dynamic tool route.
+- Focused native Node tests: [tests/tools/http-status-codes.test.cjs](../../../tests/tools/http-status-codes.test.cjs).

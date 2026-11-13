@@ -15,8 +15,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 73)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 13)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 78)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 8)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -35,7 +35,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 60)
+  assert.equal(genericToolSlugs.length, 65)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -88,6 +88,11 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
     runTool('date-difference', JSON.stringify({ start: '2024-01-31', end: '2024-03-01' })),
     runTool('timezone-converter', JSON.stringify({ instant: '2024-06-15T12:00:00Z', fromTimeZone: 'UTC', toTimeZone: 'America/New_York' })),
     runTool('text-statistics', 'one two\nthree', { includeReadingTime: 'true', wordsPerMinute: '60' }),
+    runTool('subnet-calculator', '192.168.1.10/24'),
+    runTool('user-agent-parser', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'),
+    runTool('http-status-codes', '404'),
+    runTool('emoji-picker', 'coffee'),
+    runTool('benchmark-tool', 'map-lookup', { iterations: '20', samples: '2' }),
   ])
   assert.deepEqual(JSON.parse(outputs[0]), [{ name: 'Ada' }])
   assert.deepEqual(JSON.parse(outputs[1]), { x: 1 })
@@ -135,6 +140,11 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
   assert.equal(JSON.parse(outputs[43]).target.utcOffset, 'UTC-04:00')
   assert.match(outputs[44], /^Words: 3$/m)
   assert.match(outputs[44], /^Lines: 2$/m)
+  assert.equal(JSON.parse(outputs[45]).networkAddress, '192.168.1.0')
+  assert.equal(JSON.parse(outputs[46]).browser.name, 'Chrome')
+  assert.equal(JSON.parse(outputs[47]).results[0].title, 'Not Found')
+  assert.equal(JSON.parse(outputs[48])[0].emoji, '☕')
+  assert.equal(JSON.parse(outputs[49]).sampleCount, 2)
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
 })
 

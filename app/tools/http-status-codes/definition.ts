@@ -1,16 +1,16 @@
 import type { ToolDefinition } from '@/app/tools/types'
 
 export const tool: ToolDefinition = {
-  "id": "http-status-codes",
-  "name": "HTTP Status Codes",
-  "description": "Reference guide for all HTTP status codes. Understand 1xx, 2xx, 3xx, 4xx, and 5xx codes.",
-  "icon": "fa-solid fa-code",
-  "color": "#3b82f6",
-  "badge": "Planned",
-  "href": "/http-status-codes",
-  "categoryId": "misc",
-  "status": "planned",
-  "exampleInput": "",
-  "defaultOptions": {},
-  "outputExtension": "txt"
+  id: 'http-status-codes',
+  name: 'HTTP Status Codes',
+  description: 'Search a curated local reference of standard HTTP status codes, descriptions, and response categories.',
+  icon: 'fa-solid fa-code',
+  color: '#3b82f6',
+  badge: '',
+  href: '/http-status-codes',
+  categoryId: 'misc',
+  status: 'implemented',
+  exampleInput: '404',
+  defaultOptions: { category: 'all' },
+  outputExtension: 'json',
 }

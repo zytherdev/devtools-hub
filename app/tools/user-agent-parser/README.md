@@ -1,41 +1,39 @@
 # User Agent Parser
 
-**Status:** Planned
+**Status:** Implemented
 
-Parse and analyze user agent strings. Get browser, OS, and device information.
+Parse common browser, rendering-engine, operating-system, and device patterns from a user-agent string. The parser is deterministic and runs locally; it makes no network requests and adds no dependencies.
 
-## Availability
+## Availability and input
 
-This catalog entry is planned, not a functioning processor. The page shows a planned-state placeholder; do not rely on it for production work.
+Paste one user-agent string containing 1–2,048 characters after trimming. Empty values, control characters, and non-text inputs are rejected. The parser does not accept options; its options object must be empty.
 
-## Example input
+The built-in example in [definition.ts](definition.ts) is a desktop Chrome user-agent. It is available from the tool page's **Load example** button.
 
-The catalog sample is stored in [definition.ts](definition.ts) and can be loaded from the tool page. Its JSON representation is:
+## Output
 
-~~~json
-""
-~~~
+The output is formatted JSON containing the trimmed `userAgent` and four groups:
 
-## Default options
+- `browser`: `name`, `version`, and `major`.
+- `engine`: `name` and `version`.
+- `os`: `name` and `version`.
+- `device`: `type` (`desktop`, `mobile`, `tablet`, `bot`, or `unknown`), `vendor`, and `model`.
 
-The options panel starts with this JSON:
+Unrecognized fields are represented as `null`; an unrecognized device type is `unknown`. The local tool UI displays a short summary as well as the full structured result.
 
-~~~json
-{}
-~~~
+## Recognized patterns and limitations
 
-Defaults are not the complete API contract. [logic.ts](logic.ts) defines accepted keys, aliases, validation, and input/output limits; focused tests show representative behavior.
+Common patterns include Chrome/Chromium, Edge, Firefox, Safari, Opera, Samsung Internet, UC Browser, and Internet Explorer; Blink, WebKit, Gecko, Trident, EdgeHTML, and Presto engines; Windows, macOS, iOS, Android, Chrome OS, Linux, FreeBSD, and OpenBSD; and common Apple, Google Pixel, Samsung, and Amazon device signatures. Matching is rule-based and intentionally limited rather than a complete browser-database implementation.
 
-## Processing and privacy
+User-agent strings are spoofable and can be customized or misleading. Results are estimates, not proof of a browser, operating system, device, or user identity. Uncommon clients, unusual versions, and modified strings may be partially parsed or classified as unknown. Do not use the result as a security signal.
 
-No transformation is implemented yet. Keep status set to planned until validated logic, a connected UI, meaningful tests, and this documentation are complete.
+## Privacy and processing
 
-## Contribution files
+Parsing is performed in local application code in the browser. The string is not sent to a server or third party by this tool, and it is not persisted by the parser.
 
-- [definition.ts](definition.ts): metadata, category, status, sample input, defaults, and output extension.
-- [logic.ts](logic.ts): typed run(input, options) entry point and input validation.
-- [Tool.tsx](Tool.tsx): UI entry connected through [componentRegistry](../componentRegistry.ts).
-- lib/: helpers private to this tool, when needed.
-- Focused tests: [tests/tools/user-agent-parser.test.cjs](../../../tests/tools/user-agent-parser.test.cjs).
+## Contract files
 
-Before submitting changes, run npm run check. See [Adding a tool](../../../docs/adding-a-tool.md) and [Architecture](../../../docs/architecture.md).
+- [definition.ts](definition.ts): catalog metadata, status, sample, defaults, and output extension.
+- [logic.ts](logic.ts): strict validation, parsing rules, typed result, and JSON output.
+- [Tool.tsx](Tool.tsx): local interactive UI using the shared `ToolPanel` design system.
+- Focused native tests: [tests/tools/user-agent-parser.test.cjs](../../../tests/tools/user-agent-parser.test.cjs).

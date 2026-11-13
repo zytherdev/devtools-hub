@@ -1,6 +1,6 @@
 # Tool Implementation Coverage
 
-**Reference: November 12, 2026.** The catalog contains 86 tools: 73 have connected implementations and 13 are explicitly marked as planned. Each tool has a canonical folder at `app/tools/<slug>/`; appearing in the catalog alone does not mean that it processes inputs. Update this page whenever an implementation’s status changes.
+**Reference: November 13, 2026.** The catalog contains 86 tools: 78 have connected implementations and 8 are explicitly marked as planned. Each tool has a canonical folder at `app/tools/<slug>/`; appearing in the catalog alone does not mean that it processes inputs. Update this page whenever an implementation’s status changes.
 
 ## Implemented
 
@@ -17,6 +17,8 @@
 | Database and DevOps | `sql-formatter`, `docker-compose-converter`, `kubernetes-decoder`, `chmod-calculator` |
 | Security and cryptography | `password-strength`, `email-validator`, `hash-generator`, `hash-verifier`, `hmac-generator` |
 | Date and time | `cron-validator`, `eta-calculator`, `date-difference`, `timezone-converter`, `text-statistics` |
+| Network and lookup | `subnet-calculator`, `user-agent-parser` |
+| Miscellaneous | `http-status-codes`, `emoji-picker`, `benchmark-tool` |
 
 Each implemented tool contains metadata and example/default options in `definition.ts`, processing logic in `logic.ts`, and a UI entry in `Tool.tsx`. `app/tools/registry.ts` registers the metadata; `app/tools/componentRegistry.ts` statically registers the UI entries used by the shared dynamic route. Simple interfaces reuse `UniversalTool`; richer controls follow the same shared visual system.
 
@@ -30,11 +32,11 @@ All planned tools follow the same folder contract and explicitly display their p
 | Generators | — |
 | Text and strings | — |
 | Converters | — |
-| Database and DevOps | `subnet-calculator` |
+| Database and DevOps | — |
 | Security and cryptography | `ssl-checker`, `rsa-key-generator`, `bcrypt-generator`, `aes-encryptor`, `certificate-decoder` |
 | Date and time | — |
-| Network and lookup | `ip-lookup`, `user-agent-parser`, `mac-lookup` |
-| Miscellaneous | `http-status-codes`, `emoji-picker`, `bip39-generator`, `benchmark-tool` |
+| Network and lookup | `ip-lookup`, `mac-lookup` |
+| Miscellaneous | `bip39-generator` |
 
 ## Completion criteria
 
