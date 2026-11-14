@@ -15,8 +15,8 @@ test('catalog slugs are unique, categorized and represented by one canonical def
   assert.deepEqual(getToolCatalogIssues(), [])
   assert.equal(new Set(allTools.map(tool => tool.id)).size, allTools.length)
   assert.equal(new Set(allTools.map(tool => tool.href)).size, allTools.length)
-  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 83)
-  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 3)
+  assert.equal(allTools.filter(tool => tool.status === 'implemented').length, 86)
+  assert.equal(allTools.filter(tool => tool.status === 'planned').length, 0)
   assert.ok(categories.length > 0)
   assert.ok(quickTools.every(tool => allTools.includes(tool)))
 })
@@ -35,7 +35,7 @@ test('every catalog entry has the same folder, view, logic, README and focused t
 
 test('generic executor registry contains exactly the implemented generic tools', () => {
   assert.equal(new Set(genericToolSlugs).size, genericToolSlugs.length)
-  assert.equal(genericToolSlugs.length, 70)
+  assert.equal(genericToolSlugs.length, 73)
   for (const slug of genericToolSlugs) {
     assert.equal(allTools.find(tool => tool.id === slug)?.status, 'implemented', `${slug} must be marked implemented`)
   }
@@ -161,6 +161,13 @@ test('generic dispatcher delegates to per-tool modules and rejects unknown slugs
   await assert.rejects(runTool('certificate-decoder', 'not a certificate'), /PEM CERTIFICATE block/i)
   await assert.rejects(runTool('ssl-checker', 'not a certificate'), /PEM CERTIFICATE block/i)
   await assert.rejects(runTool('not-a-tool', ''), /no generic text processor/i)
+})
+
+test('final tool handlers are wired without making implicit public lookup requests', async () => {
+  const phrase = await runTool('bip39-generator', '', { strength: '128' })
+  assert.equal(phrase.trim().split(/\s+/).length, 12)
+  await assert.rejects(runTool('ip-lookup', '127.0.0.1'), /private, reserved, or special-use/)
+  await assert.rejects(runTool('mac-lookup', 'not-a-mac'), /Enter a valid 24-bit OUI or 48-bit MAC/)
 })
 
 test('component registry has one statically analyzable UI import for every catalog slug', () => {

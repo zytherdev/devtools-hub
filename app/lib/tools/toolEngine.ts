@@ -5,6 +5,7 @@ import { run as runBase64Encoder } from '@/app/tools/base64-encoder/logic'
 import { run as runBarcodeGenerator } from '@/app/tools/barcode-generator/logic'
 import { run as runBenchmarkTool } from '@/app/tools/benchmark-tool/logic'
 import { run as runBcryptGenerator } from '@/app/tools/bcrypt-generator/logic'
+import { run as runBip39Generator } from '@/app/tools/bip39-generator/logic'
 import { run as runChmodCalculator } from '@/app/tools/chmod-calculator/logic'
 import { run as runCertificateDecoder } from '@/app/tools/certificate-decoder/logic'
 import { run as runCsvFormatter } from '@/app/tools/csv-formatter/logic'
@@ -26,6 +27,7 @@ import { run as runHashGenerator } from '@/app/tools/hash-generator/logic'
 import { run as runHashVerifier } from '@/app/tools/hash-verifier/logic'
 import { run as runHmacGenerator } from '@/app/tools/hmac-generator/logic'
 import { run as runHttpStatusCodes } from '@/app/tools/http-status-codes/logic'
+import { run as runIpLookup } from '@/app/tools/ip-lookup/logic'
 import { run as runJsonDiff } from '@/app/tools/json-diff/logic'
 import { run as runJsonSchemaGenerator } from '@/app/tools/json-schema-generator/logic'
 import { run as runJsonToXml } from '@/app/tools/json-to-xml/logic'
@@ -34,6 +36,7 @@ import { run as runJwtGenerator } from '@/app/tools/jwt-generator/logic'
 import { run as runKubernetesDecoder } from '@/app/tools/kubernetes-decoder/logic'
 import { run as runLineSorter } from '@/app/tools/line-sorter/logic'
 import { run as runLoremIpsum } from '@/app/tools/lorem-ipsum/logic'
+import { run as runMacLookup } from '@/app/tools/mac-lookup/logic'
 import { run as runMarkdownToHtml } from '@/app/tools/markdown-to-html/logic'
 import { run as runMimeTypeValidator } from '@/app/tools/mime-type-validator/logic'
 import { run as runMockApiGenerator } from '@/app/tools/mock-api-generator/logic'
@@ -77,6 +80,7 @@ const handlers: Record<string, ToolRunner> = {
   'barcode-generator': runBarcodeGenerator,
   'benchmark-tool': runBenchmarkTool,
   'bcrypt-generator': runBcryptGenerator,
+  'bip39-generator': runBip39Generator,
   'chmod-calculator': runChmodCalculator,
   'certificate-decoder': runCertificateDecoder,
   'csv-formatter': runCsvFormatter,
@@ -98,6 +102,7 @@ const handlers: Record<string, ToolRunner> = {
   'html-beautifier': runHtmlBeautifier,
   'html-encoder': runHtmlEncoder,
   'http-status-codes': runHttpStatusCodes,
+  'ip-lookup': runIpLookup,
   'json-diff': runJsonDiff,
   'json-schema-generator': runJsonSchemaGenerator,
   'json-to-xml': runJsonToXml,
@@ -106,6 +111,7 @@ const handlers: Record<string, ToolRunner> = {
   'kubernetes-decoder': runKubernetesDecoder,
   'line-sorter': runLineSorter,
   'lorem-ipsum': runLoremIpsum,
+  'mac-lookup': runMacLookup,
   'markdown-to-html': runMarkdownToHtml,
   'mime-type-validator': runMimeTypeValidator,
   'mock-api-generator': runMockApiGenerator,

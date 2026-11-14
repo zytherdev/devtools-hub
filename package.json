@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
+    "@scure/bip39": "2.4.0",
     "bwip-js": "^4.11.4",
     "clsx": "^2.1.1",
     "escodegen": "^2.1.0",
